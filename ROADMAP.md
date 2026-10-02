@@ -44,7 +44,7 @@ Acceptance:
 - `results/M0/report.md` incl. an estimate: snapshots/hour and how many
   scenario-seconds can be simulated per day.
 
-## M1 — Scenario, mobility, ground truth, blockage model (5–14 Oct) — TODO
+## M1 — Scenario, mobility, ground truth, blockage model (5–14 Oct) — DONE
 Goal: a configurable, deterministic urban scenario producing per-snapshot
 channels and ground truth.
 Build:

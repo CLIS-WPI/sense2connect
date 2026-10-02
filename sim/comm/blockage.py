@@ -1,9 +1,9 @@
 """3GPP TR 38.901 clause 7.6.4.2 blockage model B (knife-edge screen).
 
 Each blocker is a vertical rectangular screen. The screen faces the
-incoming segment: LoS uses the O-RU to UE segment, and a reflected path
-uses the segment from the last interaction point to the UE. Top and base
-edges stay parallel to the ground.
+segment under test. LoS is the O-RU to UE segment. A reflected path is
+every hop from the O-RU through the interaction points to the UE. Top
+and base edges stay parallel to the ground.
 
 The four edge terms and the loss follow clause 7.6.4.2. Distances that
 enter one edge term are measured in that term's projection plane (top
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -178,6 +179,34 @@ def screen_blockage(
     )
 
 
+def path_blocker_loss(
+    segments_m: list[tuple[np.ndarray, np.ndarray]],
+    center_m: np.ndarray,
+    length_m: float,
+    width_m: float,
+    height_m: float,
+    wavelength_m: float,
+) -> tuple[float, list[ScreenLoss]]:
+    """Model-B loss [dB] of one blocker on every segment of one path.
+
+    Segment losses add in dB, the same rule the specification uses for
+    several screens. A segment the blocker does not meet contributes
+    about 0 dB.
+    """
+    results: list[ScreenLoss] = []
+    for start_m, end_m in segments_m:
+        if float(np.linalg.norm(np.asarray(end_m) - np.asarray(start_m))) < 1e-6:
+            continue
+        results.append(
+            screen_blockage(
+                start_m, end_m, center_m, length_m, width_m, height_m, wavelength_m
+            )
+        )
+    if not results:
+        return 0.0, []
+    return sum_blockage_db([item.loss_db for item in results]), results
+
+
 def sum_blockage_db(losses_db: list[float]) -> float:
     """Sum per-blocker losses [dB], as clause 7.6.4.2 specifies for several screens."""
     total = 0.0
@@ -186,6 +215,80 @@ def sum_blockage_db(losses_db: list[float]) -> float:
             return math.inf
         total += loss
     return total
+
+
+def power_ratio_loss_db(powers: list[float], losses_db: list[float]) -> float:
+    """``10 log10(P_unblocked / P_blocked)`` [dB].
+
+    Each path keeps its unblocked power [W, linear] and is scaled by its
+    own model-B loss. A non-finite loss removes that path. The result is
+    ``+inf`` when the blocked power is zero and the unblocked power is not.
+    """
+    unblocked = 0.0
+    blocked = 0.0
+    for power, loss_db in zip(powers, losses_db, strict=True):
+        unblocked += power
+        if power <= 0.0 or not math.isfinite(loss_db):
+            continue
+        blocked += power * (10.0 ** (-loss_db / 10.0))
+    if unblocked <= 0.0:
+        return 0.0
+    if blocked <= 0.0:
+        return math.inf
+    return 10.0 * math.log10(unblocked / blocked)
+
+
+def dominant_blocker(
+    powers: list[float],
+    blockers: list[dict[str, Any]],
+) -> tuple[str | None, str | None]:
+    """Blocker that removes the most power when it is the only screen.
+
+    ``blockers`` entries have ``id``, ``kind``, and ``losses_db`` aligned
+    with ``powers``. Ties break on the blocker id so the choice is stable.
+    """
+    best_id = None
+    best_kind = None
+    best_removed = -1.0
+    unblocked = float(sum(powers))
+    for blocker in blockers:
+        remaining = 0.0
+        for power, loss_db in zip(powers, blocker["losses_db"], strict=True):
+            if power <= 0.0 or not math.isfinite(loss_db):
+                continue
+            remaining += power * (10.0 ** (-loss_db / 10.0))
+        removed = unblocked - remaining
+        blocker_id = str(blocker["id"])
+        if removed > best_removed + 1e-15 or (
+            abs(removed - best_removed) <= 1e-15 and (best_id is None or blocker_id < best_id)
+        ):
+            best_removed = removed
+            best_id = blocker_id
+            best_kind = str(blocker["kind"])
+    return best_id, best_kind
+
+
+def available_power(unblocked_power: float, loss_db: float) -> float:
+    """Power left on one path after model B.
+
+    ``unblocked_power`` is linear. ``loss_db`` is the path's model-B loss.
+    A non-finite loss removes the path.
+    """
+    if unblocked_power <= 0.0 or not math.isfinite(loss_db):
+        return 0.0
+    return unblocked_power * (10.0 ** (-loss_db / 10.0))
+
+
+def headroom_db(los_power: float, alternative_power: float | None) -> float:
+    """``10 log10(P_alternative / P_LoS)`` [dB].
+
+    Negative when the alternative is weaker than LoS. Returns ``-inf`` when
+    either power is missing or zero. The caller chooses whether
+    ``P_alternative`` is the unblocked power or the power after model B.
+    """
+    if alternative_power is None or los_power <= 0.0 or alternative_power <= 0.0:
+        return -math.inf
+    return 10.0 * math.log10(alternative_power / los_power)
 
 
 def linear_amplitude_gain(loss_db: float) -> float:

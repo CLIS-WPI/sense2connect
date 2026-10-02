@@ -1,5 +1,5 @@
-# Realistic street deployment. Geometry is fixed from the canyon map.
-# It is not adjusted to force blockage events.
+# M2 radio defaults on the same street as configs/m1_scenario.yaml.
+# M1 stays on the single-element, single-O-RU file so that study can be repeated.
 # Seed 101 is a tuning seed (configs/seeds.yaml).
 seed: 101
 carrier_hz: 2.8e10
@@ -11,20 +11,28 @@ duration_s: 2.0
 mount: facade
 density: low
 
-# M1 baseline: one element at the O-RU and at the UE. synthetic_array is the
-# solver default. The 8x8 O-RU array lives in configs/m2_scenario.yaml.
+# O-RU: 8x8 uniform planar array, half-wavelength spacing, synthetic array.
+# UE: one element. Both solves use these arrays.
 array:
   synthetic_array: true
-  num_rows: 1
-  num_cols: 1
-  polarization: V
-  pattern: iso
+  oru:
+    num_rows: 8
+    num_cols: 8
+    vertical_spacing: 0.5
+    horizontal_spacing: 0.5
+    polarization: V
+    pattern: iso
+  ue:
+    num_rows: 1
+    num_cols: 1
+    vertical_spacing: 0.5
+    horizontal_spacing: 0.5
+    polarization: V
+    pattern: iso
 
-# Second O-RU is off so this file still reproduces the single-radio study.
-# x_offset_m is along the street from the first O-RU; the lamp is placed on
-# the opposite sidewalk. See configs/m2_scenario.yaml.
+# Lamppost at 5 m on the sidewalk opposite the first O-RU, 40 m along the street.
 second_oru:
-  enabled: false
+  enabled: true
   height_m: 5.0
   x_offset_m: 40.0
 
