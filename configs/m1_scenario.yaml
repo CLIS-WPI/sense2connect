@@ -1,0 +1,80 @@
+# M1 acceptance scenario. Seed 101 is a tuning seed (configs/seeds.yaml).
+# Positions are centers [m]. Velocities are set from these vectors [m/s],
+# not from a position difference.
+seed: 101
+carrier_hz: 2.8e10
+numerology: 3
+n_subcarriers: 512
+dt_s: 0.05
+n_snapshots: 21
+
+array:
+  num_rows: 1
+  num_cols: 1
+  polarization: V
+  pattern: iso
+
+scene: simple_street_canyon
+
+solvers:
+  max_depth: 2
+  samples_per_src: 20000
+  max_num_paths_per_src: 10000
+  samples_per_sp: 20000
+  buffer_size_per_sp: 20000
+  specular_reflection: true
+  diffraction: false
+  refraction: false
+
+blockage:
+  # A blocker is in an event while its own model-B loss is at least this [dB].
+  event_loss_db: 3.0
+
+# Road between the canyon buildings (facades near y = 9.6 and y = -8.6).
+lanes:
+  - name: street
+    origin_m: [0.0, -3.2, 0.0]
+    direction: [1.0, 0.0, 0.0]
+sidewalks:
+  - name: south
+    origin_m: [0.0, -6.2, 0.0]
+    direction: [1.0, 0.0, 0.0]
+
+orus:
+  - name: oru-0
+    position_m: [0.0, 7.5, 1.8]
+
+ues:
+  - name: ue-0
+    sidewalk: south
+    s0_m: 0.0
+    speed_mps: 0.5
+    height_m: 1.5
+  - name: ue-1
+    sidewalk: south
+    s0_m: -12.0
+    speed_mps: 0.3
+    height_m: 1.5
+
+vehicles:
+  - name: veh-0
+    object_type: vehicle-multi-sp
+    lane: street
+    s0_m: -8.0
+    speed_mps: 8.0
+    center_height_m: 0.8
+
+pedestrians:
+  - name: ped-0
+    object_type: human
+    # Crosses the street near ue-0, from the roadway toward the south sidewalk.
+    position0_m: [0.4, -2.0, 0.875]
+    velocity_mps: [0.0, -0.6, 0.0]
+
+render:
+  enabled: true
+  every: 7
+  resolution: [640, 480]
+  num_samples: 64
+  camera_position_m: [22.0, 0.5, 8.0]
+  camera_look_at_m: [0.0, -2.0, 1.2]
