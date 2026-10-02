@@ -492,6 +492,16 @@ def _ue_metric_row(ue_name: str, oru_name: str, path_rows: list[dict[str, Any]])
         alt_power = None
         alt_available = None
         alt_same = False
+    unblocked_power = float(sum(float(item["power"]) for item in path_rows))
+    blocked_power = float(
+        sum(available_power(float(item["power"]), float(item["loss_db"])) for item in path_rows)
+    )
+    nlos_left = [
+        available_power(float(item["power"]), float(item["loss_db"]))
+        for item in path_rows
+        if item["path_class"] != "los"
+    ]
+    best_available_alt_power = None if not nlos_left else float(max(nlos_left))
 
     if path_rows:
         strongest = max(path_rows, key=lambda item: (float(item["power"]), item["path"]))
@@ -512,6 +522,9 @@ def _ue_metric_row(ue_name: str, oru_name: str, path_rows: list[dict[str, Any]])
         "los_power": los_power,
         "alt_power": alt_power,
         "alt_available_power": alt_available,
+        "best_available_alt_power": best_available_alt_power,
+        "unblocked_power": unblocked_power,
+        "blocked_power": blocked_power,
         "alt_blocked_by_los_blocker": los_blocker if alt_same else None,
         "los_loss_db": los_loss,
         "los_blocker_id": los_blocker,
@@ -957,6 +970,9 @@ def run_scenario(
                 "los_power": row["los_power"],
                 "alt_power": row["alt_power"],
                 "alt_available_power": row["alt_available_power"],
+                "best_available_alt_power": row["best_available_alt_power"],
+                "unblocked_power": row["unblocked_power"],
+                "blocked_power": row["blocked_power"],
                 "alt_blocked_by_los_blocker": row["alt_blocked_by_los_blocker"],
             }
             for row in ue_rows

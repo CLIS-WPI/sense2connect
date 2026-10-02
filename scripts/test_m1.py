@@ -22,7 +22,8 @@ from sim.comm.blockage import (  # noqa: E402
 )
 from sim.comm.events import annotate_los_events, apply_hysteresis, entry_warning_s, merge_ue_events  # noqa: E402
 from sim.scenes.config import load_scenario  # noqa: E402
-from sim.scenes.loop import run_scenario  # noqa: E402
+from sim.comm.diversity import oracle_link, other_link, serving_link  # noqa: E402
+from sim.scenes.loop import _ue_metric_row, run_scenario  # noqa: E402
 from sim.scenes.motion import states_at, track_identity  # noqa: E402
 from sim.scenes.traffic import prepare_scenario  # noqa: E402
 
@@ -184,6 +185,44 @@ class ModelBTheoryTest(unittest.TestCase):
         west = {"name": "car-1", "lane": "east", "s0_m": 5.0, "speed_mps": -10.0}
         self.assertEqual(track_identity(scenario, west, 0.4), "car-1#0")
         self.assertEqual(track_identity(scenario, west, 0.6), "car-1#-1")
+
+    def test_best_available_alternative_is_the_strongest_path_after_model_b(self) -> None:
+        def screen(name: str, loss: float) -> dict:
+            return {"blocker": name, "blocker_kind": "bus", "loss_db": loss, "blocked": loss >= 3.0}
+
+        rows = [
+            {
+                "path_class": "los",
+                "path": "los",
+                "power": 1.0,
+                "loss_db": 12.0,
+                "blockers": [screen("bus-0#0", 12.0)],
+            },
+            {
+                "path_class": "wall",
+                "path": "nlos-1-3",
+                "power": 0.5,
+                "loss_db": 40.0,
+                "blockers": [screen("bus-0#0", 40.0)],
+            },
+            {
+                "path_class": "ground",
+                "path": "nlos-1-4",
+                "power": 0.2,
+                "loss_db": 0.0,
+                "blockers": [screen("bus-0#0", 0.0)],
+            },
+        ]
+        metric = _ue_metric_row("ue-0", "oru-0", rows)
+        self.assertAlmostEqual(metric["alt_power"], 0.5, delta=1e-12)
+        self.assertAlmostEqual(metric["best_available_alt_power"], 0.2, delta=1e-12)
+        links = [
+            {"oru": "oru-0", "unblocked_power": 1.0, "blocked_power": 0.01, "los_loss_db": 12.0},
+            {"oru": "oru-1", "unblocked_power": 0.4, "blocked_power": 0.3, "los_loss_db": 1.0},
+        ]
+        self.assertEqual(serving_link(links)["oru"], "oru-0")
+        self.assertEqual(other_link(links, "oru-0")["oru"], "oru-1")
+        self.assertEqual(oracle_link(links)["oru"], "oru-1")
 
 
 class DeploymentTest(unittest.TestCase):

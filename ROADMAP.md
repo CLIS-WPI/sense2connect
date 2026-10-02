@@ -93,15 +93,24 @@ Goal: proactive actions from tracks, with the RIC loop modelled.
 Build (`xapp/`):
 - Predictor: for each UE and horizon T, time-to-blockage and duration
   from tracks and UE/O-RU geometry.
-- Actions: proactive beam switch to the best alternative path, handover
-  to another O-RU, or no action.
+- Two O-RUs are two cells. Primary action: inter-cell handover decided
+  by the xApp (O-RAN traffic steering) when the serving link is predicted
+  to block. Multi-TRP under one DU (near-zero interruption) is an ablation.
+- Baseline on the same cell: proactive beam switch to the best alternative
+  path.
+- Baseline: reactive 3GPP A3 handover. Offset, hysteresis, and
+  time-to-trigger come from config and are tuned on the tuning seeds.
+- No action remains a baseline.
 - Interface modelled like E2: report period, loop delay (from M4 or a
   sweep 10 ms – 1 s), control latency; xApp logic independent of the
   simulator (could later run on a real RIC).
 - Comm performance per UE over time (SNR, throughput via PHY abstraction,
   outage) including the cost of sensing resources.
-- Baselines: reactive beam management (beam-failure detection + recovery
-  delay from config), RSRP-trend predictor, oracle.
+- Other baselines: reactive beam management (beam-failure detection +
+  recovery delay from config), RSRP-trend predictor, oracle O-RU selection.
+- Metrics: handover interruption time (config), switches per UE-minute,
+  ping-pong rate. All results split by blocker class (bus/truck,
+  pedestrian, car).
 Acceptance: precision/recall and lead time of predictions; outage time and
 throughput vs. baselines -> evidence for H2.
 
