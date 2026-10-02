@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+results/*
+!results/.gitkeep
+*.h5
+*.npz

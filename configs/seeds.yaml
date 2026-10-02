@@ -1,0 +1,4 @@
+# Disjoint seed sets (see ROADMAP.md, research integrity).
+# Tune on tuning seeds only; report on evaluation seeds only.
+tuning: [101, 102, 103, 104, 105]
+evaluation: [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010]

@@ -1,0 +1,9 @@
+# Pinned: Sionna 2.2.0 is brand new; do not upgrade mid-project.
+sionna==2.2.0
+sionna-rt==2.2.0
+mitsuba==3.9.1
+drjit==1.5.0
+jupyterlab
+pyyaml
+pandas
+tqdm

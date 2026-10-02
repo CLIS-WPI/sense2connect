@@ -1,0 +1,35 @@
+# Sionna 2.2 (RT + PHY, PyTorch backend) for NVIDIA H100
+#
+# The CUDA runtime comes from the PyTorch wheels; the driver, libcuda and
+# OptiX (needed by Sionna RT / Mitsuba) are injected from the host by the
+# NVIDIA Container Toolkit, hence NVIDIA_DRIVER_CAPABILITIES=all below.
+ARG BASE_IMAGE=nvidia/cuda:12.8.1-base-ubuntu24.04
+FROM ${BASE_IMAGE}
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=all
+
+# llvm: CPU fallback backend of Dr.Jit (used only if no GPU is visible)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3 python3-venv python3-pip python3-dev \
+        libatomic1 llvm git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ubuntu 24.04 ships Python 3.12 (Sionna 2.2 needs >= 3.11)
+RUN python3 -m venv /opt/venv
+ENV PATH=/opt/venv/bin:$PATH
+
+# PyTorch with CUDA 12.8 (supports H100 / sm_90). If the host driver is too
+# old for CUDA 12.8, rebuild with --build-arg TORCH_INDEX=.../whl/cu126
+ARG TORCH_VERSION=2.9.1
+ARG TORCH_INDEX=https://download.pytorch.org/whl/cu128
+RUN pip install --no-cache-dir --upgrade pip \
+ && pip install --no-cache-dir torch==${TORCH_VERSION} --index-url ${TORCH_INDEX}
+
+COPY docker/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+WORKDIR /workspace
+CMD ["python", "scripts/sanity_check.py"]

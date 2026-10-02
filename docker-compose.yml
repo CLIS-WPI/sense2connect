@@ -1,0 +1,32 @@
+services:
+  sionna:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.sionna
+    image: sense2connect/sionna:2.2.0
+    container_name: s2c-sionna
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1         # physical GPU 1 only (overrides image default "all")
+      - NVIDIA_DRIVER_CAPABILITIES=all   # required for OptiX (Sionna RT)
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-change-me}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["1"]
+              capabilities: [gpu, compute, utility, graphics]
+    shm_size: 8gb
+    volumes:
+      - .:/workspace
+    # Bound to localhost only; on a remote server use: ssh -L 8888:localhost:8888 <server>
+    ports:
+      - "127.0.0.1:8888:8888"
+    command: >
+      jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+      --ServerApp.token=${JUPYTER_TOKEN:-change-me}
+
+  # --- Planned (step 2): O-RAN control loop for E2 latency measurements ---
+  # oai-gnb:   OpenAirInterface gNB in rfsimulator mode (no RF hardware)
+  # oai-nr-ue: OpenAirInterface UE in rfsimulator mode
+  # flexric:   near-RT RIC + latency-measurement xApp
