@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .env
+.cache/
 results/*
 !results/.gitkeep
 *.h5

@@ -262,6 +262,49 @@ def crossing_state(
     return walk(start, s_cross, dist)
 
 
+_POSE_PATCHED = False
+
+
+def _install_opaque_position() -> None:
+    """Keep object centers from being inlined into ray-tracing kernels.
+
+    The stock getter rebuilds the center from the mesh bounding box as a
+    fresh literal every call. ``dr.make_opaque`` turns that literal into a
+    kernel input so the next snapshot can reuse the compiled kernel.
+    """
+    global _POSE_PATCHED
+    if _POSE_PATCHED:
+        return
+    import drjit as dr
+    import mitsuba as mi
+    from sionna.rt.scene_object import SceneObject
+
+    getter = SceneObject.position.fget
+    setter = SceneObject.position.fset
+
+    def position(self: Any) -> Any:
+        cached = getattr(self, "_opaque_position", None)
+        if cached is not None:
+            return cached
+        point = mi.Point3f(getter(self))
+        dr.make_opaque(point)
+        self._opaque_position = point
+        return point
+
+    SceneObject.position = property(position, setter)  # type: ignore[method-assign]
+    _POSE_PATCHED = True
+
+
+def _opaque_vector(values: np.ndarray) -> Any:
+    """A 3-vector whose components are not compile-time constants."""
+    import drjit as dr
+    import mitsuba as mi
+
+    vector = mi.Vector3f(float(values[0]), float(values[1]), float(values[2]))
+    dr.make_opaque(vector)
+    return vector
+
+
 def read_vec3(value: Any) -> np.ndarray:
     """First three components of a Mitsuba or NumPy vector, in metres or m/s."""
     array = np.asarray(value, dtype=np.float64).reshape(-1)
@@ -277,20 +320,29 @@ def move_targets(scene: Any, targets: list[Any], states: dict[str, dict[str, np.
     import drjit as dr
     import mitsuba as mi
 
+    _install_opaque_position()
     params = scene.mi_scene_params
     for target in targets:
         state = states[target.name]
+        target._opaque_position = None
         current = read_vec3(target.position)
         delta = state["position_m"] - current
         key = target._mi_mesh.id() + ".vertex_positions"
-        translation = mi.Vector3f(float(delta[0]), float(delta[1]), float(delta[2]))
+        translation = _opaque_vector(delta)
         vertices = dr.unravel(mi.Point3f, params[key])
-        params[key] = dr.ravel(vertices + translation)
-        target.velocity = mi.Vector3f(
-            float(state["velocity_mps"][0]),
-            float(state["velocity_mps"][1]),
-            float(state["velocity_mps"][2]),
-        )
+        updated = dr.ravel(vertices + translation)
+        # Evaluated positions stay kernel inputs. A Python float here is
+        # baked into the next ray-tracing kernel as a literal.
+        dr.make_opaque(updated)
+        params[key] = updated
+        velocity = _opaque_vector(state["velocity_mps"])
+        target.velocity = velocity
+        if target._velocity_params is not None:
+            stored = mi.Vector3f(target._velocity_params["value"])
+            dr.make_opaque(stored)
+            target._velocity_params["value"] = stored
+            target._velocity_params.update()
+        target._opaque_position = None
     params.update()
     scene.scene_geometry_updated()
 
@@ -301,5 +353,5 @@ def move_radios(devices: list[Any], states: dict[str, dict[str, np.ndarray]]) ->
         if device.name not in states:
             continue
         state = states[device.name]
-        device.position = state["position_m"].tolist()
-        device.velocity = state["velocity_mps"].tolist()
+        device.position = _opaque_vector(state["position_m"])
+        device.velocity = _opaque_vector(state["velocity_mps"])

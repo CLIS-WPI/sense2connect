@@ -8,6 +8,7 @@ services:
     environment:
       - NVIDIA_VISIBLE_DEVICES=1         # physical GPU 1 only (overrides image default "all")
       - NVIDIA_DRIVER_CAPABILITIES=all   # required for OptiX (Sionna RT)
+      - DRJIT_CACHE_DIR=/workspace/.cache/drjit
       - JUPYTER_TOKEN=${JUPYTER_TOKEN:-change-me}
     deploy:
       resources:

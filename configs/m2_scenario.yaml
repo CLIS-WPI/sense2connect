@@ -4,7 +4,9 @@
 seed: 101
 carrier_hz: 2.8e10
 numerology: 3
-n_subcarriers: 512
+# Shared with sensing (1024). Must not be narrower than the sensing carrier.
+# 2048 remains sensing-only as a sensitivity case.
+n_subcarriers: 1024
 dt_s: 0.1
 duration_s: 2.0
 # lamppost -> 5 m, facade -> 8 m. The study sweeps both.
@@ -154,3 +156,48 @@ render:
   num_samples: 32
   camera_position_m: [22.0, 0.5, 8.0]
   camera_look_at_m: [0.0, -2.0, 1.2]
+
+# Monostatic radar at oru-0. The second O-RU stays a second cell for later
+# handover; it is not a second radar in this milestone.
+# Assumption: ideal full duplex. The colocated transmitter and receiver do
+# not model self-interference.
+sensing_radar:
+  duration_s: 0.512
+  sensing_range_m: 40.0
+  match_gate_m: 8.0
+  max_range_m: 120.0
+  # Canyon facades used by the image-method ghost check.
+  wall_y_m: [9.6, -8.6]
+  waveform:
+    numerology: 3
+    n_subcarriers: 1024
+    # Sensitivity only; wider than the comm carrier, not the main setting.
+    n_subcarriers_alt: 2048
+    cpi_slots: 256
+    sensing_symbols_per_slot: 1
+    symbols_per_slot: 14
+    window: true
+  noise:
+    enabled: true
+    tx_power_dbm: 30.0
+    noise_figure_db: 7.0
+    temperature_k: 290.0
+  arrays:
+    tx:
+      num_rows: 1
+      num_cols: 1
+      pattern: iso
+      polarization: V
+    rx:
+      num_rows: 8
+      num_cols: 8
+      vertical_spacing: 0.5
+      horizontal_spacing: 0.5
+      pattern: iso
+      polarization: V
+  cluster:
+    min_samples: 1
+  cfar:
+    guard: 2
+  tracker:
+    confirm_hits: 2
