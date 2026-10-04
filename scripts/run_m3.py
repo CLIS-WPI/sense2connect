@@ -493,7 +493,8 @@ def main() -> None:
     raw = load_yaml(ROOT / "configs" / "m2_scenario.yaml")
     cfg = load_yaml(ROOT / "configs" / "m3.yaml")
     rw = cfg["rework"]
-    seeds = load_yaml(ROOT / "configs" / "seeds.yaml")
+    from seedsets import load_seeds  # S2C_EVAL_SET selects development or held-out seeds
+    seeds = load_seeds()
     tuning = [int(s) for s in seeds["tuning"]]
     evaluation = [int(s) for s in seeds["evaluation"]]
     if args.limit_seeds:

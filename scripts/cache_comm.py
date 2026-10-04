@@ -21,7 +21,8 @@ DENSITIES = ("low", "high")
 
 def main() -> None:
     raw = load_yaml(ROOT / "configs" / "m2_scenario.yaml")
-    seeds = load_yaml(ROOT / "configs" / "seeds.yaml")
+    from seedsets import load_seeds  # S2C_EVAL_SET selects development or held-out seeds
+    seeds = load_seeds()
     jobs = [
         (mount, density, int(seed))
         for seed in list(seeds["tuning"]) + list(seeds["evaluation"])

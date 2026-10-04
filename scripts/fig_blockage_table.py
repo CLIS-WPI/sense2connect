@@ -163,7 +163,8 @@ def latex(res: dict) -> str:
 
 
 def main() -> None:
-    seeds = load_yaml(ROOT / "configs" / "seeds.yaml")
+    from seedsets import load_seeds  # S2C_EVAL_SET selects development or held-out seeds
+    seeds = load_seeds()
     tune = analyse(load_rows([int(s) for s in seeds["tuning"]]))
     bad = check_against_m15(tune)
     if bad:

@@ -1,0 +1,6 @@
+# Held-out test seeds (second external review, Block 3). Never used for
+# tuning, calibration or development. Kept out of configs/seeds.yaml on
+# purpose: that file is part of the cache config hash, and the held-out set
+# must not change the identity of the existing caches.
+# Selected at run time with S2C_EVAL_SET=heldout (scripts/seedsets.py).
+heldout: [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010]

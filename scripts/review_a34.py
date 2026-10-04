@@ -124,7 +124,8 @@ def main() -> None:
     raw = load_yaml(ROOT / "configs" / "m2_scenario.yaml")
     cfg = load_yaml(ROOT / "configs" / "m3.yaml")
     rw = cfg["rework"]
-    seeds = load_yaml(ROOT / "configs" / "seeds.yaml")
+    from seedsets import load_seeds  # S2C_EVAL_SET selects development or held-out seeds
+    seeds = load_seeds()
     tune_jobs = [(int(s), m, d) for s in seeds["tuning"] for m in R.MOUNTS for d in R.DENSITIES]
     eval_jobs = [(int(s), m, d) for s in seeds["evaluation"] for m in R.MOUNTS for d in R.DENSITIES]
     bw = int(raw["n_subcarriers"]) * 15000.0 * (2 ** int(raw["numerology"]))

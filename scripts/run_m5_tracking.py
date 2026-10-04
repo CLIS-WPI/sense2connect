@@ -83,7 +83,9 @@ def main() -> None:
     from sim.scenes.config import load_yaml
     from sim.sensing.metrics import CLASSES, empty_score, summarize
 
-    seeds = load_yaml(ROOT / "configs" / "seeds.yaml")
+    from seedsets import load_seeds  # S2C_EVAL_SET selects development or held-out seeds
+
+    seeds = load_seeds()
     jobs = [(m, d, int(s)) for s in seeds["evaluation"] for m in ("lamppost", "facade") for d in ("low", "high")]
     lt = ROOT / "results" / "M5" / "leadtime.json"
     if lt.exists():

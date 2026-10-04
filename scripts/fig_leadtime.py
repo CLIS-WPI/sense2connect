@@ -113,7 +113,9 @@ def _eval_case(item: tuple) -> dict[str, Any]:
 def recompute(workers: int) -> dict[str, Any]:
     from sim.scenes.config import load_yaml
 
-    seeds = load_yaml(ROOT / "configs" / "seeds.yaml")
+    from seedsets import load_seeds  # S2C_EVAL_SET selects development or held-out seeds
+
+    seeds = load_seeds()
     tune_jobs = [(m, d, int(s)) for s in seeds["tuning"] for m in ("lamppost", "facade") for d in ("low", "high")]
     eval_jobs = [(m, d, int(s)) for s in seeds["evaluation"] for m in ("lamppost", "facade") for d in ("low", "high")]
     ctx = mp.get_context("spawn")

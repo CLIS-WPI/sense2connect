@@ -37,7 +37,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "paper"
 RESULTS = ROOT / "results"
 
-FIGURE_SCRIPTS = ["fig_blockage_table.py", "fig_leadtime.py", "fig_onset.py", "fig_outage_margin.py", "fig_value.py"]
+FIGURE_SCRIPTS = ["fig_blockage_table.py", "fig_leadtime.py", "fig_onset.py", "fig_outage_margin.py", "fig_value.py", "fig_error_sweep.py"]
 
 # Macros added after the planner round that are not (yet) in the main.tex header list;
 # numbers.tex defines them as well, and missing ones are reported.
@@ -45,8 +45,9 @@ EXTRA_MACROS = [
     "numAfiveTen", "numAfiveRef", "numCostOracleTen", "numCostOracleRef", "numGeniePlanTen", "numGeniePlanRef",
     "numSensePlanTen", "numSensePlanRef", "numTrueLossRef", "numTrueLossFrom", "numAthreeWideRef",
     "numGridCost", "numOnsetPedFast", "numRelRedTen", "numAbsRedTen", "numRelRedRef", "numAbsRedRef",
-    "numErrMissTen", "numErrFalseTen", "numErrNoiseTen", "numErrAllTen", "numErrMissRef", "numErrFalseRef", "numErrNoiseRef", "numErrAllRef",
-    "numFragMiss", "numFragNoise", "numRobustTen", "numRobustRef", "numDensLowTen", "numDensHighTen", "numRelRedRefLow", "numRelRedRefHigh", "numValueRange", "numValuePedRange",
+    *[f"numErr{k}{t}" for k in ("Perf", "Miss", "False", "Noise", "Size", "All", "AllUE", "Real") for t in ("Ten", "Ref")],
+    "numBEPosRange", "numBEPosRef", "numBEUERange", "numBEUERef", "numBEVelMin", "numUAPlanTen", "numUAPlanRef", "numUAPlanIntervene",
+    "numRobustTen", "numRobustRef", "numDensLowTen", "numDensHighTen", "numRelRedRefLow", "numRelRedRefHigh", "numValueRange", "numValuePedRange",
     "numValueBusRange", "numValuePedTen", "numValueBusTen", "numPlanHorizon", "numSensePlanHO", "numSensePlanPP", "numAfiveHO",
 ]
 
@@ -77,22 +78,27 @@ def _rng(values: list[float], fmt: str, pct: bool = False) -> str:
     return text + ("\\%" if pct else "")
 
 
-EVAL = "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each"
+sys.path.insert(0, str(ROOT / "scripts"))
+from seedsets import eval_set  # noqa: E402
+
+EVAL = ("held-out test seeds 2001-2010 (configs/seeds_heldout.yaml)" if eval_set() == "heldout" else "development seeds 1001-1010 (configs/seeds.yaml)") + \
+    ", 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each"
+DEV_RESULTS = RESULTS / "dev"  # snapshot of results/M3 and results/M5 on the development seeds (made before the held-out run)
 CHAR_CFG = "configs/m2_scenario.yaml two-O-RU config (8x8, 1024 SC), comm traces at 0.1 s, serving cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s"
 M3_CFG = "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105"
 
 
-def catalog() -> dict[str, dict[str, Any]]:
+def catalog(results: Path = RESULTS) -> dict[str, dict[str, Any]]:
     """One entry per main.tex macro: value (main.tex format) and its source."""
     out: dict[str, dict[str, Any]] = {}
 
     def put(name, value, *, script, config, aggregation, raw, seeds=EVAL, note=""):
         out[name] = {"value": value, "script": script, "config": config, "seeds": seeds, "aggregation": aggregation, "raw": raw, "note": note}
 
-    R5 = RESULTS / "M5"
-    m3 = json.loads((RESULTS / "M3" / "metrics.json").read_text())
-    gen = json.loads((RESULTS / "M3" / "genie.json").read_text())
-    hyb = json.loads((RESULTS / "M3" / "hybrid.json").read_text())
+    R5 = results / "M5"
+    m3 = json.loads((results / "M3" / "metrics.json").read_text())
+    gen = json.loads((results / "M3" / "genie.json").read_text())
+    hyb = json.loads((results / "M3" / "hybrid.json").read_text())
     char = json.loads((R5 / "characterization.json").read_text())
     tab = json.loads((R5 / "blockage_table.json").read_text())["evaluation"]
     trk = json.loads((R5 / "tracking.json").read_text())
@@ -243,6 +249,7 @@ def catalog() -> dict[str, dict[str, Any]]:
     _planner_macros(put, R5, M3_CFG, EVAL)
     _paired_extras(put, R5, M3_CFG, out.get("numTrueLossFrom", {}).get("value"))
     _review_bc_macros(put, R5, M3_CFG)
+    _review2_macros(put, R5, M3_CFG)
     rref = next(r for r in gen["margins"] if r["label"] == "3GPP short-range reference")
     put("numTauZeroRef", _pct(closed(rref)), script=gn[0], config=tcfg + "; 3GPP reference margin", aggregation="1 - gap(0)/gap(20 ms), from means over jobs", raw=closed(rref))
     return out
@@ -399,41 +406,12 @@ def _paired_extras(put, R5: Path, M3_CFG: str, true_loss_from: str | None) -> No
 
 def _review_bc_macros(put, R5: Path, M3_CFG: str) -> None:
     """Macros from the external-review blocks B and C (added after review)."""
-    b5f, b6f, c8f = R5 / "review_b5.json", R5 / "review_b6.json", R5 / "review_c8.json"
+    b6f, c8f = R5 / "review_b6.json", R5 / "review_c8.json"
     cfg = M3_CFG + "; ADDED AFTER EXTERNAL REVIEW"
     tags = (("Ten", "10 dB", 2), ("Ref", "3GPP short-range reference", 3))
-    if b5f.exists():
-        b5 = json.loads(b5f.read_text())
-        sb = "scripts/review_b5_ablation.py -> results/M5/review_b5.json"
-        conds = {"Miss": "miss measured", "False": "spurious 1x", "Noise": "noise measured", "All": "combined measured"}
-        for key, cname in conds.items():
-            c = {m["label"]: m for m in b5["conditions"][cname]["margins"]}
-            for tag, lab, nd in tags:
-                v = c[lab]["vs_a5"]
-                put(f"numErr{key}{tag}", f"{v['mean_diff']:+.{nd}f}", script=sb,
-                    config=cfg + f"; margin {lab}; planner on ground-truth tracks with injected error '{cname}' at the measured final-tracker rate "
-                    "(image ghosts, budget 4, map tracker); H tuned on tuning seeds; sensing overhead charged",
-                    aggregation="paired: mean over the 40 evaluation jobs of (planner - A5) per-job outage [s/UE-min]; t-based 95 % CI and Wilcoxon p in raw",
-                    raw=v)
-        base = {m["label"]: m["vs_a5"]["mean_diff"] for m in b5["conditions"]["baseline"]["margins"]}
-        win = [lab for lab, v in base.items() if v < 0 and lab.endswith(" dB") and lab != "0 dB" and lab != "5 dB" and lab != "10 dB"]
-
-        def vanish(prefix: str, values: list[str]) -> tuple[str | None, dict]:
-            raw = {}
-            for val in values:
-                c = {m["label"]: m["vs_a5"]["mean_diff"] for m in b5["conditions"][f"{prefix} {val}"]["margins"]}
-                raw[val] = {lab: c[lab] for lab in win}
-                if all(c[lab] >= 0 for lab in win):
-                    return val, raw
-            return None, raw
-
-        vm, rawm = vanish("miss", ["0.1", "0.2", "0.3", "0.4", "0.5"])
-        rule = ("smallest injected value at which the planner's mean outage is no longer below A5's (paired mean difference >= 0) at every margin where "
-                f"the perfect-track baseline beats A5 among 15-30 dB ({', '.join(win)}); the 3GPP reference and v1 points are not part of the rule")
-        put("numFragMiss", "--" if vm is None else f"{100 * float(vm):.0f}\\%", script=sb, config=cfg + "; miss probability per blocker and report", aggregation=rule, raw=rawm)
-        vn, rawn = vanish("noise", ["0.5", "1.0", "2.0", "4.0"])
-        put("numFragNoise", "--" if vn is None else f"{float(vn):.1f}", script=sb, config=cfg + "; Gaussian position sigma [m] and velocity sigma [m/s] per horizontal axis",
-            aggregation=rule, raw=rawn)
+    # The first-review B5 macros (memoryless error budget, numFragMiss/numFragNoise) were replaced after the
+    # second review by the realistic error budget in _review2_macros; results/M5/review_b5.json is still read
+    # there for the fixed horizons.
     if b6f.exists():
         b6 = {r["label"]: r for r in json.loads(b6f.read_text())["margins"]}
         for tag, lab, nd in tags:
@@ -452,6 +430,100 @@ def _review_bc_macros(put, R5: Path, M3_CFG: str) -> None:
             put(f"numRelRedRef{tag}", f"{100 * red['share_of_a5']:.0f}\\%", script=sc,
                 config=cfg + f"; 3GPP reference; A5 -> any-step cost-aware oracle; {dens} traffic density",
                 aggregation="mean per-job reduction / mean A5 outage over the 20 evaluation jobs of that density", raw=red)
+
+
+def _crossover(xs: list[float], ys: list[float]) -> float | None:
+    """sigma where the mean paired difference to A5 first reaches 0 from below (linear interpolation);
+    None if not below A5 at sigma = 0; inf if still below at the largest sigma."""
+    if ys[0] >= 0:
+        return None
+    for i in range(1, len(xs)):
+        if ys[i] >= 0:
+            return xs[i - 1] + (xs[i] - xs[i - 1]) * (-ys[i - 1]) / (ys[i] - ys[i - 1])
+    return math.inf
+
+
+def _review2_macros(put, R5: Path, M3_CFG: str) -> None:
+    """Macros from the second external review: realistic error budget (Table II), break-even sigmas, uncertainty-aware planner."""
+    swf, uaf, pf = R5 / "review2" / "sweeps.json", R5 / "review2" / "uaplanner.json", R5 / "paired.json"
+    cfg = M3_CFG + "; ADDED AFTER THE SECOND EXTERNAL REVIEW"
+    tags = (("Ten", "10 dB", 2), ("Ref", "3GPP short-range reference", 3))
+    dagger = "$^\\dagger$"
+    if swf.exists():
+        sw = json.loads(swf.read_text())
+        cond, sig = sw["conditions"], [float(x) for x in sw["sigmas"]]
+        ss = "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json"
+        tcfg = (cfg + "; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by "
+                "scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); "
+                "H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged")
+        cols = {"Perf": ("perfect | ue 0.0", "perfect tracks"), "Miss": ("R table miss", "misses (coverage + measured outages)"),
+                "False": ("R table false", "false tracks"), "Noise": ("R table noise", "position/velocity error"),
+                "Size": ("R table size", "predictor size rule"), "All": ("R table all", "all four"),
+                "AllUE": ("R table all + ue 1", "all four + UE position error sigma 1 m")}
+        for key, (cname, desc) in cols.items():
+            bl = {m["label"]: m for m in cond[cname]["margins"]}
+            for tag, lab, nd in tags:
+                v = bl[lab]["vs_a5"]
+                put(f"numErr{key}{tag}", f"{v['mean_diff']:+.{nd}f}" + (dagger if v["wilcoxon_p_two_sided"] >= 0.05 else ""), script=ss,
+                    config=tcfg + f"; condition '{cname}' ({desc}); margin {lab}",
+                    aggregation="paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+                    raw=v)
+
+        def be(series, labels):
+            out = {}
+            for lab in labels:
+                ys = [{m["label"]: m for m in cond[n]["margins"]}[lab]["vs_a5"]["mean_diff"] for n in series]
+                out[lab] = _crossover([0.0] + sig, ys)
+            return out
+
+        def fmt(x: float) -> str:
+            return "$>$" + f"{sig[-1]:g}" if math.isinf(x) else f"{x:.2f}"
+
+        def rng_text(vals: dict) -> str:
+            got = [v for v in vals.values() if v is not None]
+            if not got:
+                return "--"
+            lo, hi = min(got), max(got)
+            return fmt(lo) if fmt(lo) == fmt(hi) else f"{fmt(lo)}--{fmt(hi)}"
+
+        mid = ["15 dB", "20 dB", "25 dB", "30 dB"]
+        ref = ["3GPP short-range reference"]
+        brule = ("break-even sigma = the sigma at which the mean paired difference planner - A5 first reaches 0 (linear interpolation over the grid "
+                 f"0, {', '.join(f'{x:g}' for x in sig)}); margins where perfect tracks are not below A5 are left out; '$>$max' = still below A5 at the largest sigma")
+        pos = [f"perfect | ue 0.0"] + [f"R pos {x} | ue 0.0" for x in sw["sigmas"]]
+        ue = [f"perfect | ue 0.0"] + [f"perfect | ue {x}" for x in sw["sigmas"]]
+        vel = [f"perfect | ue 0.0"] + [f"R vel {x} | ue 0.0" for x in sw["sigmas"]]
+        for name, series, labels, desc in (("numBEPosRange", pos, mid, "blocker position (realistic: along-line AR(1)), UE exact; min-max over 15-30 dB"),
+                                           ("numBEPosRef", pos, ref, "blocker position (realistic), UE exact; 3GPP reference"),
+                                           ("numBEUERange", ue, mid, "UE position (white, as the main runs), perfect tracks; min-max over 15-30 dB"),
+                                           ("numBEUERef", ue, ref, "UE position, perfect tracks; 3GPP reference")):
+            vals = be(series, labels)
+            put(name, rng_text(vals), script=ss, config=cfg + "; " + desc, aggregation=brule + " [m]", raw=vals)
+        vv = be(vel, mid)
+        got = [v for v in vv.values() if v is not None]
+        put("numBEVelMin", "--" if not got else fmt(min(got)), script=ss, config=cfg + "; blocker velocity (realistic: along-line AR(1)), UE exact; minimum over 15-30 dB",
+            aggregation=brule + " [m/s]", raw=vv)
+    if pf.exists():
+        pj = {m["label"]: m for m in json.loads(pf.read_text())["margins"]}
+        for tag, lab, nd in tags:
+            v = pj[lab]["sensing_vs_a5"]
+            put(f"numErrReal{tag}", f"{v['mean_diff']:+.{nd}f}" + (dagger if v["wilcoxon_p_two_sided"] >= 0.05 else ""),
+                script="scripts/run_m5_paired.py -> results/M5/paired.json", config=cfg + f"; real sensing-planner (its own tuned H and budget) minus A5; margin {lab}",
+                aggregation="paired: mean over the 40 jobs of the per-job outage difference [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05", raw=v)
+    if uaf.exists():
+        ua = {m["label"]: m for m in json.loads(uaf.read_text())["margins"]}
+        su = "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json"
+        for tag, lab, nd in (("Ten", "10 dB", 2), ("Ref", "3GPP short-range reference", 3)):
+            v = ua[lab]["vs_a5"]
+            put(f"numUAPlan{tag}", f"{v['mean_diff']:+.{nd}f}", script=su, config=cfg + f"; uncertainty-aware planner, tuned on tuning seeds {ua[lab]['tuned']}; margin {lab}",
+                aggregation="paired: mean over the 40 jobs of (UA planner - A5) per-job outage [s/UE-min]; Wilcoxon p and t-based CI in raw", raw=v)
+        sel = [lab for lab in ua if lab not in ("0 dB", "5 dB", "v1 radio (high margin)")]
+        shares = {lab: ua[lab]["intervention_share"]["intervene"] for lab in sel if "intervention_share" in ua[lab]}
+        if shares:
+            mx = max(shares.values())
+            put("numUAPlanIntervene", f"{100 * mx:.1f}\\%", script=su, config=cfg + "; uncertainty-aware planner; margins 10-30 dB and the 3GPP reference",
+                aggregation="share of decision epochs (UE lane x 0.1 s report) at which the advance or veto condition holds for the serving cell; MAXIMUM over those margins",
+                raw=shares)
 
 
 def macros_in_main() -> list[tuple[str, str]]:
@@ -521,6 +593,23 @@ def main() -> None:
     if not args.skip_figures:
         run_scripts(args.leadtime_recompute)
     cat = catalog()
+    if eval_set() == "heldout":
+        if not (DEV_RESULTS / "M5").exists():
+            raise SystemExit(f"held-out run: the development snapshot {DEV_RESULTS} is missing")
+        dev = catalog(DEV_RESULTS)
+        changed = []
+        for k, v in cat.items():
+            v["seed_set"] = "held-out 2001-2010"
+            if k in dev:
+                v["dev_value"] = dev[k]["value"]
+                v["dev_raw"] = dev[k]["raw"]
+                if k.startswith("num") and dev[k]["value"] != v["value"]:
+                    changed.append((k, dev[k]["value"], v["value"]))
+        (RESULTS / "M5" / "heldout_vs_dev.json").write_text(json.dumps({"changed": changed, "only_dev": sorted(set(dev) - set(cat)),
+                                                                       "only_heldout": sorted(set(cat) - set(dev))}, indent=1) + "\n")
+        print(f"held-out vs development: {len(changed)} macros change beyond their rounding -> results/M5/heldout_vs_dev.json")
+        for k, a, b in changed:
+            print(f"  {k}: {a} -> {b}")
     (RESULTS / "M5").mkdir(parents=True, exist_ok=True)
     (RESULTS / "M5" / "numbers_catalog.json").write_text(json.dumps(cat, indent=1) + "\n", encoding="utf-8")
     status = write_numbers(cat)
