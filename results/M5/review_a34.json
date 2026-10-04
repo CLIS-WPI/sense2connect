@@ -1,0 +1,8604 @@
+{
+ "definition": "ADDED AFTER EXTERNAL REVIEW (A3, A4).\n\nA3 -- car share of the closable gap per margin (fig_value): A5 (tuned) vs the\nany-step cost-aware oracle on the evaluation jobs; net closed steps (A5 in\noutage, oracle not, minus the reverse) attributed to the class of the\ndominant LoS blocker of A5's cell; the car-attributed part is split by the\nLoS loss of A5's cell at that step (< 10 dB vs >= 10 dB). Shares of the\nA5-to-instantaneous-oracle gap, pooled.\n\nA4 -- onset at 1 ms: for every evaluation-seed 10 dB event (bus/truck and\npedestrian), model B is evaluated analytically every 1 ms on the LoS\nsegment O-RU -> UE of the event cell from the exact analytic poses of the\nUE and every blocker (sim.scenes.motion.states_at; no re-trace), over\n[event start - 1 s, event end + 0.2 s], and the 10-90 % onset is computed\nwith the same rule as at 10 ms (xapp.metrics.onset_10_90; the event\ninterval is the 10 ms event mapped to 1 ms). Medians per class at 1 ms and\nthe same events at 10 ms. Uses 4 CPU worker processes.\n\nWrites results/M5/review_a34.json.\n",
+ "a3_car_share": [
+  {
+   "label": "0 dB",
+   "gap_steps": 844,
+   "shares_of_gap": {
+    "bus/truck": 0.33886255924170616,
+    "pedestrian": 0.4443127962085308,
+    "car": 0.21682464454976302,
+    "car<10dB": 0.21682464454976302,
+    "car>=10dB": 0.0,
+    "no LoS blocker": 0.0
+   },
+   "car_sub10_share_of_car": 1.0
+  },
+  {
+   "label": "5 dB",
+   "gap_steps": 2061,
+   "shares_of_gap": {
+    "bus/truck": 0.2775351770984959,
+    "pedestrian": 0.47016011644832606,
+    "car": 0.05240174672489083,
+    "car<10dB": 0.05240174672489083,
+    "car>=10dB": 0.0,
+    "no LoS blocker": 0.0
+   },
+   "car_sub10_share_of_car": 1.0
+  },
+  {
+   "label": "10 dB",
+   "gap_steps": 3370,
+   "shares_of_gap": {
+    "bus/truck": 0.313946587537092,
+    "pedestrian": 0.5103857566765578,
+    "car": -0.018991097922848664,
+    "car<10dB": -0.018991097922848664,
+    "car>=10dB": 0.0,
+    "no LoS blocker": 0.0
+   },
+   "car_sub10_share_of_car": 1.0
+  },
+  {
+   "label": "15 dB",
+   "gap_steps": 2607,
+   "shares_of_gap": {
+    "bus/truck": 0.19217491369390102,
+    "pedestrian": 0.587265055619486,
+    "car": -0.008438818565400843,
+    "car<10dB": -0.008438818565400843,
+    "car>=10dB": 0.0,
+    "no LoS blocker": 0.0
+   },
+   "car_sub10_share_of_car": 1.0
+  },
+  {
+   "label": "20 dB",
+   "gap_steps": 2223,
+   "shares_of_gap": {
+    "bus/truck": 0.13270355375618534,
+    "pedestrian": 0.614484930274404,
+    "car": 0.0103463787674314,
+    "car<10dB": 0.0103463787674314,
+    "car>=10dB": 0.0,
+    "no LoS blocker": 0.0
+   },
+   "car_sub10_share_of_car": 1.0
+  },
+  {
+   "label": "25 dB",
+   "gap_steps": 1295,
+   "shares_of_gap": {
+    "bus/truck": 0.11814671814671815,
+    "pedestrian": 0.5915057915057915,
+    "car": 0.03552123552123552,
+    "car<10dB": 0.03552123552123552,
+    "car>=10dB": 0.0,
+    "no LoS blocker": 0.0
+   },
+   "car_sub10_share_of_car": 1.0
+  },
+  {
+   "label": "30 dB",
+   "gap_steps": 560,
+   "shares_of_gap": {
+    "bus/truck": 0.16071428571428573,
+    "pedestrian": 0.5660714285714286,
+    "car": 0.01607142857142857,
+    "car<10dB": 0.01607142857142857,
+    "car>=10dB": 0.0,
+    "no LoS blocker": 0.0
+   },
+   "car_sub10_share_of_car": 1.0
+  },
+  {
+   "label": "3GPP short-range reference",
+   "gap_steps": 506,
+   "shares_of_gap": {
+    "bus/truck": 0.23517786561264822,
+    "pedestrian": 0.6383399209486166,
+    "car": 0.015810276679841896,
+    "car<10dB": 0.015810276679841896,
+    "car>=10dB": 0.0,
+    "no LoS blocker": 0.0
+   },
+   "car_sub10_share_of_car": 1.0
+  },
+  {
+   "label": "v1 radio (high margin)",
+   "gap_steps": 231,
+   "shares_of_gap": {
+    "bus/truck": 0.1645021645021645,
+    "pedestrian": 0.6796536796536796,
+    "car": 0.03463203463203463,
+    "car<10dB": 0.03463203463203463,
+    "car>=10dB": 0.0,
+    "no LoS blocker": 0.0
+   },
+   "car_sub10_share_of_car": 1.0
+  }
+ ],
+ "a4_onset": {
+  "summary": {
+   "bus/truck": {
+    "n_events": 317,
+    "median_1ms_s": 0.492,
+    "p10_p90_1ms_s": [
+     0.089,
+     1.0773000000000001
+    ],
+    "median_10ms_s": 0.5,
+    "p10_p90_10ms_s": [
+     0.1,
+     1.0890000000000004
+    ],
+    "share_below_10ms_at_1ms": 0.016233766233766232
+   },
+   "pedestrian": {
+    "n_events": 387,
+    "median_1ms_s": 0.001,
+    "p10_p90_1ms_s": [
+     0.001,
+     0.3466000000000002
+    ],
+    "median_10ms_s": 0.01,
+    "p10_p90_10ms_s": [
+     0.01,
+     0.37200000000000044
+    ],
+    "share_below_10ms_at_1ms": 0.6178010471204188
+   }
+  },
+  "events": [
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 11.85,
+    "onset_10ms_s": 0.16,
+    "onset_1ms_s": 0.158
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 23.19,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.11900000000000001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 32.45,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 34.31,
+    "onset_10ms_s": 0.52,
+    "onset_1ms_s": 0.51
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 45.36,
+    "onset_10ms_s": 0.49,
+    "onset_1ms_s": 0.484
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 3.13,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.12
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 14.06,
+    "onset_10ms_s": 0.42,
+    "onset_1ms_s": 0.418
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 24.1,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 49.32,
+    "onset_10ms_s": 0.31,
+    "onset_1ms_s": 0.307
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 8.3,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 10.78,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.135
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 14.01,
+    "onset_10ms_s": 0.18,
+    "onset_1ms_s": 0.17
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 15.05,
+    "onset_10ms_s": 0.71,
+    "onset_1ms_s": 0.6980000000000001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 19.07,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.109
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 22.81,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.112
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 27.3,
+    "onset_10ms_s": 1.77,
+    "onset_1ms_s": 1.762
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 32.45,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 35.06,
+    "onset_10ms_s": 0.96,
+    "onset_1ms_s": 0.9460000000000001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 38.35,
+    "onset_10ms_s": 2.27,
+    "onset_1ms_s": 2.254
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 46.87,
+    "onset_10ms_s": 0.87,
+    "onset_1ms_s": 0.866
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 51.61,
+    "onset_10ms_s": 0.33,
+    "onset_1ms_s": 0.315
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 53.86,
+    "onset_10ms_s": 0.24,
+    "onset_1ms_s": 0.23600000000000002
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 1.33,
+    "onset_10ms_s": 0.29,
+    "onset_1ms_s": 0.28
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 4.01,
+    "onset_10ms_s": 0.06,
+    "onset_1ms_s": 0.054
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 5.57,
+    "onset_10ms_s": 0.2,
+    "onset_1ms_s": 0.187
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 8.77,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 11.1,
+    "onset_10ms_s": 0.28,
+    "onset_1ms_s": 0.273
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 13.450000000000001,
+    "onset_10ms_s": 1.02,
+    "onset_1ms_s": 1.0110000000000001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 17.76,
+    "onset_10ms_s": 0.87,
+    "onset_1ms_s": 0.856
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 20.76,
+    "onset_10ms_s": 0.54,
+    "onset_1ms_s": 0.523
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 24.1,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 25.2,
+    "onset_10ms_s": 0.9400000000000001,
+    "onset_1ms_s": 0.934
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 28.66,
+    "onset_10ms_s": 2.73,
+    "onset_1ms_s": 2.72
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 34.12,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 40.31,
+    "onset_10ms_s": 0.22,
+    "onset_1ms_s": 0.213
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 45.14,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.064
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 55.68,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 59.78,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 11.4,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.089
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 23.2,
+    "onset_10ms_s": 0.5,
+    "onset_1ms_s": 0.497
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 32.45,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 34.5,
+    "onset_10ms_s": 0.5,
+    "onset_1ms_s": 0.486
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 45.78,
+    "onset_10ms_s": 0.64,
+    "onset_1ms_s": 0.632
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 3.13,
+    "onset_10ms_s": 0.5,
+    "onset_1ms_s": 0.486
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 14.21,
+    "onset_10ms_s": 0.47000000000000003,
+    "onset_1ms_s": 0.466
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 24.1,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 25.26,
+    "onset_10ms_s": 0.5700000000000001,
+    "onset_1ms_s": 0.56
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 48.08,
+    "onset_10ms_s": 1.94,
+    "onset_1ms_s": 1.94
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 2.15,
+    "onset_10ms_s": 0.18,
+    "onset_1ms_s": 0.166
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 8.16,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.095
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 10.290000000000001,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.088
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 14.09,
+    "onset_10ms_s": 0.06,
+    "onset_1ms_s": 0.047
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 17.900000000000002,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 23.400000000000002,
+    "onset_10ms_s": 0.53,
+    "onset_1ms_s": 0.521
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 27.86,
+    "onset_10ms_s": 1.47,
+    "onset_1ms_s": 1.452
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 32.45,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 35.35,
+    "onset_10ms_s": 0.5700000000000001,
+    "onset_1ms_s": 0.556
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.35,
+    "onset_10ms_s": 2.11,
+    "onset_1ms_s": 2.092
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 47.38,
+    "onset_10ms_s": 0.35000000000000003,
+    "onset_1ms_s": 0.343
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 51.85,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.06,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 1.32,
+    "onset_10ms_s": 0.52,
+    "onset_1ms_s": 0.519
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 4.14,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 5.66,
+    "onset_10ms_s": 0.68,
+    "onset_1ms_s": 0.663
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 8.77,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 11.18,
+    "onset_10ms_s": 0.4,
+    "onset_1ms_s": 0.393
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 13.82,
+    "onset_10ms_s": 0.53,
+    "onset_1ms_s": 0.519
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 18.01,
+    "onset_10ms_s": 0.62,
+    "onset_1ms_s": 0.609
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 21.0,
+    "onset_10ms_s": 0.47000000000000003,
+    "onset_1ms_s": 0.458
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 24.1,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 25.57,
+    "onset_10ms_s": 0.63,
+    "onset_1ms_s": 0.618
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 28.5,
+    "onset_10ms_s": 1.42,
+    "onset_1ms_s": 1.405
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 34.12,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 40.49,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 45.19,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 47.01,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 55.68,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1001,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 58.75,
+    "onset_10ms_s": 0.88,
+    "onset_1ms_s": 0.87
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 11.290000000000001,
+    "onset_10ms_s": 0.15,
+    "onset_1ms_s": 0.136
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 16.4,
+    "onset_10ms_s": 0.38,
+    "onset_1ms_s": 0.374
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 23.18,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.088
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 35.92,
+    "onset_10ms_s": 0.79,
+    "onset_1ms_s": 0.776
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 47.84,
+    "onset_10ms_s": 1.61,
+    "onset_1ms_s": 1.597
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 57.67,
+    "onset_10ms_s": 0.08,
+    "onset_1ms_s": 0.082
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 1.93,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.109
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 13.73,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 24.990000000000002,
+    "onset_10ms_s": 1.69,
+    "onset_1ms_s": 1.676
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 51.410000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 10.5,
+    "onset_10ms_s": 0.48,
+    "onset_1ms_s": 1.1260000000000001
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 17.72,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.121
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 22.86,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.089
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 29.59,
+    "onset_10ms_s": 0.29,
+    "onset_1ms_s": 0.28300000000000003
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 35.35,
+    "onset_10ms_s": 0.96,
+    "onset_1ms_s": 0.9490000000000001
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 39.26,
+    "onset_10ms_s": 0.55,
+    "onset_1ms_s": 0.54
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 44.1,
+    "onset_10ms_s": 1.47,
+    "onset_1ms_s": 1.467
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 47.35,
+    "onset_10ms_s": 0.7000000000000001,
+    "onset_1ms_s": 0.6960000000000001
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 50.660000000000004,
+    "onset_10ms_s": 0.35000000000000003,
+    "onset_1ms_s": 0.338
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 53.34,
+    "onset_10ms_s": 0.22,
+    "onset_1ms_s": 0.219
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 1.47,
+    "onset_10ms_s": 0.72,
+    "onset_1ms_s": 0.718
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 7.48,
+    "onset_10ms_s": 0.39,
+    "onset_1ms_s": 0.383
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 11.88,
+    "onset_10ms_s": 1.2,
+    "onset_1ms_s": 1.195
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 20.52,
+    "onset_10ms_s": 1.26,
+    "onset_1ms_s": 1.2510000000000001
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 24.32,
+    "onset_10ms_s": 1.31,
+    "onset_1ms_s": 1.304
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 30.95,
+    "onset_10ms_s": 0.72,
+    "onset_1ms_s": 0.707
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 40.38,
+    "onset_10ms_s": 0.23,
+    "onset_1ms_s": 0.222
+   },
+   {
+    "job": [
+     1002,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 47.61,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 1.4000000000000001,
+    "onset_10ms_s": NaN,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 10.8,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.088
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 23.31,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 36.2,
+    "onset_10ms_s": 0.5700000000000001,
+    "onset_1ms_s": 0.5670000000000001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 48.4,
+    "onset_10ms_s": 0.74,
+    "onset_1ms_s": 0.727
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 57.74,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 2.52,
+    "onset_10ms_s": 0.53,
+    "onset_1ms_s": 0.519
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 13.73,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 26.27,
+    "onset_10ms_s": 0.65,
+    "onset_1ms_s": 0.636
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 51.410000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 3.97,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.109
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 9.46,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.081
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 12.85,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.061
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 18.71,
+    "onset_10ms_s": 0.68,
+    "onset_1ms_s": 0.669
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 22.98,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 29.66,
+    "onset_10ms_s": 0.41000000000000003,
+    "onset_1ms_s": 0.404
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 31.44,
+    "onset_10ms_s": 0.58,
+    "onset_1ms_s": 0.5760000000000001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 35.58,
+    "onset_10ms_s": 0.55,
+    "onset_1ms_s": 0.538
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 39.52,
+    "onset_10ms_s": 0.48,
+    "onset_1ms_s": 0.47100000000000003
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 44.58,
+    "onset_10ms_s": 0.72,
+    "onset_1ms_s": 0.705
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 47.85,
+    "onset_10ms_s": 0.32,
+    "onset_1ms_s": 0.316
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 50.92,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 53.52,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 1.47,
+    "onset_10ms_s": 0.93,
+    "onset_1ms_s": 0.914
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 8.05,
+    "onset_10ms_s": 0.55,
+    "onset_1ms_s": 0.539
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 11.98,
+    "onset_10ms_s": 0.4,
+    "onset_1ms_s": 0.394
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 13.52,
+    "onset_10ms_s": 0.5700000000000001,
+    "onset_1ms_s": 0.5660000000000001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 20.85,
+    "onset_10ms_s": 0.98,
+    "onset_1ms_s": 0.97
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 24.07,
+    "onset_10ms_s": 1.83,
+    "onset_1ms_s": 1.825
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 31.34,
+    "onset_10ms_s": 0.56,
+    "onset_1ms_s": 0.551
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 33.69,
+    "onset_10ms_s": 0.77,
+    "onset_1ms_s": 0.754
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 40.57,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1002,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 47.61,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 7.12,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 8.51,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 17.27,
+    "onset_10ms_s": 0.15,
+    "onset_1ms_s": 0.136
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 23.85,
+    "onset_10ms_s": 0.06,
+    "onset_1ms_s": 0.056
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 26.63,
+    "onset_10ms_s": 0.03,
+    "onset_1ms_s": 0.02
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 29.22,
+    "onset_10ms_s": 0.25,
+    "onset_1ms_s": 0.241
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.39,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 39.1,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 40.92,
+    "onset_10ms_s": 0.7000000000000001,
+    "onset_1ms_s": 0.6980000000000001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 56.83,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.096
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 59.15,
+    "onset_10ms_s": 0.06,
+    "onset_1ms_s": 0.045
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 7.88,
+    "onset_10ms_s": 0.18,
+    "onset_1ms_s": 0.168
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 14.23,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 16.54,
+    "onset_10ms_s": 1.9000000000000001,
+    "onset_1ms_s": 1.887
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 30.87,
+    "onset_10ms_s": 1.22,
+    "onset_1ms_s": 1.207
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 51.36,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 52.83,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 10.18,
+    "onset_10ms_s": 2.92,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 15.49,
+    "onset_10ms_s": 1.31,
+    "onset_1ms_s": 1.3
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 23.400000000000002,
+    "onset_10ms_s": 1.22,
+    "onset_1ms_s": 1.212
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 27.14,
+    "onset_10ms_s": 0.15,
+    "onset_1ms_s": 0.136
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 30.810000000000002,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 33.79,
+    "onset_10ms_s": 0.73,
+    "onset_1ms_s": 0.719
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 36.77,
+    "onset_10ms_s": 0.93,
+    "onset_1ms_s": 0.922
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 42.79,
+    "onset_10ms_s": 0.76,
+    "onset_1ms_s": 0.747
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 47.57,
+    "onset_10ms_s": 0.65,
+    "onset_1ms_s": 0.642
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 52.68,
+    "onset_10ms_s": 0.3,
+    "onset_1ms_s": 0.292
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.0,
+    "onset_10ms_s": 0.2,
+    "onset_1ms_s": 0.191
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 0.0,
+    "onset_10ms_s": NaN,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 6.12,
+    "onset_10ms_s": 0.04,
+    "onset_1ms_s": 0.037
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 8.4,
+    "onset_10ms_s": 0.28,
+    "onset_1ms_s": 0.275
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 12.44,
+    "onset_10ms_s": 0.46,
+    "onset_1ms_s": 0.453
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 17.5,
+    "onset_10ms_s": 1.16,
+    "onset_1ms_s": 1.149
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 22.490000000000002,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 25.47,
+    "onset_10ms_s": 1.21,
+    "onset_1ms_s": 1.195
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 28.560000000000002,
+    "onset_10ms_s": 0.85,
+    "onset_1ms_s": 0.844
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 45.76,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.055
+   },
+   {
+    "job": [
+     1003,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 59.65,
+    "onset_10ms_s": 0.18,
+    "onset_1ms_s": 0.18
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 4.71,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.12
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 6.96,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.108
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 8.370000000000001,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.093
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 16.84,
+    "onset_10ms_s": 0.7000000000000001,
+    "onset_1ms_s": 0.6940000000000001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 23.98,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 26.72,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 29.3,
+    "onset_10ms_s": 0.51,
+    "onset_1ms_s": 0.501
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.39,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 41.26,
+    "onset_10ms_s": 0.6,
+    "onset_1ms_s": 0.595
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 56.92,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 59.18,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 7.91,
+    "onset_10ms_s": 0.47000000000000003,
+    "onset_1ms_s": 0.467
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 14.23,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 15.92,
+    "onset_10ms_s": 2.42,
+    "onset_1ms_s": 2.4050000000000002
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 31.04,
+    "onset_10ms_s": 0.96,
+    "onset_1ms_s": 0.9490000000000001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 51.36,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 52.83,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 57.28,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.123
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 5.76,
+    "onset_10ms_s": 0.32,
+    "onset_1ms_s": 0.306
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 9.120000000000001,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.113
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 15.17,
+    "onset_10ms_s": 0.06,
+    "onset_1ms_s": 0.046
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 16.3,
+    "onset_10ms_s": 0.65,
+    "onset_1ms_s": 0.644
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 23.41,
+    "onset_10ms_s": 0.61,
+    "onset_1ms_s": 0.596
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 24.990000000000002,
+    "onset_10ms_s": 0.39,
+    "onset_1ms_s": 0.382
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 27.16,
+    "onset_10ms_s": 0.44,
+    "onset_1ms_s": 0.423
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 30.810000000000002,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 34.02,
+    "onset_10ms_s": 0.42,
+    "onset_1ms_s": 0.40900000000000003
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 37.050000000000004,
+    "onset_10ms_s": 0.81,
+    "onset_1ms_s": 0.802
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 43.09,
+    "onset_10ms_s": 0.48,
+    "onset_1ms_s": 0.47600000000000003
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 48.0,
+    "onset_10ms_s": 0.63,
+    "onset_1ms_s": 0.623
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 52.92,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.160000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 0.0,
+    "onset_10ms_s": NaN,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 6.25,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 8.52,
+    "onset_10ms_s": 0.5,
+    "onset_1ms_s": 0.498
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 12.58,
+    "onset_10ms_s": 0.55,
+    "onset_1ms_s": 0.544
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 17.71,
+    "onset_10ms_s": 0.45,
+    "onset_1ms_s": 0.441
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 22.490000000000002,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 25.87,
+    "onset_10ms_s": 1.01,
+    "onset_1ms_s": 0.998
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 28.97,
+    "onset_10ms_s": 0.6,
+    "onset_1ms_s": 0.589
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 45.79,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1003,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 59.47,
+    "onset_10ms_s": 0.15,
+    "onset_1ms_s": 0.148
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 6.68,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 10.86,
+    "onset_10ms_s": 0.33,
+    "onset_1ms_s": 0.449
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 14.86,
+    "onset_10ms_s": 0.15,
+    "onset_1ms_s": 0.139
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 16.11,
+    "onset_10ms_s": 0.15,
+    "onset_1ms_s": 0.139
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 31.45,
+    "onset_10ms_s": 1.37,
+    "onset_1ms_s": 1.356
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 40.9,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 44.68,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 46.57,
+    "onset_10ms_s": 1.31,
+    "onset_1ms_s": 1.304
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 59.1,
+    "onset_10ms_s": 0.06,
+    "onset_1ms_s": 0.046
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 4.37,
+    "onset_10ms_s": 1.79,
+    "onset_1ms_s": 1.7830000000000001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 8.76,
+    "onset_10ms_s": 0.29,
+    "onset_1ms_s": 0.29
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 19.19,
+    "onset_10ms_s": 1.12,
+    "onset_1ms_s": 1.118
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 33.42,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 38.04,
+    "onset_10ms_s": 0.27,
+    "onset_1ms_s": 0.262
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 52.7,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 3.39,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 9.69,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 12.17,
+    "onset_10ms_s": 0.33,
+    "onset_1ms_s": 0.324
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 12.870000000000001,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.099
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 15.68,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.131
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 16.97,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.131
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 20.650000000000002,
+    "onset_10ms_s": 2.12,
+    "onset_1ms_s": 2.111
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 27.57,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 32.24,
+    "onset_10ms_s": 1.0,
+    "onset_1ms_s": 0.983
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 36.93,
+    "onset_10ms_s": 0.74,
+    "onset_1ms_s": 0.731
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 41.84,
+    "onset_10ms_s": 0.8,
+    "onset_1ms_s": 0.786
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 45.53,
+    "onset_10ms_s": 0.41000000000000003,
+    "onset_1ms_s": 0.393
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 50.22,
+    "onset_10ms_s": 0.38,
+    "onset_1ms_s": 0.373
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 0.0,
+    "onset_10ms_s": NaN,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 5.43,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.094
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 8.76,
+    "onset_10ms_s": 0.33,
+    "onset_1ms_s": 0.328
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 10.83,
+    "onset_10ms_s": 0.84,
+    "onset_1ms_s": 0.8320000000000001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 15.02,
+    "onset_10ms_s": 0.78,
+    "onset_1ms_s": 0.765
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 18.86,
+    "onset_10ms_s": 0.19,
+    "onset_1ms_s": 0.177
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 23.21,
+    "onset_10ms_s": 2.64,
+    "onset_1ms_s": 2.633
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 33.730000000000004,
+    "onset_10ms_s": 1.42,
+    "onset_1ms_s": 1.412
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 39.11,
+    "onset_10ms_s": 0.23,
+    "onset_1ms_s": 0.227
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 43.63,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.10300000000000001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 54.59,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 57.83,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 1.4000000000000001,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 6.5,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.126
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 14.93,
+    "onset_10ms_s": 0.05,
+    "onset_1ms_s": 0.035
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 31.990000000000002,
+    "onset_10ms_s": 0.68,
+    "onset_1ms_s": 0.672
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 41.36,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 44.68,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 47.19,
+    "onset_10ms_s": 0.87,
+    "onset_1ms_s": 0.861
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 59.13,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 5.05,
+    "onset_10ms_s": 0.63,
+    "onset_1ms_s": 0.623
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 8.28,
+    "onset_10ms_s": 1.09,
+    "onset_1ms_s": 1.089
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 19.77,
+    "onset_10ms_s": 0.7000000000000001,
+    "onset_1ms_s": 0.6940000000000001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 33.42,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 38.25,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 52.7,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 2.81,
+    "onset_10ms_s": 0.46,
+    "onset_1ms_s": 0.452
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 7.49,
+    "onset_10ms_s": 0.28,
+    "onset_1ms_s": 0.273
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 9.540000000000001,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.092
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 12.5,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.065
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 15.76,
+    "onset_10ms_s": 0.04,
+    "onset_1ms_s": 0.028
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 17.150000000000002,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 21.330000000000002,
+    "onset_10ms_s": 0.66,
+    "onset_1ms_s": 0.654
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 27.57,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 32.52,
+    "onset_10ms_s": 0.67,
+    "onset_1ms_s": 0.656
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 37.24,
+    "onset_10ms_s": 0.68,
+    "onset_1ms_s": 0.672
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 42.14,
+    "onset_10ms_s": 0.61,
+    "onset_1ms_s": 0.607
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 45.7,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 50.5,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 0.0,
+    "onset_10ms_s": NaN,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 5.86,
+    "onset_10ms_s": 0.41000000000000003,
+    "onset_1ms_s": 0.395
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 8.28,
+    "onset_10ms_s": 1.06,
+    "onset_1ms_s": 1.049
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 11.21,
+    "onset_10ms_s": 0.6,
+    "onset_1ms_s": 0.599
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 15.27,
+    "onset_10ms_s": 0.43,
+    "onset_1ms_s": 0.424
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 18.86,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 23.55,
+    "onset_10ms_s": 2.33,
+    "onset_1ms_s": 2.319
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 34.160000000000004,
+    "onset_10ms_s": 0.5700000000000001,
+    "onset_1ms_s": 0.561
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 35.910000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 39.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 43.72,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 54.59,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1004,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 56.67,
+    "onset_10ms_s": 1.03,
+    "onset_1ms_s": 1.026
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 11.36,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.114
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 21.67,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.096
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 24.37,
+    "onset_10ms_s": 0.05,
+    "onset_1ms_s": 0.044
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 32.09,
+    "onset_10ms_s": 0.89,
+    "onset_1ms_s": 0.888
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 38.42,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.077
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 42.37,
+    "onset_10ms_s": 0.8200000000000001,
+    "onset_1ms_s": 0.8130000000000001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.71,
+    "onset_10ms_s": 0.18,
+    "onset_1ms_s": 0.168
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 3.43,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.096
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 8.28,
+    "onset_10ms_s": 0.21,
+    "onset_1ms_s": 0.203
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 13.66,
+    "onset_10ms_s": 0.88,
+    "onset_1ms_s": 0.873
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 16.21,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 23.77,
+    "onset_10ms_s": 0.81,
+    "onset_1ms_s": 0.806
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 33.7,
+    "onset_10ms_s": 0.96,
+    "onset_1ms_s": 0.9480000000000001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 49.09,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 4.5,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 5.94,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 14.3,
+    "onset_10ms_s": 0.46,
+    "onset_1ms_s": 0.453
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 31.68,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.01,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.061
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 42.82,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.135
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 48.09,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 56.9,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.112
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 21.53,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.075
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 23.19,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 30.43,
+    "onset_10ms_s": 0.16,
+    "onset_1ms_s": 0.154
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 40.6,
+    "onset_10ms_s": 0.22,
+    "onset_1ms_s": 0.211
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 50.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 59.6,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 1.4000000000000001,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.038
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 10.950000000000001,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.075
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 22.2,
+    "onset_10ms_s": 0.47000000000000003,
+    "onset_1ms_s": 0.461
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 24.48,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 32.410000000000004,
+    "onset_10ms_s": 0.47000000000000003,
+    "onset_1ms_s": 0.456
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 42.7,
+    "onset_10ms_s": 0.56,
+    "onset_1ms_s": 0.544
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.86,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 3.91,
+    "onset_10ms_s": 0.44,
+    "onset_1ms_s": 0.429
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 7.9,
+    "onset_10ms_s": 0.8,
+    "onset_1ms_s": 0.801
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 13.96,
+    "onset_10ms_s": 0.46,
+    "onset_1ms_s": 0.447
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 16.21,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 24.060000000000002,
+    "onset_10ms_s": 0.52,
+    "onset_1ms_s": 0.51
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 34.17,
+    "onset_10ms_s": 0.61,
+    "onset_1ms_s": 0.604
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 49.09,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 56.6,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.045
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 4.32,
+    "onset_10ms_s": 0.15,
+    "onset_1ms_s": 0.146
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 5.78,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.124
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 31.68,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.01,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 48.09,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 57.0,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 23.19,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 30.43,
+    "onset_10ms_s": 0.16,
+    "onset_1ms_s": 0.154
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 40.78,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 50.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1005,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 59.4,
+    "onset_10ms_s": 0.17,
+    "onset_1ms_s": 0.164
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 22.14,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.137
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 27.44,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 37.14,
+    "onset_10ms_s": 1.1300000000000001,
+    "onset_1ms_s": 1.115
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 41.43,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.092
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 58.22,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.059000000000000004
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 10.5,
+    "onset_10ms_s": 1.16,
+    "onset_1ms_s": 1.151
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 19.3,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 24.03,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.081
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 25.07,
+    "onset_10ms_s": 1.2,
+    "onset_1ms_s": 1.187
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 32.38,
+    "onset_10ms_s": 2.56,
+    "onset_1ms_s": 2.5540000000000003
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 38.46,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 52.7,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 0.85,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 5.59,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 10.5,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.214
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 15.530000000000001,
+    "onset_10ms_s": 0.58,
+    "onset_1ms_s": 0.5760000000000001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 20.1,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.101
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 24.3,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.135
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 29.66,
+    "onset_10ms_s": 0.75,
+    "onset_1ms_s": 0.734
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 35.96,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 37.03,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 38.26,
+    "onset_10ms_s": 1.07,
+    "onset_1ms_s": 1.06
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 43.44,
+    "onset_10ms_s": 1.05,
+    "onset_1ms_s": 1.05
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 50.0,
+    "onset_10ms_s": 6.04,
+    "onset_1ms_s": 6.029
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 0.05,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.128
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 4.53,
+    "onset_10ms_s": 0.16,
+    "onset_1ms_s": 0.157
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 9.97,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 13.6,
+    "onset_10ms_s": 1.1,
+    "onset_1ms_s": 1.088
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 18.07,
+    "onset_10ms_s": 0.7000000000000001,
+    "onset_1ms_s": 0.6930000000000001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 21.75,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 26.92,
+    "onset_10ms_s": 5.96,
+    "onset_1ms_s": 5.952
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 35.0,
+    "onset_10ms_s": 2.8000000000000003,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 48.26,
+    "onset_10ms_s": 0.2,
+    "onset_1ms_s": 0.194
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 49.31,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 58.230000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 6.7700000000000005,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.116
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 22.88,
+    "onset_10ms_s": 0.65,
+    "onset_1ms_s": 0.646
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 27.44,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 37.5,
+    "onset_10ms_s": 0.71,
+    "onset_1ms_s": 0.6970000000000001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 58.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 11.200000000000001,
+    "onset_10ms_s": 0.63,
+    "onset_1ms_s": 0.615
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 19.3,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 25.51,
+    "onset_10ms_s": 0.8,
+    "onset_1ms_s": 0.788
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 32.92,
+    "onset_10ms_s": 3.23,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 37.37,
+    "onset_10ms_s": 1.0,
+    "onset_1ms_s": 0.99
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 52.7,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 56.6,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.127
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 0.85,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 5.42,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.125
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 9.99,
+    "onset_10ms_s": 0.5700000000000001,
+    "onset_1ms_s": 0.561
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 15.0,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.095
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 20.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 24.93,
+    "onset_10ms_s": 0.61,
+    "onset_1ms_s": 0.599
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 29.77,
+    "onset_10ms_s": 0.73,
+    "onset_1ms_s": 0.719
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 35.96,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 37.03,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 38.61,
+    "onset_10ms_s": 0.6900000000000001,
+    "onset_1ms_s": 0.682
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 43.92,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 56.09,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 0.76,
+    "onset_10ms_s": 0.65,
+    "onset_1ms_s": 0.641
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 4.54,
+    "onset_10ms_s": 0.58,
+    "onset_1ms_s": 0.5730000000000001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 9.97,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 14.01,
+    "onset_10ms_s": 0.61,
+    "onset_1ms_s": 0.602
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 18.35,
+    "onset_10ms_s": 0.65,
+    "onset_1ms_s": 0.642
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 21.75,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 27.330000000000002,
+    "onset_10ms_s": 0.36,
+    "onset_1ms_s": 0.354
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 37.89,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 47.03,
+    "onset_10ms_s": 1.71,
+    "onset_1ms_s": 1.693
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 49.31,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1006,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 56.6,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.12
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 15.34,
+    "onset_10ms_s": 0.18,
+    "onset_1ms_s": 0.185
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 17.18,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.089
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 26.79,
+    "onset_10ms_s": 0.17,
+    "onset_1ms_s": 0.162
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 29.91,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 36.56,
+    "onset_10ms_s": 0.75,
+    "onset_1ms_s": 0.739
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 45.53,
+    "onset_10ms_s": 0.03,
+    "onset_1ms_s": 0.022
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 0.24,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.088
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 6.5,
+    "onset_10ms_s": 0.03,
+    "onset_1ms_s": 0.029
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 7.15,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 9.620000000000001,
+    "onset_10ms_s": 0.68,
+    "onset_1ms_s": 0.668
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 19.27,
+    "onset_10ms_s": 0.71,
+    "onset_1ms_s": 0.7000000000000001
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 21.63,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 28.580000000000002,
+    "onset_10ms_s": 1.02,
+    "onset_1ms_s": 1.0130000000000001
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 38.980000000000004,
+    "onset_10ms_s": 0.23,
+    "onset_1ms_s": 0.23
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 55.13,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 0.98,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 11.61,
+    "onset_10ms_s": 0.18,
+    "onset_1ms_s": 0.177
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 13.120000000000001,
+    "onset_10ms_s": 0.22,
+    "onset_1ms_s": 0.20600000000000002
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 22.84,
+    "onset_10ms_s": 1.51,
+    "onset_1ms_s": 1.493
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 29.48,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 32.69,
+    "onset_10ms_s": 1.06,
+    "onset_1ms_s": 1.057
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 42.12,
+    "onset_10ms_s": 0.32,
+    "onset_1ms_s": 0.31
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 49.88,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 0.0,
+    "onset_10ms_s": NaN,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 2.3000000000000003,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.064
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 4.72,
+    "onset_10ms_s": 0.06,
+    "onset_1ms_s": 0.049
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 5.6000000000000005,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.101
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 8.120000000000001,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.13
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 15.290000000000001,
+    "onset_10ms_s": 0.78,
+    "onset_1ms_s": 0.771
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 21.25,
+    "onset_10ms_s": 0.19,
+    "onset_1ms_s": 0.182
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 23.46,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.096
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 24.79,
+    "onset_10ms_s": 1.11,
+    "onset_1ms_s": 1.096
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 34.15,
+    "onset_10ms_s": 0.81,
+    "onset_1ms_s": 0.803
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 42.64,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.139
+   },
+   {
+    "job": [
+     1007,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 55.57,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 7.17,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.075
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 15.790000000000001,
+    "onset_10ms_s": 0.04,
+    "onset_1ms_s": 0.028
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 18.07,
+    "onset_10ms_s": 1.29,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 27.22,
+    "onset_10ms_s": 0.41000000000000003,
+    "onset_1ms_s": 0.403
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 29.91,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 36.79,
+    "onset_10ms_s": 0.46,
+    "onset_1ms_s": 0.453
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 45.53,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 0.74,
+    "onset_10ms_s": 0.44,
+    "onset_1ms_s": 0.437
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 6.61,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 10.08,
+    "onset_10ms_s": 0.42,
+    "onset_1ms_s": 0.404
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 19.490000000000002,
+    "onset_10ms_s": 0.45,
+    "onset_1ms_s": 0.443
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 22.04,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 28.92,
+    "onset_10ms_s": 0.52,
+    "onset_1ms_s": 0.514
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 39.17,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 55.13,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 58.72,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.08
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 0.98,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 2.97,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.083
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 5.74,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.083
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 11.69,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.063
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 12.75,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.064
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 14.88,
+    "onset_10ms_s": 0.29,
+    "onset_1ms_s": 0.28300000000000003
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 23.31,
+    "onset_10ms_s": 0.44,
+    "onset_1ms_s": 0.428
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 29.48,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 32.96,
+    "onset_10ms_s": 0.59,
+    "onset_1ms_s": 0.589
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 42.4,
+    "onset_10ms_s": 0.27,
+    "onset_1ms_s": 0.261
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 49.88,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 2.44,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 4.86,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 6.03,
+    "onset_10ms_s": 0.41000000000000003,
+    "onset_1ms_s": 0.402
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 8.15,
+    "onset_10ms_s": 0.36,
+    "onset_1ms_s": 0.353
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 15.540000000000001,
+    "onset_10ms_s": 0.44,
+    "onset_1ms_s": 0.432
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 17.05,
+    "onset_10ms_s": 0.4,
+    "onset_1ms_s": 0.388
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 25.07,
+    "onset_10ms_s": 0.54,
+    "onset_1ms_s": 0.535
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 34.57,
+    "onset_10ms_s": 0.55,
+    "onset_1ms_s": 0.545
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 35.56,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 42.76,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1007,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 55.57,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 16.85,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.132
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 28.39,
+    "onset_10ms_s": 0.28,
+    "onset_1ms_s": 0.277
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 35.72,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 39.67,
+    "onset_10ms_s": 0.65,
+    "onset_1ms_s": 0.638
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 7.8,
+    "onset_10ms_s": 0.17,
+    "onset_1ms_s": 0.16
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 18.89,
+    "onset_10ms_s": 1.09,
+    "onset_1ms_s": 1.085
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 26.89,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 30.0,
+    "onset_10ms_s": 0.96,
+    "onset_1ms_s": 0.9450000000000001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 56.120000000000005,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 0.46,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 3.52,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 11.88,
+    "onset_10ms_s": 0.21,
+    "onset_1ms_s": 0.197
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 14.44,
+    "onset_10ms_s": 0.49,
+    "onset_1ms_s": 0.487
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 16.92,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 21.02,
+    "onset_10ms_s": 0.17,
+    "onset_1ms_s": 0.163
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 23.57,
+    "onset_10ms_s": 0.06,
+    "onset_1ms_s": 0.052000000000000005
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 25.740000000000002,
+    "onset_10ms_s": 0.04,
+    "onset_1ms_s": 0.032
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 28.91,
+    "onset_10ms_s": 0.28,
+    "onset_1ms_s": 0.272
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 31.88,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 35.61,
+    "onset_10ms_s": 0.72,
+    "onset_1ms_s": 0.71
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.72,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 42.96,
+    "onset_10ms_s": 0.86,
+    "onset_1ms_s": 0.855
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 47.0,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.19,
+    "onset_10ms_s": 0.2,
+    "onset_1ms_s": 0.188
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 59.28,
+    "onset_10ms_s": 0.05,
+    "onset_1ms_s": 0.04
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 1.16,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.089
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 3.25,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.135
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 9.290000000000001,
+    "onset_10ms_s": 0.28,
+    "onset_1ms_s": 0.272
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 15.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 16.8,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 23.39,
+    "onset_10ms_s": 0.63,
+    "onset_1ms_s": 0.62
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 30.400000000000002,
+    "onset_10ms_s": 1.27,
+    "onset_1ms_s": 1.262
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 39.33,
+    "onset_10ms_s": 0.26,
+    "onset_1ms_s": 0.261
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 43.35,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 48.49,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 53.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 58.04,
+    "onset_10ms_s": 0.17,
+    "onset_1ms_s": 0.165
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 0.0,
+    "onset_10ms_s": NaN,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 4.74,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.109
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 16.43,
+    "onset_10ms_s": 0.17,
+    "onset_1ms_s": 0.161
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 28.45,
+    "onset_10ms_s": 0.31,
+    "onset_1ms_s": 0.305
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 35.72,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 39.980000000000004,
+    "onset_10ms_s": 0.5700000000000001,
+    "onset_1ms_s": 0.5640000000000001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 7.83,
+    "onset_10ms_s": 0.46,
+    "onset_1ms_s": 0.45
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 19.13,
+    "onset_10ms_s": 0.9400000000000001,
+    "onset_1ms_s": 0.927
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 26.89,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 30.42,
+    "onset_10ms_s": 0.64,
+    "onset_1ms_s": 0.634
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 56.120000000000005,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 0.46,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 3.3200000000000003,
+    "onset_10ms_s": 0.16,
+    "onset_1ms_s": 0.16
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 5.44,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.137
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 11.97,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.069
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 13.9,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.10200000000000001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 16.67,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 21.0,
+    "onset_10ms_s": 0.81,
+    "onset_1ms_s": 0.809
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 23.68,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 25.85,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 28.990000000000002,
+    "onset_10ms_s": 0.59,
+    "onset_1ms_s": 0.584
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 31.88,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 35.9,
+    "onset_10ms_s": 0.67,
+    "onset_1ms_s": 0.67
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.72,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 43.43,
+    "onset_10ms_s": 0.81,
+    "onset_1ms_s": 0.803
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 47.0,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.35,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 59.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 1.32,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 3.24,
+    "onset_10ms_s": 0.67,
+    "onset_1ms_s": 0.654
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 9.36,
+    "onset_10ms_s": 0.59,
+    "onset_1ms_s": 0.578
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 15.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 16.8,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 23.79,
+    "onset_10ms_s": 0.36,
+    "onset_1ms_s": 0.34700000000000003
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 30.400000000000002,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 39.54,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 41.18,
+    "onset_10ms_s": 2.13,
+    "onset_1ms_s": 2.124
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 48.49,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 53.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 56.6,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.095
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 57.84,
+    "onset_10ms_s": 0.17,
+    "onset_1ms_s": 0.167
+   },
+   {
+    "job": [
+     1008,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 59.88,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 8.83,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 13.43,
+    "onset_10ms_s": 0.4,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 23.97,
+    "onset_10ms_s": 0.05,
+    "onset_1ms_s": 0.05
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.62,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.410000000000004,
+    "onset_10ms_s": 0.19,
+    "onset_1ms_s": 0.179
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 22.04,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.092
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 31.67,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 48.75,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 5.3,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 13.16,
+    "onset_10ms_s": 0.34,
+    "onset_1ms_s": 0.331
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 15.46,
+    "onset_10ms_s": 0.32,
+    "onset_1ms_s": 0.307
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 18.79,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.099
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 26.1,
+    "onset_10ms_s": 0.03,
+    "onset_1ms_s": 0.026000000000000002
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 35.89,
+    "onset_10ms_s": 0.03,
+    "onset_1ms_s": 0.025
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 37.99,
+    "onset_10ms_s": 0.08,
+    "onset_1ms_s": 0.064
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 40.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 49.42,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 56.42,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.11
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 57.620000000000005,
+    "onset_10ms_s": 0.08,
+    "onset_1ms_s": 0.075
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 10.19,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 18.1,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 19.51,
+    "onset_10ms_s": 0.07,
+    "onset_1ms_s": 0.06
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 21.76,
+    "onset_10ms_s": 0.08,
+    "onset_1ms_s": 0.067
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 27.38,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.132
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 28.51,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 32.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 43.09,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.108
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 50.9,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 52.03,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 8.69,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.089
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 24.080000000000002,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.62,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.56,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 31.67,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 48.75,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 5.14,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.124
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 18.94,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 26.2,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 35.89,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 40.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 49.42,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 56.52,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 57.68,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 10.19,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 18.1,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 28.51,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 32.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 43.19,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 50.9,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1009,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 52.03,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 1.57,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 10.08,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 13.3,
+    "onset_10ms_s": 0.14,
+    "onset_1ms_s": 0.133
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 21.32,
+    "onset_10ms_s": 2.21,
+    "onset_1ms_s": 2.206
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 33.46,
+    "onset_10ms_s": 0.43,
+    "onset_1ms_s": 0.41600000000000004
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 36.82,
+    "onset_10ms_s": 1.1400000000000001,
+    "onset_1ms_s": 1.133
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 40.17,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 43.410000000000004,
+    "onset_10ms_s": 0.61,
+    "onset_1ms_s": 0.605
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 0.6,
+    "onset_10ms_s": 0.08,
+    "onset_1ms_s": 0.079
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 5.43,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.112
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 9.35,
+    "onset_10ms_s": 1.08,
+    "onset_1ms_s": 1.074
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 15.23,
+    "onset_10ms_s": 0.44,
+    "onset_1ms_s": 0.428
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 24.39,
+    "onset_10ms_s": 1.22,
+    "onset_1ms_s": 1.215
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 33.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 34.81,
+    "onset_10ms_s": 0.27,
+    "onset_1ms_s": 0.264
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 3.2800000000000002,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 7.75,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 10.08,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 11.33,
+    "onset_10ms_s": 0.16,
+    "onset_1ms_s": 0.156
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 14.01,
+    "onset_10ms_s": 0.16,
+    "onset_1ms_s": 0.155
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 15.08,
+    "onset_10ms_s": 0.42,
+    "onset_1ms_s": 0.41400000000000003
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 18.37,
+    "onset_10ms_s": 0.53,
+    "onset_1ms_s": 0.52
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 22.14,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.113
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 32.78,
+    "onset_10ms_s": 0.45,
+    "onset_1ms_s": 0.44
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 36.92,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.085
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.59,
+    "onset_10ms_s": 0.21,
+    "onset_1ms_s": 0.20500000000000002
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 40.17,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 43.31,
+    "onset_10ms_s": 1.09,
+    "onset_1ms_s": 1.108
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 54.97,
+    "onset_10ms_s": 0.16,
+    "onset_1ms_s": 0.16
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 0.6,
+    "onset_10ms_s": 0.08,
+    "onset_1ms_s": 0.079
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 3.0100000000000002,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.11
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 4.86,
+    "onset_10ms_s": 0.05,
+    "onset_1ms_s": 0.042
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 13.46,
+    "onset_10ms_s": 0.36,
+    "onset_1ms_s": 0.355
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 23.84,
+    "onset_10ms_s": 0.63,
+    "onset_1ms_s": 0.616
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 30.39,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 31.37,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 33.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 38.07,
+    "onset_10ms_s": 0.28,
+    "onset_1ms_s": 0.271
+   },
+   {
+    "job": [
+     1010,
+     "lamppost",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 49.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 1.4000000000000001,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": NaN
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 2.67,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.10300000000000001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 5.42,
+    "onset_10ms_s": 0.13,
+    "onset_1ms_s": 0.123
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 9.950000000000001,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.078
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 12.91,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.074
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 22.1,
+    "onset_10ms_s": 0.6900000000000001,
+    "onset_1ms_s": 0.682
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 33.62,
+    "onset_10ms_s": 0.45,
+    "onset_1ms_s": 0.437
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 37.18,
+    "onset_10ms_s": 0.73,
+    "onset_1ms_s": 0.716
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 40.17,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 43.75,
+    "onset_10ms_s": 0.54,
+    "onset_1ms_s": 0.533
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 0.74,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 5.44,
+    "onset_10ms_s": 0.42,
+    "onset_1ms_s": 0.404
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 10.06,
+    "onset_10ms_s": 0.64,
+    "onset_1ms_s": 0.638
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 15.39,
+    "onset_10ms_s": 0.43,
+    "onset_1ms_s": 0.421
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 24.810000000000002,
+    "onset_10ms_s": 0.87,
+    "onset_1ms_s": 0.867
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 33.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "low"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 56.75,
+    "onset_10ms_s": 0.61,
+    "onset_1ms_s": 0.6
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 3.08,
+    "onset_10ms_s": 0.17,
+    "onset_1ms_s": 0.163
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 7.6000000000000005,
+    "onset_10ms_s": 0.11,
+    "onset_1ms_s": 0.10200000000000001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 9.950000000000001,
+    "onset_10ms_s": 0.09,
+    "onset_1ms_s": 0.078
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 10.9,
+    "onset_10ms_s": 0.1,
+    "onset_1ms_s": 0.085
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 14.09,
+    "onset_10ms_s": 0.05,
+    "onset_1ms_s": 0.043000000000000003
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 22.14,
+    "onset_10ms_s": 0.53,
+    "onset_1ms_s": 0.519
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "bus/truck",
+    "start_s": 32.94,
+    "onset_10ms_s": 0.46,
+    "onset_1ms_s": 0.448
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 38.59,
+    "onset_10ms_s": 0.21,
+    "onset_1ms_s": 0.20500000000000002
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 40.17,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 43.69,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 0,
+    "class": "pedestrian",
+    "start_s": 55.1,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 0.2,
+    "onset_10ms_s": 0.59,
+    "onset_1ms_s": 0.583
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 3.02,
+    "onset_10ms_s": 0.48,
+    "onset_1ms_s": 0.467
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 4.97,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 13.59,
+    "onset_10ms_s": 0.45,
+    "onset_1ms_s": 0.441
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 24.14,
+    "onset_10ms_s": 0.55,
+    "onset_1ms_s": 0.538
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 30.39,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 31.37,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 33.27,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 34.68,
+    "onset_10ms_s": 0.6900000000000001,
+    "onset_1ms_s": 0.683
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 38.28,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "pedestrian",
+    "start_s": 49.300000000000004,
+    "onset_10ms_s": 0.01,
+    "onset_1ms_s": 0.001
+   },
+   {
+    "job": [
+     1010,
+     "facade",
+     "high"
+    ],
+    "ue": 1,
+    "class": "bus/truck",
+    "start_s": 58.09,
+    "onset_10ms_s": 0.12,
+    "onset_1ms_s": 0.109
+   }
+  ]
+ }
+}

@@ -142,19 +142,19 @@ Of 2571 blockage-caused wrong-cell steps of A3 (A3's cell unusable, other usable
 | 3GPP short-range reference | 1/10/40 | 3/6/40 | a5 | 0.5 s | 2.0 s (4) |
 | v1 radio (high margin) | 1/10/40 | 3/0/40 | a5 | 0.5 s | 0.5 s (2) |
 
-### Value of foresight (best reactive vs cost-aware oracle, 0.1 s epochs, tau_HO 20 ms)
+### Value of foresight (best reactive vs cost-aware oracle, any-step switching, tau_HO 20 ms; changed after review A1)
 
 | Margin | Best reactive | Cost-aware | Difference [s/UE-min] | Share of best-reactive gap | bus/truck | pedestrian | car |
 |---|---|---|---|---|---|---|---|
 | 0 dB | 34.665 ± 2.766 | 34.559 ± 2.768 | 0.106 | 100 % | 34 % | 44 % | 22 % |
-| 5 dB | 9.227 ± 1.359 | 9.036 ± 1.355 | 0.191 | 74 % | 26 % | 40 % | 7 % |
-| 10 dB | 3.292 ± 0.711 | 2.971 ± 0.683 | 0.321 | 76 % | 32 % | 46 % | -1 % |
-| 15 dB | 1.998 ± 0.453 | 1.766 ± 0.419 | 0.233 | 71 % | 19 % | 53 % | -1 % |
-| 20 dB | 1.180 ± 0.289 | 0.985 ± 0.260 | 0.195 | 70 % | 13 % | 56 % | 1 % |
-| 25 dB | 0.462 ± 0.170 | 0.345 ± 0.154 | 0.117 | 72 % | 11 % | 58 % | 3 % |
-| 30 dB | 0.169 ± 0.092 | 0.118 ± 0.088 | 0.051 | 73 % | 16 % | 57 % | 1 % |
-| 3GPP short-range reference | 0.079 ± 0.045 | 0.023 ± 0.016 | 0.056 | 89 % | 24 % | 64 % | 1 % |
-| v1 radio (high margin) | 0.040 ± 0.014 | 0.014 ± 0.011 | 0.025 | 87 % | 17 % | 67 % | 3 % |
+| 5 dB | 9.227 ± 1.359 | 9.020 ± 1.354 | 0.206 | 80 % | 28 % | 47 % | 5 % |
+| 10 dB | 3.292 ± 0.711 | 2.953 ± 0.681 | 0.340 | 81 % | 31 % | 51 % | -2 % |
+| 15 dB | 1.998 ± 0.453 | 1.747 ± 0.416 | 0.252 | 77 % | 19 % | 59 % | -1 % |
+| 20 dB | 1.180 ± 0.289 | 0.969 ± 0.258 | 0.211 | 76 % | 13 % | 61 % | 1 % |
+| 25 dB | 0.462 ± 0.170 | 0.341 ± 0.153 | 0.121 | 75 % | 12 % | 59 % | 4 % |
+| 30 dB | 0.169 ± 0.092 | 0.117 ± 0.088 | 0.052 | 74 % | 16 % | 57 % | 2 % |
+| 3GPP short-range reference | 0.079 ± 0.045 | 0.023 ± 0.016 | 0.056 | 89 % | 24 % | 64 % | 2 % |
+| v1 radio (high margin) | 0.040 ± 0.014 | 0.014 ± 0.011 | 0.025 | 88 % | 16 % | 68 % | 3 % |
 
 Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle), pooled steps; class = dominant LoS blocker of the best reactive scheme's cell (net steps).
 
@@ -179,7 +179,8 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | diagnostic: true-LoS-loss planner, H = 1.0 s | 36.047 ± 2.771 | 1.502 ± 0.000 | 0.000 ± 0.000 |
 | diagnostic: true-LoS-loss planner, H = 2.0 s | 36.047 ± 2.771 | 1.502 ± 0.000 | 0.000 ± 0.000 |
 | diagnostic: true-LoS-loss planner, H = 3.0 s | 36.047 ± 2.771 | 1.502 ± 0.000 | 0.000 ± 0.000 |
-| cost-aware oracle (0.1 s epochs) | 34.559 ± 2.768 | — | — |
+| cost-aware oracle (any step) | 34.559 ± 2.768 | — | — |
+| cost-aware oracle (0.1 s epochs; not a bound for the planners) | 34.559 ± 2.768 | — | — |
 | instantaneous oracle | 34.559 ± 2.768 | 0 | 0 |
 
 #### 5 dB
@@ -201,7 +202,8 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | diagnostic: true-LoS-loss planner, H = 1.0 s | 10.528 ± 1.393 | 3.468 ± 0.390 | 0.076 ± 0.027 |
 | diagnostic: true-LoS-loss planner, H = 2.0 s | 10.523 ± 1.393 | 3.468 ± 0.390 | 0.076 ± 0.027 |
 | diagnostic: true-LoS-loss planner, H = 3.0 s | 10.521 ± 1.393 | 3.468 ± 0.390 | 0.076 ± 0.027 |
-| cost-aware oracle (0.1 s epochs) | 9.036 ± 1.355 | — | — |
+| cost-aware oracle (any step) | 9.020 ± 1.354 | — | — |
+| cost-aware oracle (0.1 s epochs; not a bound for the planners) | 9.036 ± 1.355 | — | — |
 | instantaneous oracle | 8.969 ± 1.354 | 0 | 0 |
 
 #### 10 dB
@@ -223,7 +225,8 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | diagnostic: true-LoS-loss planner, H = 1.0 s | 3.493 ± 0.761 | 6.034 ± 0.935 | 0.090 ± 0.037 |
 | diagnostic: true-LoS-loss planner, H = 2.0 s | 3.492 ± 0.761 | 6.034 ± 0.935 | 0.090 ± 0.037 |
 | diagnostic: true-LoS-loss planner, H = 3.0 s | 3.489 ± 0.762 | 6.009 ± 0.935 | 0.090 ± 0.037 |
-| cost-aware oracle (0.1 s epochs) | 2.971 ± 0.683 | — | — |
+| cost-aware oracle (any step) | 2.953 ± 0.681 | — | — |
+| cost-aware oracle (0.1 s epochs; not a bound for the planners) | 2.971 ± 0.683 | — | — |
 | instantaneous oracle | 2.871 ± 0.676 | 0 | 0 |
 
 #### 15 dB
@@ -245,7 +248,8 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | diagnostic: true-LoS-loss planner, H = 1.0 s | 1.953 ± 0.472 | 5.496 ± 0.882 | 0.109 ± 0.028 |
 | diagnostic: true-LoS-loss planner, H = 2.0 s | 1.952 ± 0.472 | 5.496 ± 0.882 | 0.109 ± 0.028 |
 | diagnostic: true-LoS-loss planner, H = 3.0 s | 1.952 ± 0.472 | 5.496 ± 0.882 | 0.109 ± 0.028 |
-| cost-aware oracle (0.1 s epochs) | 1.766 ± 0.419 | — | — |
+| cost-aware oracle (any step) | 1.747 ± 0.416 | — | — |
+| cost-aware oracle (0.1 s epochs; not a bound for the planners) | 1.766 ± 0.419 | — | — |
 | instantaneous oracle | 1.672 ± 0.409 | 0 | 0 |
 
 #### 20 dB
@@ -267,7 +271,8 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | diagnostic: true-LoS-loss planner, H = 1.0 s | 1.105 ± 0.297 | 4.995 ± 0.870 | 0.092 ± 0.034 |
 | diagnostic: true-LoS-loss planner, H = 2.0 s | 1.104 ± 0.297 | 4.970 ± 0.867 | 0.091 ± 0.034 |
 | diagnostic: true-LoS-loss planner, H = 3.0 s | 1.104 ± 0.297 | 4.970 ± 0.867 | 0.091 ± 0.034 |
-| cost-aware oracle (0.1 s epochs) | 0.985 ± 0.260 | — | — |
+| cost-aware oracle (any step) | 0.969 ± 0.258 | — | — |
+| cost-aware oracle (0.1 s epochs; not a bound for the planners) | 0.985 ± 0.260 | — | — |
 | instantaneous oracle | 0.902 ± 0.251 | 0 | 0 |
 
 #### 25 dB
@@ -289,7 +294,8 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | diagnostic: true-LoS-loss planner, H = 1.0 s | 0.426 ± 0.161 | 3.067 ± 0.542 | 0.029 ± 0.017 |
 | diagnostic: true-LoS-loss planner, H = 2.0 s | 0.426 ± 0.161 | 3.042 ± 0.519 | 0.029 ± 0.017 |
 | diagnostic: true-LoS-loss planner, H = 3.0 s | 0.425 ± 0.161 | 3.017 ± 0.515 | 0.029 ± 0.017 |
-| cost-aware oracle (0.1 s epochs) | 0.345 ± 0.154 | — | — |
+| cost-aware oracle (any step) | 0.341 ± 0.153 | — | — |
+| cost-aware oracle (0.1 s epochs; not a bound for the planners) | 0.345 ± 0.154 | — | — |
 | instantaneous oracle | 0.300 ± 0.152 | 0 | 0 |
 
 #### 30 dB
@@ -311,7 +317,8 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | diagnostic: true-LoS-loss planner, H = 1.0 s | 0.152 ± 0.100 | 1.189 ± 0.289 | 0.007 ± 0.010 |
 | diagnostic: true-LoS-loss planner, H = 2.0 s | 0.151 ± 0.100 | 1.202 ± 0.291 | 0.007 ± 0.010 |
 | diagnostic: true-LoS-loss planner, H = 3.0 s | 0.151 ± 0.101 | 1.202 ± 0.291 | 0.007 ± 0.010 |
-| cost-aware oracle (0.1 s epochs) | 0.118 ± 0.088 | — | — |
+| cost-aware oracle (any step) | 0.117 ± 0.088 | — | — |
+| cost-aware oracle (0.1 s epochs; not a bound for the planners) | 0.118 ± 0.088 | — | — |
 | instantaneous oracle | 0.099 ± 0.086 | 0 | 0 |
 
 #### 3GPP short-range reference
@@ -333,7 +340,8 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | diagnostic: true-LoS-loss planner, H = 1.0 s | 0.039 ± 0.020 | 0.776 ± 0.238 | 0.004 ± 0.008 |
 | diagnostic: true-LoS-loss planner, H = 2.0 s | 0.039 ± 0.020 | 0.776 ± 0.238 | 0.004 ± 0.008 |
 | diagnostic: true-LoS-loss planner, H = 3.0 s | 0.039 ± 0.020 | 0.776 ± 0.238 | 0.004 ± 0.008 |
-| cost-aware oracle (0.1 s epochs) | 0.023 ± 0.016 | — | — |
+| cost-aware oracle (any step) | 0.023 ± 0.016 | — | — |
+| cost-aware oracle (0.1 s epochs; not a bound for the planners) | 0.023 ± 0.016 | — | — |
 | instantaneous oracle | 0.016 ± 0.013 | 0 | 0 |
 
 #### v1 radio (high margin)
@@ -355,7 +363,8 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | diagnostic: true-LoS-loss planner, H = 1.0 s | 0.026 ± 0.011 | 0.526 ± 0.126 | 0.000 ± 0.000 |
 | diagnostic: true-LoS-loss planner, H = 2.0 s | 0.026 ± 0.011 | 0.526 ± 0.126 | 0.000 ± 0.000 |
 | diagnostic: true-LoS-loss planner, H = 3.0 s | 0.026 ± 0.011 | 0.526 ± 0.126 | 0.000 ± 0.000 |
-| cost-aware oracle (0.1 s epochs) | 0.014 ± 0.011 | — | — |
+| cost-aware oracle (any step) | 0.014 ± 0.011 | — | — |
+| cost-aware oracle (0.1 s epochs; not a bound for the planners) | 0.014 ± 0.011 | — | — |
 | instantaneous oracle | 0.011 ± 0.010 | 0 | 0 |
 
 True-LoS-loss planner vs A5 from 15 dB up (sensing-planner's tuned H; 95 % CI = 1.96 sd / sqrt(40) over evaluation jobs):
@@ -388,6 +397,64 @@ Paired comparison on the same 40 evaluation jobs (`scripts/run_m5_paired.py`; st
 Paired, the true-LoS-loss planner has significantly lower outage than A5 (CI below 0 and p < 0.05) at: 15 dB, 20 dB, 30 dB, 3GPP short-range reference, v1 radio (high margin). The unpaired CIs above overlap because the job-to-job spread is large, while the per-job differences are consistent. The sensing-planner is significantly worse than A5 wherever its CI excludes 0.
 
 Reading (planner): the genie-planner reaches the cost-aware bound at every margin, and the horizon hardly matters (0.5 s suffices). The sensing-planner is worse than the best reactive scheme at every margin. The true-LoS-loss diagnostic separates the causes: with perfect blockage prediction the same planner model has a lower mean outage than the best reactive scheme at margins >= 15 dB even with the sensing overhead, and loses at 0-10 dB (overhead and the 'unblocked SNR minus LoS loss' approximation). The gap between the diagnostic and the sensing-planner is the blockage-prediction error of the current tracker/predictor (false and missed blockages, no measurement feedback in the plan as specified).
+
+## External review, block A (correctness) -- ADDED AFTER REVIEW
+
+### A1 Oracle accounting (`scripts/review_a1_oracle.py`)
+
+The simulator counts outage at the service rate as the UNION of handover interruption and rate below the service rate (`outage = interrupted | rate < req`; an interrupted step counts once). The cost-aware Viterbi uses the same union objective (state = cell and remaining interruption steps; an interrupted step costs 1 regardless of SNR). Per evaluation job and margin, every scheme was compared with the cost-aware oracle (tau_HO 20 ms).
+
+| Margin | Any-step oracle | 0.1 s-epoch oracle | Instantaneous | Jobs below the any-step oracle (all schemes) | Jobs below the epoch oracle |
+|---|---|---|---|---|---|
+| 0 dB | 34.559 | 34.559 | 34.559 | 0 | 0 |
+| 5 dB | 9.020 | 9.036 | 8.969 | 0 | genie-planner H=0.5: 2, genie-planner H=1.0: 2, genie-planner H=2.0: 2, genie-planner H=3.0: 2 |
+| 10 dB | 2.953 | 2.971 | 2.871 | 0 | genie-planner H=0.5: 2, genie-planner H=1.0: 2, genie-planner H=2.0: 2, genie-planner H=3.0: 2, true-LoS-loss planner H=0.5: 1, true-LoS-loss planner H=1.0: 1, true-LoS-loss planner H=2.0: 1, true-LoS-loss planner H=3.0: 1 |
+| 15 dB | 1.747 | 1.766 | 1.672 | 0 | genie-planner H=0.5: 4, genie-planner H=1.0: 4, genie-planner H=2.0: 4, genie-planner H=3.0: 4, true-LoS-loss planner H=0.5: 1, true-LoS-loss planner H=1.0: 1, true-LoS-loss planner H=2.0: 1, true-LoS-loss planner H=3.0: 1 |
+| 20 dB | 0.969 | 0.985 | 0.902 | 0 | genie-planner H=0.5: 8, genie-planner H=1.0: 8, genie-planner H=2.0: 9, genie-planner H=3.0: 9 |
+| 25 dB | 0.341 | 0.345 | 0.300 | 0 | genie-planner H=0.5: 4, genie-planner H=1.0: 5, genie-planner H=2.0: 5, genie-planner H=3.0: 5 |
+| 30 dB | 0.117 | 0.118 | 0.099 | 0 | genie-planner H=2.0: 1, genie-planner H=3.0: 1 |
+| 3GPP short-range reference | 0.023 | 0.023 | 0.016 | 0 | 0 |
+| v1 radio (high margin) | 0.014 | 0.014 | 0.011 | 0 | 0 |
+
+Result: no scheme beats the any-step cost-aware oracle on any job at any margin, and instantaneous <= any-step <= epoch holds on every job. The 0.1 s-epoch oracle (switches at k mod 10 = 0) is NOT a bound for the planners, whose switches fall on the E2-delay-offset grid (k mod 10 = 3); the genie-planner and the true-LoS-loss planner beat it on a few jobs. Fix: the any-step oracle is now 'the cost-aware oracle' in fig_outage_margin, fig_value, the value-of-foresight shares and the macros (\numCostOracle*, \numValue*, \numPlanHorizon). The planner re-run changed only the value-of-foresight field; every other field of planner.json is identical.
+
+### A2 Lead-time detector configuration
+
+fig_leadtime.pdf now uses the final detector configuration, the same as the Pd/FA/lead macros: final: budget 4 FA/CPI, blind clutter, image-method ghost handling; trackers: unconstrained EKF and map-constrained (MAP_TUNED) (source `results/M5/tracking.json`). The earlier no-ghost comparison stays available (`fig_leadtime.py --config noghost`) and still reproduces results/M2/followup.md. \numMapBus/\numMapPed/\numMapCross remain the no-ghost budget-4 detector, as stated in the catalog.
+
+| Tracker | Class | Events | Confirmed track 0.5 s before onset | Wilson 95 % | lamppost | facade |
+|---|---|---|---|---|---|---|
+| map | bus/truck | 439 | 86.8 % | 83.3-89.6 % | 191/227 | 190/212 |
+| unconstrained | bus/truck | 439 | 85.6 % | 82.1-88.6 % | 188/227 | 188/212 |
+| map | pedestrian | 355 | 58.6 % | 53.4-63.6 % | 89/167 | 119/188 |
+| unconstrained | pedestrian | 355 | 43.4 % | 38.3-48.6 % | 68/167 | 86/188 |
+
+### A3 Car share of the closable gap (fig_value)
+
+Net closed steps (A5 vs any-step oracle) by the dominant LoS blocker of A5's cell, as a share of the A5-to-oracle gap (pooled); and the part of the car-attributed share that comes from LoS losses below 10 dB on A5's cell.
+
+| Margin | Car share of gap | Car share from < 10 dB loss |
+|---|---|---|
+| 0 dB | +21.7 % | 100 % |
+| 5 dB | +5.2 % | 100 % |
+| 10 dB | -1.9 % | 100 % |
+| 15 dB | -0.8 % | 100 % |
+| 20 dB | +1.0 % | 100 % |
+| 25 dB | +3.6 % | 100 % |
+| 30 dB | +1.6 % | 100 % |
+| 3GPP short-range reference | +1.6 % | 100 % |
+| v1 radio (high margin) | +3.5 % | 100 % |
+
+Cars never cause 10 dB events; all car-attributed closable gap comes from sub-10 dB LoS losses (A5 sits below the service rate while the other cell is usable). Negative shares are net losses of the oracle path on car-attributed steps and are not drawn in fig_value.
+
+### A4 Onset at 1 ms (analytic model B on the LoS segment, no re-trace)
+
+| Class | Events | Median 10-90 % onset at 1 ms | p10 / p90 at 1 ms | Median at 10 ms (same events) | Onsets below 10 ms at 1 ms |
+|---|---|---|---|---|---|
+| bus/truck | 317 | 492.0 ms | 89.0 / 1077.3 ms | 500 ms | 2 % |
+| pedestrian | 387 | 1.0 ms | 1.0 / 346.6 ms | 10 ms | 62 % |
+
+The bus/truck onset is resolved at 10 ms (median 0.49 s at 1 ms vs 0.50 s). The pedestrian median equals the time step at both resolutions (1 ms and 10 ms): with the model-B screen of a 0.5 m pedestrian the LoS loss is effectively a step; the onset is below the 1 ms resolution, i.e. 'abrupt' is a property of the model, not a measured rise time.
 
 ## paper/numbers.tex vs the defaults in main.tex
 
@@ -423,7 +490,7 @@ main.tex lists 45 macros; numbers.tex defines 59. Not defined: none.
 | `\numOracleRef` | 0.02 | 0.02 | scripts/run_m3.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
 | `\numAfiveTen` | 3.29 | 3.29 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
 | `\numAfiveRef` | 0.08 | 0.08 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
-| `\numCostOracleTen` | 2.97 | 2.97 | scripts/run_m5_dporacle.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numCostOracleTen` | 2.97 | 2.95 **changed** | scripts/run_m5_dporacle.py | mean over 40 evaluation jobs [s/UE-min] |
 | `\numCostOracleRef` | 0.02 | 0.02 | scripts/run_m5_dporacle.py | mean over 40 evaluation jobs [s/UE-min] |
 | `\numGeniePlanTen` | 2.99 | 2.99 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
 | `\numGeniePlanRef` | 0.03 | 0.03 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
@@ -431,12 +498,12 @@ main.tex lists 45 macros; numbers.tex defines 59. Not defined: none.
 | `\numSensePlanRef` | 0.13 | 0.13 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
 | `\numTrueLossRef` | 0.04 | 0.04 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
 | `\numTrueLossFrom` | 15 | 15 | scripts/run_m5_planner.py | lowest margin [dB] where the mean outage is below A5's |
-| `\numValueRange` | 70--89\% | 70--89\% | scripts/run_m5_planner.py | POOLED over evaluation jobs: (best reactive - cost-aware) / (best reactive - instantaneous oracle) outage steps; min-max over margins |
-| `\numValuePedRange` | 40--64\% | 40--64\% | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |
-| `\numValueBusRange` | 11--32\% | 11--32\% | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |
-| `\numValuePedTen` | 46\% | 46\% | scripts/run_m5_planner.py | net closed steps (pedestrian) / best-reactive-to-oracle gap, pooled |
-| `\numValueBusTen` | 32\% | 32\% | scripts/run_m5_planner.py | net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled |
-| `\numPlanHorizon` | 0.5 | 0.5 | scripts/run_m5_planner.py | RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute) |
+| `\numValueRange` | 70--89\% | 74--89\% **changed** | scripts/run_m5_planner.py | POOLED over evaluation jobs: (best reactive - cost-aware) / (best reactive - instantaneous oracle) outage steps; min-max over margins |
+| `\numValuePedRange` | 40--64\% | 47--64\% **changed** | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |
+| `\numValueBusRange` | 11--32\% | 12--31\% **changed** | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |
+| `\numValuePedTen` | 46\% | 51\% **changed** | scripts/run_m5_planner.py | net closed steps (pedestrian) / best-reactive-to-oracle gap, pooled |
+| `\numValueBusTen` | 32\% | 31\% **changed** | scripts/run_m5_planner.py | net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled |
+| `\numPlanHorizon` | 0.5 | -- **changed** | scripts/run_m5_planner.py | RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute) |
 | `\numSensePlanHO` | 23.7 | 23.7 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute |
 | `\numSensePlanPP` | 0.54 | 0.54 | scripts/run_m5_planner.py | mean over evaluation jobs of the per-job ping-pong rate |
 | `\numAfiveHO` | 5.9 | 5.9 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute |

@@ -1,6 +1,6 @@
 {
  "label": "added after the cost-aware-oracle result",
- "definition": "Equal-effort reactive baselines and a receding-horizon planner (xApp v2).\n\nADDED AFTER THE COST-AWARE-ORACLE RESULT (results/M5/dporacle.json).\nTuning on tuning seeds 101-105 per margin (objective: outage at the\nservice rate incl. interruption, ties -> fewer HO/UE-min), evaluation on\n1001-1010, tau_HO = 20 ms, E2 loop delay 20 ms, report period 0.1 s.\n\n1. Reactive baselines with equal effort:\n   - A3 (wide): offset {0,1,3,6,10,15} dB x hysteresis {0,1,3,6,10,15} dB x\n     TTT {40,80,160,320,640} ms (180 points);\n   - A5: serving filtered SNR < SNR_req + t1 AND neighbour filtered SNR >\n     SNR_req + t2 for TTT; t1 {-3,0,3,6,10} dB x t2 {0,3,6,10} dB x\n     TTT {40,80,160,320,640} ms (100 points);\n   - best reactive = the one with the lower tuning objective per margin.\n2. Value of foresight: best reactive vs the cost-aware oracle (Viterbi with\n   perfect SNR of both cells, switches only at 0.1 s epochs, tau_HO 20 ms),\n   absolute and as a share of the best-reactive-to-instantaneous-oracle gap\n   (pooled), split by the dominant LoS blocker of the best reactive's cell.\n3. Receding-horizon planner: at every report r, from the current cell, a\n   2-state Viterbi over the horizon H in {0.5, 1, 2, 3} s (steps from\n   r*0.1 s + E2 delay + 10 ms, switches only at future 0.1 s decision\n   epochs, every switch = tau_HO outage) on PREDICTED SNR of both cells; the\n   first decision is applied after the E2 delay. No A3 underneath; no hold.\n   a) genie-planner: true future blocked SNR;\n   b) sensing-planner: predicted SNR = unblocked SNR along the UE path\n      (digital-twin radio map, i.e. the true unblocked SNR) minus the\n      predicted model-B LoS loss of the tracked blockers (final M2 map\n      tracker, detector budget 2 or 4 tuned, UE position fix with sigma 1 m,\n      xapp/predict_torch.py); sensing overhead charged in the plan and the rate.\n   c) diagnostic only (not a policy): the sensing-planner model with the TRUE\n      LoS loss instead of the predicted one (separates predictor error from\n      the \"unblocked SNR minus LoS loss\" approximation), overhead charged,\n      every H on the evaluation seeds.\n4. Per margin: A3, A5, best reactive, genie-planner(H), sensing-planner(H),\n   cost-aware oracle, instantaneous oracle (mean, 95 % CI, HO/UE-min,\n   ping-pong).\n\nWrites results/M5/planner.json.\n",
+ "definition": "Equal-effort reactive baselines and a receding-horizon planner (xApp v2).\n\nADDED AFTER THE COST-AWARE-ORACLE RESULT (results/M5/dporacle.json).\nTuning on tuning seeds 101-105 per margin (objective: outage at the\nservice rate incl. interruption, ties -> fewer HO/UE-min), evaluation on\n1001-1010, tau_HO = 20 ms, E2 loop delay 20 ms, report period 0.1 s.\n\n1. Reactive baselines with equal effort:\n   - A3 (wide): offset {0,1,3,6,10,15} dB x hysteresis {0,1,3,6,10,15} dB x\n     TTT {40,80,160,320,640} ms (180 points);\n   - A5: serving filtered SNR < SNR_req + t1 AND neighbour filtered SNR >\n     SNR_req + t2 for TTT; t1 {-3,0,3,6,10} dB x t2 {0,3,6,10} dB x\n     TTT {40,80,160,320,640} ms (100 points);\n   - best reactive = the one with the lower tuning objective per margin.\n2. Value of foresight: best reactive vs the cost-aware oracle (Viterbi with\n   perfect SNR of both cells, switches at any 10 ms step, tau_HO 20 ms; after\n   review A1 -- the 0.1 s-epoch variant is not a lower bound for planners\n   whose switches fall on the E2-delay-offset grid),\n   absolute and as a share of the best-reactive-to-instantaneous-oracle gap\n   (pooled), split by the dominant LoS blocker of the best reactive's cell.\n3. Receding-horizon planner: at every report r, from the current cell, a\n   2-state Viterbi over the horizon H in {0.5, 1, 2, 3} s (steps from\n   r*0.1 s + E2 delay + 10 ms, switches only at future 0.1 s decision\n   epochs, every switch = tau_HO outage) on PREDICTED SNR of both cells; the\n   first decision is applied after the E2 delay. No A3 underneath; no hold.\n   a) genie-planner: true future blocked SNR;\n   b) sensing-planner: predicted SNR = unblocked SNR along the UE path\n      (digital-twin radio map, i.e. the true unblocked SNR) minus the\n      predicted model-B LoS loss of the tracked blockers (final M2 map\n      tracker, detector budget 2 or 4 tuned, UE position fix with sigma 1 m,\n      xapp/predict_torch.py); sensing overhead charged in the plan and the rate.\n   c) diagnostic only (not a policy): the sensing-planner model with the TRUE\n      LoS loss instead of the predicted one (separates predictor error from\n      the \"unblocked SNR minus LoS loss\" approximation), overhead charged,\n      every H on the evaluation seeds.\n4. Per margin: A3, A5, best reactive, genie-planner(H), sensing-planner(H),\n   cost-aware oracle, instantaneous oracle (mean, 95 % CI, HO/UE-min,\n   ping-pong).\n\nWrites results/M5/planner.json.\n",
  "grids": {
   "a3_wide": {
    "offset_db": [
@@ -831,11 +831,12 @@
      "car": 0.21682464454976302,
      "no LoS blocker": 0.0
     },
-    "costaware_epoch": {
+    "costaware": {
      "mean": 34.559213820731095,
      "ci": 2.7679509396964215,
      "n": 40
     },
+    "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
     "costaware_recomputed_check": true
    },
    "diag_trueloss_planner": {
@@ -4014,7 +4015,7 @@
    },
    "genie_planner_tuned_H": 0.5,
    "sensing_planner_tuned_H": 0.5,
-   "wall_s": 25.313021979294717
+   "wall_s": 25.748397740535438
   },
   {
    "label": "5 dB",
@@ -4778,19 +4779,20 @@
    },
    "best_reactive": "a5",
    "value_of_foresight": {
-    "best_reactive_minus_costaware_s_per_ue_min": 0.19103655483224813,
-    "share_of_best_reactive_gap_pooled": 0.7404172731683649,
+    "best_reactive_minus_costaware_s_per_ue_min": 0.20643465197796473,
+    "share_of_best_reactive_gap_pooled": 0.8000970402717128,
     "by_class_share_of_gap_pooled": {
-     "bus/truck": 0.26297913634158177,
-     "pedestrian": 0.4027171276079573,
-     "car": 0.07472100921882581,
+     "bus/truck": 0.2775351770984959,
+     "pedestrian": 0.47016011644832606,
+     "car": 0.05240174672489083,
      "no LoS blocker": 0.0
     },
-    "costaware_epoch": {
-     "mean": 9.035803705558337,
-     "ci": 1.3546134934748346,
+    "costaware": {
+     "mean": 9.02040560841262,
+     "ci": 1.3541917603786435,
      "n": 40
     },
+    "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
     "costaware_recomputed_check": true
    },
    "diag_trueloss_planner": {
@@ -7969,7 +7971,7 @@
    },
    "genie_planner_tuned_H": 3.0,
    "sensing_planner_tuned_H": 1.0,
-   "wall_s": 25.785387627780437
+   "wall_s": 25.89271460659802
   },
   {
    "label": "10 dB",
@@ -8733,19 +8735,20 @@
    },
    "best_reactive": "a5",
    "value_of_foresight": {
-    "best_reactive_minus_costaware_s_per_ue_min": 0.32148222333500254,
-    "share_of_best_reactive_gap_pooled": 0.7620178041543026,
+    "best_reactive_minus_costaware_s_per_ue_min": 0.33975963945918863,
+    "share_of_best_reactive_gap_pooled": 0.8053412462908012,
     "by_class_share_of_gap_pooled": {
-     "bus/truck": 0.31572700296735906,
-     "pedestrian": 0.458160237388724,
-     "car": -0.011869436201780416,
+     "bus/truck": 0.313946587537092,
+     "pedestrian": 0.5103857566765578,
+     "car": -0.018991097922848664,
      "no LoS blocker": 0.0
     },
-    "costaware_epoch": {
-     "mean": 2.9709564346519777,
-     "ci": 0.6826475937617859,
+    "costaware": {
+     "mean": 2.9526790185277916,
+     "ci": 0.681401277668845,
      "n": 40
     },
+    "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
     "costaware_recomputed_check": true
    },
    "diag_trueloss_planner": {
@@ -11924,7 +11927,7 @@
    },
    "genie_planner_tuned_H": 3.0,
    "sensing_planner_tuned_H": 0.5,
-   "wall_s": 26.463618103414774
+   "wall_s": 26.30954523663968
   },
   {
    "label": "15 dB",
@@ -12688,19 +12691,20 @@
    },
    "best_reactive": "a5",
    "value_of_foresight": {
-    "best_reactive_minus_costaware_s_per_ue_min": 0.23284927391086607,
-    "share_of_best_reactive_gap_pooled": 0.713463751438435,
+    "best_reactive_minus_costaware_s_per_ue_min": 0.2516274411617423,
+    "share_of_best_reactive_gap_pooled": 0.7710011507479861,
     "by_class_share_of_gap_pooled": {
-     "bus/truck": 0.19064058304564635,
-     "pedestrian": 0.5301112389719984,
-     "car": -0.00728807057920982,
+     "bus/truck": 0.19217491369390102,
+     "pedestrian": 0.587265055619486,
+     "car": -0.008438818565400843,
      "no LoS blocker": 0.0
     },
-    "costaware_epoch": {
-     "mean": 1.7656484727090636,
-     "ci": 0.41892204483721746,
+    "costaware": {
+     "mean": 1.7468703054581873,
+     "ci": 0.4163526068002484,
      "n": 40
     },
+    "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
     "costaware_recomputed_check": true
    },
    "diag_trueloss_planner": {
@@ -15879,7 +15883,7 @@
    },
    "genie_planner_tuned_H": 2.0,
    "sensing_planner_tuned_H": 0.5,
-   "wall_s": 25.948814750649035
+   "wall_s": 26.10867077857256
   },
   {
    "label": "20 dB",
@@ -16643,19 +16647,20 @@
    },
    "best_reactive": "a5",
    "value_of_foresight": {
-    "best_reactive_minus_costaware_s_per_ue_min": 0.19466700050075114,
-    "share_of_best_reactive_gap_pooled": 0.6995051731893838,
+    "best_reactive_minus_costaware_s_per_ue_min": 0.2108162243365047,
+    "share_of_best_reactive_gap_pooled": 0.7575348627980207,
     "by_class_share_of_gap_pooled": {
-     "bus/truck": 0.1349527665317139,
-     "pedestrian": 0.5578047683310842,
-     "car": 0.006747638326585695,
+     "bus/truck": 0.13270355375618534,
+     "pedestrian": 0.614484930274404,
+     "car": 0.0103463787674314,
      "no LoS blocker": 0.0
     },
-    "costaware_epoch": {
-     "mean": 0.9854782173259888,
-     "ci": 0.25967651487164295,
+    "costaware": {
+     "mean": 0.9693289934902353,
+     "ci": 0.2578315098627202,
      "n": 40
     },
+    "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
     "costaware_recomputed_check": true
    },
    "diag_trueloss_planner": {
@@ -19834,7 +19839,7 @@
    },
    "genie_planner_tuned_H": 2.0,
    "sensing_planner_tuned_H": 1.0,
-   "wall_s": 25.522100623697042
+   "wall_s": 25.840805393643677
   },
   {
    "label": "25 dB",
@@ -20598,19 +20603,20 @@
    },
    "best_reactive": "a5",
    "value_of_foresight": {
-    "best_reactive_minus_costaware_s_per_ue_min": 0.11680020030045063,
-    "share_of_best_reactive_gap_pooled": 0.7204633204633205,
+    "best_reactive_minus_costaware_s_per_ue_min": 0.1208062093139709,
+    "share_of_best_reactive_gap_pooled": 0.7451737451737451,
     "by_class_share_of_gap_pooled": {
-     "bus/truck": 0.10656370656370656,
-     "pedestrian": 0.583011583011583,
-     "car": 0.03088803088803089,
+     "bus/truck": 0.11814671814671815,
+     "pedestrian": 0.5915057915057915,
+     "car": 0.03552123552123552,
      "no LoS blocker": 0.0
     },
-    "costaware_epoch": {
-     "mean": 0.34539308963445164,
-     "ci": 0.15426106847809504,
+    "costaware": {
+     "mean": 0.34138708062093137,
+     "ci": 0.15339456819960254,
      "n": 40
     },
+    "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
     "costaware_recomputed_check": true
    },
    "diag_trueloss_planner": {
@@ -23789,7 +23795,7 @@
    },
    "genie_planner_tuned_H": 3.0,
    "sensing_planner_tuned_H": 3.0,
-   "wall_s": 25.817450957372785
+   "wall_s": 25.826766278594732
   },
   {
    "label": "30 dB",
@@ -24553,19 +24559,20 @@
    },
    "best_reactive": "a5",
    "value_of_foresight": {
-    "best_reactive_minus_costaware_s_per_ue_min": 0.05132699048572857,
-    "share_of_best_reactive_gap_pooled": 0.7321428571428571,
+    "best_reactive_minus_costaware_s_per_ue_min": 0.05207811717576363,
+    "share_of_best_reactive_gap_pooled": 0.7428571428571429,
     "by_class_share_of_gap_pooled": {
-     "bus/truck": 0.15535714285714286,
-     "pedestrian": 0.5714285714285714,
-     "car": 0.005357142857142857,
+     "bus/truck": 0.16071428571428573,
+     "pedestrian": 0.5660714285714286,
+     "car": 0.01607142857142857,
      "no LoS blocker": 0.0
     },
-    "costaware_epoch": {
-     "mean": 0.11792689033550326,
-     "ci": 0.08793661098450198,
+    "costaware": {
+     "mean": 0.1171757636454682,
+     "ci": 0.08795756919874483,
      "n": 40
     },
+    "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
     "costaware_recomputed_check": true
    },
    "diag_trueloss_planner": {
@@ -27744,7 +27751,7 @@
    },
    "genie_planner_tuned_H": 3.0,
    "sensing_planner_tuned_H": 2.0,
-   "wall_s": 25.111223489046097
+   "wall_s": 25.79675214458257
   },
   {
    "label": "3GPP short-range reference",
@@ -28508,19 +28515,20 @@
    },
    "best_reactive": "a5",
    "value_of_foresight": {
-    "best_reactive_minus_costaware_s_per_ue_min": 0.05620931397095643,
-    "share_of_best_reactive_gap_pooled": 0.8873517786561265,
+    "best_reactive_minus_costaware_s_per_ue_min": 0.05633450175262894,
+    "share_of_best_reactive_gap_pooled": 0.8893280632411067,
     "by_class_share_of_gap_pooled": {
      "bus/truck": 0.23517786561264822,
-     "pedestrian": 0.6403162055335968,
-     "car": 0.011857707509881422,
+     "pedestrian": 0.6383399209486166,
+     "car": 0.015810276679841896,
      "no LoS blocker": 0.0
     },
-    "costaware_epoch": {
-     "mean": 0.023159739609414122,
-     "ci": 0.015612408296159293,
+    "costaware": {
+     "mean": 0.02303455182774161,
+     "ci": 0.015612853242713757,
      "n": 40
     },
+    "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
     "costaware_recomputed_check": true
    },
    "diag_trueloss_planner": {
@@ -31699,7 +31707,7 @@
    },
    "genie_planner_tuned_H": 0.5,
    "sensing_planner_tuned_H": 2.0,
-   "wall_s": 25.14148650225252
+   "wall_s": 25.891272148117423
   },
   {
    "label": "v1 radio (high margin)",
@@ -32463,19 +32471,20 @@
    },
    "best_reactive": "a5",
    "value_of_foresight": {
-    "best_reactive_minus_costaware_s_per_ue_min": 0.025287931897846762,
-    "share_of_best_reactive_gap_pooled": 0.8744588744588745,
+    "best_reactive_minus_costaware_s_per_ue_min": 0.025413119679519272,
+    "share_of_best_reactive_gap_pooled": 0.8787878787878788,
     "by_class_share_of_gap_pooled": {
-     "bus/truck": 0.17316017316017315,
-     "pedestrian": 0.6666666666666666,
+     "bus/truck": 0.1645021645021645,
+     "pedestrian": 0.6796536796536796,
      "car": 0.03463203463203463,
      "no LoS blocker": 0.0
     },
-    "costaware_epoch": {
-     "mean": 0.014396594892338507,
-     "ci": 0.010613845547039485,
+    "costaware": {
+     "mean": 0.014271407110665999,
+     "ci": 0.010604314623280767,
      "n": 40
     },
+    "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
     "costaware_recomputed_check": true
    },
    "diag_trueloss_planner": {
@@ -35654,8 +35663,8 @@
    },
    "genie_planner_tuned_H": 0.5,
    "sensing_planner_tuned_H": 0.5,
-   "wall_s": 24.95822359342128
+   "wall_s": 25.532751995138824
   }
  ],
- "wall_s": 231.75828605983406
+ "wall_s": 234.9521754551679
 }

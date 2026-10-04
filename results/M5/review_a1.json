@@ -1,0 +1,950 @@
+{
+ "definition": "ADDED AFTER EXTERNAL REVIEW (A1): oracle accounting check.\n\nThe simulator (xapp/schemes.py) counts outage at the service rate as the\nUNION of HO interruption and rate < service rate (an interrupted step counts\nonce). The cost-aware Viterbi (scripts/run_m5_dporacle.py) uses the same\nunion objective: its state carries the remaining interruption steps p; a\nstep costs 1 if p > 0 (interrupted) else 1 if the cell is below the service\nrate. This script verifies, per evaluation job and margin (tau_HO 20 ms),\nthat no scheme has a lower outage than the cost-aware oracle:\n- any-step oracle: switches at any 10 ms step (a lower bound for every\n  causal or non-causal policy with the simulator's switching rule);\n- epoch oracle: switches only at k mod 10 == 0 (bounds only policies that\n  switch on that grid; violations by schemes that switch at other times are\n  reported separately, not as errors).\nSchemes re-simulated here: A3 (main), xApp + A3, hybrid (joint), genie +\nA3 (no overhead), onset-advance genie (no overhead), A3 wide, A5; planners\n(genie, sensing, true-LoS-loss; every H) use their per-job outages in\nresults/M5/planner.json. Per job = mean over its 2 UEs.\n\nWrites results/M5/review_a1.json.\n",
+ "margins": [
+  {
+   "label": "0 dB",
+   "checks": {
+    "A3 (main)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "xApp + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "hybrid (joint)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "onset genie": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A3 (wide)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    }
+   },
+   "oracle_any_mean": 34.559213820731095,
+   "oracle_epoch_mean": 34.559213820731095,
+   "instantaneous_mean": 34.559213820731095,
+   "any_le_epoch_every_job": true,
+   "inst_le_any_every_job": true
+  },
+  {
+   "label": "5 dB",
+   "checks": {
+    "A3 (main)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "xApp + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "hybrid (joint)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "onset genie": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A3 (wide)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 2,
+     "max_excess_below_epoch": 0.03505257886830293
+    },
+    "genie-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 2,
+     "max_excess_below_epoch": 0.03505257886830293
+    },
+    "genie-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 2,
+     "max_excess_below_epoch": 0.03505257886830293
+    },
+    "genie-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 2,
+     "max_excess_below_epoch": 0.03505257886830293
+    },
+    "sensing-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    }
+   },
+   "oracle_any_mean": 9.02040560841262,
+   "oracle_epoch_mean": 9.035803705558338,
+   "instantaneous_mean": 8.968828242363546,
+   "any_le_epoch_every_job": true,
+   "inst_le_any_every_job": true
+  },
+  {
+   "label": "10 dB",
+   "checks": {
+    "A3 (main)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "xApp + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "hybrid (joint)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "onset genie": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A3 (wide)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 2,
+     "max_excess_below_epoch": 0.020030045067601365
+    },
+    "genie-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 2,
+     "max_excess_below_epoch": 0.020030045067601365
+    },
+    "genie-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 2,
+     "max_excess_below_epoch": 0.020030045067601365
+    },
+    "genie-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 2,
+     "max_excess_below_epoch": 0.020030045067601365
+    },
+    "sensing-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.010015022533800655
+    },
+    "true-LoS-loss planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.010015022533800655
+    },
+    "true-LoS-loss planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.010015022533800655
+    },
+    "true-LoS-loss planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.010015022533800655
+    }
+   },
+   "oracle_any_mean": 2.9526790185277916,
+   "oracle_epoch_mean": 2.9709564346519777,
+   "instantaneous_mean": 2.8705558337506263,
+   "any_le_epoch_every_job": true,
+   "inst_le_any_every_job": true
+  },
+  {
+   "label": "15 dB",
+   "checks": {
+    "A3 (main)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "xApp + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "hybrid (joint)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "onset genie": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A3 (wide)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 4,
+     "max_excess_below_epoch": 0.02003004506760142
+    },
+    "genie-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 4,
+     "max_excess_below_epoch": 0.02003004506760142
+    },
+    "genie-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 4,
+     "max_excess_below_epoch": 0.02003004506760142
+    },
+    "genie-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 4,
+     "max_excess_below_epoch": 0.02003004506760142
+    },
+    "sensing-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.01001502253380071
+    },
+    "true-LoS-loss planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.01001502253380071
+    },
+    "true-LoS-loss planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.01001502253380071
+    },
+    "true-LoS-loss planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.01001502253380071
+    }
+   },
+   "oracle_any_mean": 1.7468703054581873,
+   "oracle_epoch_mean": 1.765648472709064,
+   "instantaneous_mean": 1.6721331997996995,
+   "any_le_epoch_every_job": true,
+   "inst_le_any_every_job": true
+  },
+  {
+   "label": "20 dB",
+   "checks": {
+    "A3 (main)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "xApp + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "hybrid (joint)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "onset genie": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A3 (wide)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 8,
+     "max_excess_below_epoch": 0.010015022533801154
+    },
+    "genie-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 8,
+     "max_excess_below_epoch": 0.02003004506760142
+    },
+    "genie-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 9,
+     "max_excess_below_epoch": 0.02003004506760142
+    },
+    "genie-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 9,
+     "max_excess_below_epoch": 0.02003004506760142
+    },
+    "sensing-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    }
+   },
+   "oracle_any_mean": 0.9693289934902353,
+   "oracle_epoch_mean": 0.9854782173259888,
+   "instantaneous_mean": 0.9018527791687531,
+   "any_le_epoch_every_job": true,
+   "inst_le_any_every_job": true
+  },
+  {
+   "label": "25 dB",
+   "checks": {
+    "A3 (main)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "xApp + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "hybrid (joint)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "onset genie": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A3 (wide)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 4,
+     "max_excess_below_epoch": 0.005007511266900355
+    },
+    "genie-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 5,
+     "max_excess_below_epoch": 0.005007511266900355
+    },
+    "genie-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 5,
+     "max_excess_below_epoch": 0.005007511266900355
+    },
+    "genie-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 5,
+     "max_excess_below_epoch": 0.005007511266900355
+    },
+    "sensing-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    }
+   },
+   "oracle_any_mean": 0.3413870806209314,
+   "oracle_epoch_mean": 0.34539308963445164,
+   "instantaneous_mean": 0.3000751126690035,
+   "any_le_epoch_every_job": true,
+   "inst_le_any_every_job": true
+  },
+  {
+   "label": "30 dB",
+   "checks": {
+    "A3 (main)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "xApp + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "hybrid (joint)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "onset genie": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A3 (wide)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.01001502253380071
+    },
+    "genie-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 1,
+     "max_excess_below_epoch": 0.01001502253380071
+    },
+    "sensing-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    }
+   },
+   "oracle_any_mean": 0.1171757636454682,
+   "oracle_epoch_mean": 0.11792689033550326,
+   "instantaneous_mean": 0.09914872308462694,
+   "any_le_epoch_every_job": true,
+   "inst_le_any_every_job": true
+  },
+  {
+   "label": "3GPP short-range reference",
+   "checks": {
+    "A3 (main)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "xApp + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "hybrid (joint)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "onset genie": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A3 (wide)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    }
+   },
+   "oracle_any_mean": 0.02303455182774161,
+   "oracle_epoch_mean": 0.023159739609414122,
+   "instantaneous_mean": 0.01602403605408112,
+   "any_le_epoch_every_job": true,
+   "inst_le_any_every_job": true
+  },
+  {
+   "label": "v1 radio (high margin)",
+   "checks": {
+    "A3 (main)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "xApp + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "hybrid (joint)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie + A3": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "onset genie": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A3 (wide)": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "A5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "genie-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "sensing-planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=0.5": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=1.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=2.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    },
+    "true-LoS-loss planner H=3.0": {
+     "jobs_below_anystep_oracle": [],
+     "jobs_below_epoch_oracle": 0,
+     "max_excess_below_epoch": 0.0
+    }
+   },
+   "oracle_any_mean": 0.014271407110665999,
+   "oracle_epoch_mean": 0.014396594892338507,
+   "instantaneous_mean": 0.010766149223835753,
+   "any_le_epoch_every_job": true,
+   "inst_le_any_every_job": true
+  }
+ ]
+}
