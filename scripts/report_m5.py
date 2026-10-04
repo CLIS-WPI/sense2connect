@@ -217,9 +217,24 @@ def main() -> None:
             add(f"| cost-aware oracle (0.1 s epochs) | {ci(dr['0.020']['costaware_epoch'])} | — | — |")
             add(f"| instantaneous oracle | {ci(r['oracle_inst']['outage_req_s_per_min'])} | 0 | 0 |")
             add("")
+        tl_rows = [(k, v) for k, v in cat.items() if k.startswith("x.trueloss_vs_a5.")]
+        if tl_rows:
+            add("True-LoS-loss planner vs A5 from 15 dB up (sensing-planner's tuned H; 95 % CI = 1.96 sd / sqrt(40) over evaluation jobs):")
+            add("")
+            add("| Margin | True-LoS-loss planner | A5 | 95 % CIs overlap |")
+            add("|---|---|---|---|")
+            for k, v in tl_rows:
+                t_, a_ = v["raw"]["trueloss"], v["raw"]["a5"]
+                lab = k.split(".")[2]
+                add(f"| {lab} | {t_['mean']:.3f} ± {t_['ci']:.3f} | {a_['mean']:.3f} ± {a_['ci']:.3f} | {v['value']} |")
+            add("")
+            add("The true-LoS-loss planner's mean outage is below A5's at every margin from 15 dB up, but the 95 % CIs overlap at "
+                + ("every one of these margins" if all(v["value"] == "yes" for _, v in tl_rows) else "some of these margins")
+                + " (unpaired comparison over jobs); 'beats A5' refers to the means.")
+            add("")
         add("Reading (planner): the genie-planner reaches the cost-aware bound at every margin, and the horizon hardly matters (0.5 s "
             "suffices). The sensing-planner is worse than the best reactive scheme at every margin. The true-LoS-loss diagnostic separates "
-            "the causes: with perfect blockage prediction the same planner model beats the best reactive scheme at margins >= 15 dB even "
+            "the causes: with perfect blockage prediction the same planner model has a lower mean outage than the best reactive scheme at margins >= 15 dB even "
             "with the sensing overhead, and loses at 0-10 dB (overhead and the 'unblocked SNR minus LoS loss' approximation). The gap "
             "between the diagnostic and the sensing-planner is the blockage-prediction error of the current tracker/predictor (false "
             "and missed blockages, no measurement feedback in the plan as specified).")

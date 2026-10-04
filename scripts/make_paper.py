@@ -41,7 +41,7 @@ FIGURE_SCRIPTS = ["fig_blockage_table.py", "fig_leadtime.py", "fig_onset.py", "f
 # numbers.tex defines them as well, and missing ones are reported.
 EXTRA_MACROS = [
     "numAfiveTen", "numAfiveRef", "numCostOracleTen", "numCostOracleRef", "numGeniePlanTen", "numGeniePlanRef",
-    "numSensePlanTen", "numSensePlanRef", "numTrueLossRef", "numTrueLossFrom", "numValueRange", "numValuePedRange",
+    "numSensePlanTen", "numSensePlanRef", "numTrueLossRef", "numTrueLossFrom", "numAthreeWideRef", "numValueRange", "numValuePedRange",
     "numValueBusRange", "numValuePedTen", "numValueBusTen", "numPlanHorizon", "numSensePlanHO", "numSensePlanPP", "numAfiveHO",
 ]
 
@@ -278,10 +278,18 @@ def _planner_macros(put, R5: Path, M3_CFG: str, EVAL: str) -> None:
     winning = sorted(v[2] for v in beats.values() if v[0] < v[1])
     first = winning[0] if winning else None
     above_all = first is not None and all(v[0] < v[1] for v in beats.values() if v[2] >= first)
+    overlaps = []
+    for lab, r in rows.items():
+        if first is not None and r["margin_db"] >= first:
+            hh = f"{r['sensing_planner_tuned_H']:.1f}"
+            t_, a_ = r["diag_trueloss_planner"][hh]["eval"]["outage_req_s_per_min"], r["a5"]["eval"]["outage_req_s_per_min"]
+            overlaps.append(not (t_["mean"] + t_["ci"] < a_["mean"] - a_["ci"] or a_["mean"] + a_["ci"] < t_["mean"] - t_["ci"]))
+    ci_note = ("; 95 % CIs overlap at every such margin (not significant, unpaired)" if overlaps and all(overlaps)
+               else "; 95 % CIs separate at some such margins" if overlaps else "")
     put("numTrueLossFrom", "--" if first is None else f"{first:.0f}", script=sp,
         config=cfg + "; true-LoS-loss planner (sensing-planner's tuned H per margin) vs A5, comparison of means",
         aggregation="lowest margin [dB] where the mean outage is below A5's", raw={k: {"trueloss": v[0], "a5": v[1]} for k, v in beats.items()},
-        note=("beats A5 at every margin from this one up" if above_all else "does NOT beat A5 at every higher margin"))
+        note=("lower mean than A5 at every margin from this one up" if above_all else "does NOT have a lower mean at every higher margin") + ci_note)
     sel = [r for lab, r in rows.items() if lab not in ("0 dB", "v1 radio (high margin)")]  # 5-30 dB and the 3GPP reference
     val = [r["value_of_foresight"]["share_of_best_reactive_gap_pooled"] for r in sel]
     ped = [r["value_of_foresight"]["by_class_share_of_gap_pooled"]["pedestrian"] for r in sel]
@@ -304,10 +312,27 @@ def _planner_macros(put, R5: Path, M3_CFG: str, EVAL: str) -> None:
     for hs in ("0.5", "1.0", "2.0", "3.0"):
         rel[hs] = {lab: (r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - dpr[lab]["0.020"]["costaware_epoch"]["mean"]) / dpr[lab]["0.020"]["costaware_epoch"]["mean"]
                    for lab, r in rows.items()}
-    ok = [hs for hs in ("0.5", "1.0", "2.0", "3.0") if all(v <= 0.05 for v in rel[hs].values())]
-    put("numPlanHorizon", ok[0] if ok else "--", script=sp, config=cfg + "; genie-planner vs cost-aware oracle (0.1 s epochs, tau_HO 20 ms), all margins",
-        aggregation="smallest H with (genie-planner - cost-aware) / cost-aware <= 5 % of the mean outage at every margin", raw=rel,
-        note=("" if ok else "no H meets the 5 % criterion at every margin; see raw for the per-margin relative excess"))
+    absx = {hs: {lab: r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - dpr[lab]["0.020"]["costaware_epoch"]["mean"] for lab, r in rows.items()}
+            for hs in ("0.5", "1.0", "2.0", "3.0")}
+    ok = [hs for hs in ("0.5", "1.0", "2.0", "3.0") if all(rel[hs][lab] <= 0.02 or absx[hs][lab] <= 0.01 for lab in rows)]
+    put("numPlanHorizon", ok[0] if ok else "--", script=sp, config=cfg + "; genie-planner vs cost-aware oracle (0.1 s epochs, tau_HO 20 ms), all margins incl. the v1-radio point",
+        aggregation="RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute)",
+        raw={"relative_excess": rel, "absolute_excess_s_per_ue_min": absx},
+        note=("" if ok else "no H meets the rule at every margin"))
+    rw_ = rows["3GPP short-range reference"]["a3_wide"]
+    put("numAthreeWideRef", f"{rw_['eval']['outage_req_s_per_min']['mean']:.2f}", script=sp,
+        config=cfg + f"; 3GPP reference; A3 on the equal-effort wide grid (offset/hysteresis up to 15 dB, TTT 40-640 ms), tuned on tuning seeds: {rw_['params']}; the A3 curve in fig_outage_margin.pdf",
+        aggregation=mean_agg, raw=rw_["eval"]["outage_req_s_per_min"]["mean"])
+    for lab, r in rows.items():
+        if r["margin_db"] < 15.0:
+            continue
+        hh = f"{r['sensing_planner_tuned_H']:.1f}"
+        t_, a_ = r["diag_trueloss_planner"][hh]["eval"]["outage_req_s_per_min"], r["a5"]["eval"]["outage_req_s_per_min"]
+        overlap = not (t_["mean"] + t_["ci"] < a_["mean"] - a_["ci"] or a_["mean"] + a_["ci"] < t_["mean"] - t_["ci"])
+        tag = {"3GPP short-range reference": "ref", "v1 radio (high margin)": "v1"}.get(lab, lab.replace(" dB", "db"))
+        put(f"x.trueloss_vs_a5.{tag}.ci_overlap", "yes" if overlap else "no", script=sp,
+            config=cfg + f"; margin {lab}; true-LoS-loss planner (H = {hh} s) vs A5; 95 % CI = 1.96 sd / sqrt(n) over 40 evaluation jobs",
+            aggregation="do the two 95 % CIs of the mean outage overlap", raw={"trueloss": t_, "a5": a_})
     sv10 = r10["sensing_planner"][f"{r10['sensing_planner_tuned_H']:.1f}"]["eval"]
     put("numSensePlanHO", f"{sv10['ho_per_min']['mean']:.1f}", script=sp, config=cfg + "; margin 10 dB; sensing-planner (tuned H)",
         aggregation="mean over evaluation jobs of handovers per UE-minute", raw=sv10["ho_per_min"]["mean"], note="margin not specified in the request; 10 dB used")
@@ -390,7 +415,25 @@ def main() -> None:
             print(f"  NOT DEFINED (no catalog entry '{key}'): \\{name}")
         for name in status["catalog_not_in_main"]:
             print(f"  catalog entry not listed in main.tex: {name}")
+    used = macros_used_in_main()
+    defined_now = set(re.findall(r"\\newcommand\{\\(num[A-Za-z]+)\}", (PAPER / "numbers.tex").read_text(encoding="utf-8")))
+    undefined = sorted(set(used) - defined_now)
+    print(f"main.tex uses {len(set(used))} \\num macros; not defined by numbers.tex: {', '.join(undefined) if undefined else 'none'}")
     compile_paper()
+
+
+def macros_used_in_main() -> list[str]:
+    """Every \\num... macro used anywhere in paper/main.tex outside comments and \\providecommand defaults."""
+    main = PAPER / "main.tex"
+    if not main.exists():
+        return []
+    names = []
+    for line in main.read_text(encoding="utf-8").splitlines():
+        code = re.split(r"(?<!\\)%", line, maxsplit=1)[0]
+        if "\\providecommand" in code:
+            continue
+        names += MACRO_NAME.findall(code)
+    return names
 
 
 if __name__ == "__main__":
