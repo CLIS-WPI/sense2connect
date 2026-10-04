@@ -185,7 +185,7 @@ project and measure indication -> control round-trip (CDF, summary
 stats). Until then, M3 uses the E2-delay sweep. Do not start M4 until the
 humans say so.
 
-## M5 — Experiments and figures — TODO
+## M5 — Experiments and figures — DONE (tagged v1.0-wcnc2027, WCNC 2027 submission)
 - Paper figures, one command each (`scripts/fig_*.py`), from saved
   results, written to `paper/figs/`: `fig_onset.pdf`,
   `fig_outage_margin.pdf`, `fig_headroom.pdf`.
@@ -199,7 +199,10 @@ humans say so.
 - A short video of the scenario for the presentation.
 Acceptance: every paper figure and number regenerates with one command.
 
-## M6 — Artefact and submission support — TODO
-- Clean README for reproduction, pinned environment, license.
+## M6 — Artefact and submission support — OPEN
+- README for paper readers: how to reproduce every figure and number
+  with `scripts/make_paper.py` (from saved results and from scratch),
+  the pinned environment (Docker image, sionna 2.2.0, sionna-rt 2.2.0,
+  mitsuba 3.9.1, drjit 1.5.0, torch 2.9.1), and the license.
 - The venue (WCNC) is not blind: no anonymized mirror needed.
 - Writing is done by the humans; the agent supports with numbers/tables.
