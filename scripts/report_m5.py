@@ -37,8 +37,8 @@ def main() -> None:
     add("| `paper/tables/tab_blockage.tex` | `fig_blockage_table.py` | cached comm traces, evaluation seeds; tuning-seed run must reproduce `results/M1.5/diversity.json` (it does) |")
     add("| `paper/figs/fig_leadtime.pdf` | `fig_leadtime.py` | M2 detection caches (stage-validated), tracker replay |")
     add("| `paper/figs/fig_onset.pdf` | `fig_onset.py` | `results/M3/onset/onset_events.json` + m3_timeline caches |")
-    add("| `paper/figs/fig_outage_margin.pdf` | `fig_outage_margin.py` | `results/M3/{metrics,hybrid,genie}.json` |")
-    add("| `paper/figs/fig_headroom.pdf` | `fig_headroom.py` | `results/M5/foresight.json` (causal decomposition) + `results/M3/genie.json` (tau_HO = 0) |")
+    add("| `paper/figs/fig_outage_margin.pdf` | `fig_outage_margin.py` | `results/M5/planner.json` (A3 wide, A5, planners, instantaneous oracle) + `dporacle.json` (cost-aware oracle, 0.1 s epochs) |")
+    add("| `paper/figs/fig_value.pdf` (replaces fig_headroom.pdf) | `fig_value.py` | `results/M5/planner.json` (best reactive = A5, value of foresight by class, planner markers) |")
     add("| `paper/numbers.tex` | `make_paper.py` | `results/M5/numbers_catalog.json` (every macro with value, script, config, seeds, aggregation, raw values) |")
     add("")
     add("## Stage-scoped detection provenance")
@@ -70,7 +70,7 @@ def main() -> None:
         "per 10 ms step and lane, wrong-cell time is blockage-caused when A3's cell would be usable with its unblocked power, and "
         "distance-caused when it is unusable even unblocked. The foresight bound is the blockage-caused wrong-cell time (any loss level, "
         "either cell). Both splits of the wrong-cell time sum to the same total (checked), and interruption and both-unusable equal the M3 "
-        "decomposition (checked in `fig_headroom.py`). Shares are POOLED over evaluation jobs (sum of steps / sum of A3 outage steps); "
+        "decomposition (checked by the former `fig_headroom.py`, which fig_value.py replaced). Shares are POOLED over evaluation jobs (sum of steps / sum of A3 outage steps); "
         "absolute values are means over jobs.")
     add("")
     add("| Margin | A3 outage [s/UE-min] | Old bound [s/UE-min] | Old share | New bound [s/UE-min] | New share | Distance-caused [s/UE-min] | Interruption share | Both unusable share |")
@@ -235,6 +235,17 @@ def main() -> None:
         c = cat.get(m, {})
         flag = "" if defined.get(m) == dv else " **changed**"
         add(f"| `\\{m}` | {dv} | {defined.get(m, '—')}{flag} | {c.get('script', '—').split(' ->')[0]} | {c.get('aggregation', '—')} |")
+    add("")
+    extra = [m for m in defined if m not in defaults]
+    if extra:
+        add("")
+        add("Extra macros (added after the planner round; not in the main.tex header list, defined in numbers.tex):")
+        add("")
+        add("| Macro | numbers.tex | Source script | Aggregation | Note |")
+        add("|---|---|---|---|---|")
+        for m in extra:
+            c = cat.get(m, {})
+            add(f"| `\\{m}` | {defined[m]} | {c.get('script', '—').split(' ->')[0]} | {c.get('aggregation', '—')} | {c.get('note', '')} |")
     add("")
     add("Every macro's full source (script, config incl. detector budget, ghost method and tracker, seeds, aggregation, raw values, notes) "
         "is in `results/M5/numbers_catalog.json`.")

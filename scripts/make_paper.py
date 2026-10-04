@@ -35,7 +35,15 @@ ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "paper"
 RESULTS = ROOT / "results"
 
-FIGURE_SCRIPTS = ["fig_blockage_table.py", "fig_leadtime.py", "fig_onset.py", "fig_outage_margin.py", "fig_headroom.py"]
+FIGURE_SCRIPTS = ["fig_blockage_table.py", "fig_leadtime.py", "fig_onset.py", "fig_outage_margin.py", "fig_value.py"]
+
+# Macros added after the planner round that are not (yet) in the main.tex header list;
+# numbers.tex defines them as well, and missing ones are reported.
+EXTRA_MACROS = [
+    "numAfiveTen", "numAfiveRef", "numCostOracleTen", "numCostOracleRef", "numGeniePlanTen", "numGeniePlanRef",
+    "numSensePlanTen", "numSensePlanRef", "numTrueLossRef", "numTrueLossFrom", "numValueRange", "numValuePedRange",
+    "numValueBusRange", "numValuePedTen", "numValueBusTen", "numPlanHorizon", "numSensePlanHO", "numSensePlanPP", "numAfiveHO",
+]
 
 # main.tex macro name -> catalog key. Filled in once paper/main.tex (with its
 # macro list) is in the repository; unmapped macros are reported.
@@ -222,9 +230,91 @@ def catalog() -> dict[str, dict[str, Any]]:
                     if blk[f"{v}_gap_closed_pooled"] is not None:
                         put(f"x.{v}.{tag}.{ttag}.gap_closed", _pct(blk[f"{v}_gap_closed_pooled"]), script=sd, config=M3_CFG + f"; margin {r['label']}; tau_HO {float(t) * 1e3:.0f} ms",
                             aggregation="POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps", raw=blk[f"{v}_gap_closed_pooled"])
+    _planner_macros(put, R5, M3_CFG, EVAL)
     rref = next(r for r in gen["margins"] if r["label"] == "3GPP short-range reference")
     put("numTauZeroRef", _pct(closed(rref)), script=gn[0], config=tcfg + "; 3GPP reference margin", aggregation="1 - gap(0)/gap(20 ms), from means over jobs", raw=closed(rref))
     return out
+
+
+def _planner_macros(put, R5: Path, M3_CFG: str, EVAL: str) -> None:
+    """Macros of the planner round (added after the cost-aware-oracle result)."""
+    pf = R5 / "planner.json"
+    if not pf.exists():
+        return
+    pl = json.loads(pf.read_text())
+    dp = json.loads((R5 / "dporacle.json").read_text())
+    rows = {r["label"]: r for r in pl["margins"]}
+    dpr = {r["label"]: r for r in dp["margins"]}
+    sp = "scripts/run_m5_planner.py -> results/M5/planner.json"
+    sd = "scripts/run_m5_dporacle.py -> results/M5/dporacle.json"
+    cfg = M3_CFG + "; ADDED AFTER THE COST-AWARE-ORACLE RESULT"
+    mean_agg = "mean over 40 evaluation jobs [s/UE-min]"
+    tag_lab = {"Ten": "10 dB", "Ref": "3GPP short-range reference"}
+    for tag, lab in tag_lab.items():
+        r = rows[lab]
+        a5 = r["a5"]
+        put(f"numAfive{tag}", f"{a5['eval']['outage_req_s_per_min']['mean']:.2f}", script=sp, config=cfg + f"; margin {lab}; A5 tuned on tuning seeds (t1/t2/TTT = {a5['params']})",
+            aggregation=mean_agg, raw=a5["eval"]["outage_req_s_per_min"]["mean"])
+        ca = dpr[lab]["0.020"]["costaware_epoch"]
+        put(f"numCostOracle{tag}", f"{ca['mean']:.2f}", script=sd, config=cfg + f"; margin {lab}; cost-aware oracle, switches at 0.1 s epochs, tau_HO 20 ms",
+            aggregation=mean_agg, raw=ca["mean"])
+        g = r["genie_planner"]["0.5"]["eval"]["outage_req_s_per_min"]["mean"]
+        put(f"numGeniePlan{tag}", f"{g:.2f}", script=sp, config=cfg + f"; margin {lab}; genie-planner, H = 0.5 s, true future SNR, no overhead",
+            aggregation=mean_agg, raw=g)
+        h = f"{r['sensing_planner_tuned_H']:.1f}"
+        sv = r["sensing_planner"][h]
+        put(f"numSensePlan{tag}", f"{sv['eval']['outage_req_s_per_min']['mean']:.2f}", script=sp,
+            config=cfg + f"; margin {lab}; sensing-planner, H = {h} s and detector budget {sv['budget']} tuned on tuning seeds, overhead charged",
+            aggregation=mean_agg, raw=sv["eval"]["outage_req_s_per_min"]["mean"])
+    rref = rows["3GPP short-range reference"]
+    h = f"{rref['sensing_planner_tuned_H']:.1f}"
+    tl = rref["diag_trueloss_planner"][h]["eval"]["outage_req_s_per_min"]["mean"]
+    put("numTrueLossRef", f"{tl:.2f}", script=sp, config=cfg + f"; 3GPP reference; diagnostic planner with the TRUE LoS loss (unblocked SNR minus true LoS loss), overhead charged, H = {h} s (the sensing-planner's tuned H at this margin)",
+        aggregation=mean_agg, raw=tl)
+    beats = {}
+    for lab, r in rows.items():
+        hh = f"{r['sensing_planner_tuned_H']:.1f}"
+        beats[lab] = (r["diag_trueloss_planner"][hh]["eval"]["outage_req_s_per_min"]["mean"], r["a5"]["eval"]["outage_req_s_per_min"]["mean"], r["margin_db"])
+    winning = sorted(v[2] for v in beats.values() if v[0] < v[1])
+    first = winning[0] if winning else None
+    above_all = first is not None and all(v[0] < v[1] for v in beats.values() if v[2] >= first)
+    put("numTrueLossFrom", "--" if first is None else f"{first:.0f}", script=sp,
+        config=cfg + "; true-LoS-loss planner (sensing-planner's tuned H per margin) vs A5, comparison of means",
+        aggregation="lowest margin [dB] where the mean outage is below A5's", raw={k: {"trueloss": v[0], "a5": v[1]} for k, v in beats.items()},
+        note=("beats A5 at every margin from this one up" if above_all else "does NOT beat A5 at every higher margin"))
+    sel = [r for lab, r in rows.items() if lab not in ("0 dB", "v1 radio (high margin)")]  # 5-30 dB and the 3GPP reference
+    val = [r["value_of_foresight"]["share_of_best_reactive_gap_pooled"] for r in sel]
+    ped = [r["value_of_foresight"]["by_class_share_of_gap_pooled"]["pedestrian"] for r in sel]
+    bus = [r["value_of_foresight"]["by_class_share_of_gap_pooled"]["bus/truck"] for r in sel]
+    vagg = "POOLED over evaluation jobs: (best reactive - cost-aware) / (best reactive - instantaneous oracle) outage steps"
+    vcfg = cfg + "; best reactive = A5 (all margins); cost-aware oracle at 0.1 s epochs, tau_HO 20 ms"
+    put("numValueRange", _rng(val, "{:.0f}", pct=True), script=sp, config=vcfg + "; margins 5-30 dB and the 3GPP reference", aggregation=vagg + "; min-max over margins",
+        raw={r["label"]: v for r, v in zip(sel, val)})
+    cagg = "net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins"
+    put("numValuePedRange", _rng(ped, "{:.0f}", pct=True), script=sp, config=vcfg + "; pedestrian; margins 5-30 dB and the 3GPP reference", aggregation=cagg,
+        raw={r["label"]: v for r, v in zip(sel, ped)})
+    put("numValueBusRange", _rng(bus, "{:.0f}", pct=True), script=sp, config=vcfg + "; bus/truck; margins 5-30 dB and the 3GPP reference", aggregation=cagg,
+        raw={r["label"]: v for r, v in zip(sel, bus)})
+    r10 = rows["10 dB"]
+    put("numValuePedTen", _pct(r10["value_of_foresight"]["by_class_share_of_gap_pooled"]["pedestrian"]), script=sp, config=vcfg + "; pedestrian; margin 10 dB",
+        aggregation="net closed steps (pedestrian) / best-reactive-to-oracle gap, pooled", raw=r10["value_of_foresight"]["by_class_share_of_gap_pooled"]["pedestrian"])
+    put("numValueBusTen", _pct(r10["value_of_foresight"]["by_class_share_of_gap_pooled"]["bus/truck"]), script=sp, config=vcfg + "; bus/truck; margin 10 dB",
+        aggregation="net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled", raw=r10["value_of_foresight"]["by_class_share_of_gap_pooled"]["bus/truck"])
+    rel = {}
+    for hs in ("0.5", "1.0", "2.0", "3.0"):
+        rel[hs] = {lab: (r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - dpr[lab]["0.020"]["costaware_epoch"]["mean"]) / dpr[lab]["0.020"]["costaware_epoch"]["mean"]
+                   for lab, r in rows.items()}
+    ok = [hs for hs in ("0.5", "1.0", "2.0", "3.0") if all(v <= 0.05 for v in rel[hs].values())]
+    put("numPlanHorizon", ok[0] if ok else "--", script=sp, config=cfg + "; genie-planner vs cost-aware oracle (0.1 s epochs, tau_HO 20 ms), all margins",
+        aggregation="smallest H with (genie-planner - cost-aware) / cost-aware <= 5 % of the mean outage at every margin", raw=rel,
+        note=("" if ok else "no H meets the 5 % criterion at every margin; see raw for the per-margin relative excess"))
+    sv10 = r10["sensing_planner"][f"{r10['sensing_planner_tuned_H']:.1f}"]["eval"]
+    put("numSensePlanHO", f"{sv10['ho_per_min']['mean']:.1f}", script=sp, config=cfg + "; margin 10 dB; sensing-planner (tuned H)",
+        aggregation="mean over evaluation jobs of handovers per UE-minute", raw=sv10["ho_per_min"]["mean"], note="margin not specified in the request; 10 dB used")
+    put("numSensePlanPP", f"{sv10['ping_pong']['mean']:.2f}", script=sp, config=cfg + "; margin 10 dB; sensing-planner (tuned H); ping-pong = share of handovers back to the previous cell within 1 s",
+        aggregation="mean over evaluation jobs of the per-job ping-pong rate", raw=sv10["ping_pong"]["mean"], note="margin not specified in the request; 10 dB used")
+    put("numAfiveHO", f"{r10['a5']['eval']['ho_per_min']['mean']:.1f}", script=sp, config=cfg + "; margin 10 dB; A5 (tuned)",
+        aggregation="mean over evaluation jobs of handovers per UE-minute", raw=r10["a5"]["eval"]["ho_per_min"]["mean"], note="margin not specified in the request; 10 dB used")
 
 
 def macros_in_main() -> list[tuple[str, str]]:
@@ -245,9 +335,10 @@ def macros_in_main() -> list[tuple[str, str]]:
 
 def write_numbers(cat: dict[str, dict[str, str]]) -> dict[str, Any]:
     wanted = macros_in_main()
+    wanted += [(m, "extra") for m in EXTRA_MACROS if m not in {n for n, _ in wanted}]
     lines = ["% Generated by scripts/make_paper.py from results/. Do not edit."]
     defined, unmapped, missing = [], [], []
-    extra = sorted(set(cat) - {n for n, _ in wanted})
+    extra = sorted(k for k in set(cat) - {n for n, _ in wanted} if not k.startswith("x."))
     for name, desc in wanted:
         key = MACRO_MAP.get(name, name)
         if key is None:
@@ -290,7 +381,9 @@ def main() -> None:
     if not status["main_tex_found"]:
         print("paper/main.tex not found: numbers.tex written without macros; no macro list to check")
     else:
-        print(f"main.tex lists {status['macros_in_main']} macros; numbers.tex defines {len(status['defined'])}")
+        n_extra = sum(1 for m in EXTRA_MACROS if m not in {n for n, _ in macros_in_main()})
+        print(f"main.tex lists {status['macros_in_main'] - n_extra} macros, plus {n_extra} extra macros (EXTRA_MACROS); "
+              f"numbers.tex defines {len(status['defined'])} of {status['macros_in_main']}")
         for name, desc in status["unmapped"]:
             print(f"  NOT DEFINED (no mapping): \\{name}  -- {desc}")
         for name, key in status["mapped_key_missing"]:

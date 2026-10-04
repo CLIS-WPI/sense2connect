@@ -1,10 +1,16 @@
-"""Outage at the service rate vs link margin: A3, hybrid, genie, oracle (paper/figs/fig_outage_margin.pdf).
+"""Outage at the service rate vs link margin (paper/figs/fig_outage_margin.pdf).
 
-Reads results/M3/metrics.json (A3, oracle), hybrid.json (hybrid, jointly
-tuned) and genie.json (genie + A3, first-round policy, no sensing overhead,
-tau_HO = 20 ms). Evaluation seeds, mean and 95 % CI over 40 jobs. The
-3GPP short-range reference margin is marked; the v1-radio point is not
-plotted.
+Schemes (evaluation seeds, mean and 95 % CI over 40 jobs, tau_HO = 20 ms):
+- A3: equal-effort wide grid (results/M5/planner.json, a3_wide);
+- A5: best reactive scheme at every margin (planner.json, a5);
+- sensing-planner: receding-horizon planner on predicted SNR, H tuned on
+  the tuning seeds per margin (planner.json, sensing_planner);
+- genie-planner: same planner on true future SNR, H = 0.5 s;
+- cost-aware oracle: Viterbi with perfect SNR, switches at 0.1 s epochs,
+  tau_HO = 20 ms (results/M5/dporacle.json, costaware_epoch);
+- instantaneous oracle (planner.json, oracle_inst).
+Log y axis; the 3GPP short-range reference margin is marked; the v1-radio
+point is not plotted.
 """
 
 from __future__ import annotations
@@ -17,60 +23,61 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from figstyle import COLORS, COLUMN_IN, save, setup  # noqa: E402
+from figstyle import COLUMN_IN, save, setup  # noqa: E402
 
-REF = "3GPP short-range reference"
+V1 = "v1 radio (high margin)"
 
 
 def series() -> dict:
-    m3 = ROOT / "results" / "M3"
-    main = json.loads((m3 / "metrics.json").read_text())
-    hyb = json.loads((m3 / "hybrid.json").read_text())
-    gen = json.loads((m3 / "genie.json").read_text())
-    labels = main["budget"]["labels"]
-    keep = [i for i, lab in enumerate(labels) if lab != "v1 radio (high margin)"]
-    tau = f"{gen['tau_ho_default_s']:.3f}"
-    x = np.array([main["budget"]["points_db"][i] for i in keep])
-    pick = {
-        "A3": [main["evaluation"][i]["a3"]["outage_req_s_per_min"] for i in keep],
-        "Hybrid (A3 + xApp)": [hyb["margins"][i]["evaluation"]["hybrid_joint"]["outage_req_s_per_min"] for i in keep],
-        "Genie + A3": [gen["margins"][i]["tau_ho"][tau]["genie_no_overhead"]["outage_req_s_per_min"] for i in keep],
-        "Oracle": [main["evaluation"][i]["oracle"]["outage_req_s_per_min"] for i in keep],
+    pl = json.loads((ROOT / "results" / "M5" / "planner.json").read_text())
+    dp = json.loads((ROOT / "results" / "M5" / "dporacle.json").read_text())
+    rows = [r for r in pl["margins"] if r["label"] != V1]
+    dpm = {r["label"]: r for r in dp["margins"]}
+    x = np.array([r["margin_db"] for r in rows])
+    out = {
+        "A3": [r["a3_wide"]["eval"]["outage_req_s_per_min"] for r in rows],
+        "A5 (best reactive)": [r["a5"]["eval"]["outage_req_s_per_min"] for r in rows],
+        "Sensing-planner": [r["sensing_planner"][f"{r['sensing_planner_tuned_H']:.1f}"]["eval"]["outage_req_s_per_min"] for r in rows],
+        "Genie-planner (H = 0.5 s)": [r["genie_planner"]["0.5"]["eval"]["outage_req_s_per_min"] for r in rows],
+        "Cost-aware oracle": [dpm[r["label"]]["0.020"]["costaware_epoch"] for r in rows],
+        "Instantaneous oracle": [r["oracle_inst"]["outage_req_s_per_min"] for r in rows],
     }
-    ref_x = main["budget"]["margin_ref_db"]
-    return {"x": x, "series": pick, "ref_x": ref_x, "labels": [labels[i] for i in keep]}
+    ref = next(r["margin_db"] for r in rows if r["label"] == "3GPP short-range reference")
+    return {"x": x, "series": out, "ref_x": ref}
 
 
 def main() -> None:
     plt = setup()
     data = series()
     style = {
-        "A3": (COLORS["a3"], "o", "-"),
-        "Hybrid (A3 + xApp)": (COLORS["hybrid"], "s", "--"),
-        "Genie + A3": (COLORS["genie"], "^", "-."),
-        "Oracle": (COLORS["oracle"], "D", ":"),
+        "A3": ("#1f77b4", "o", "-"),
+        "A5 (best reactive)": ("#2ca02c", "v", "-"),
+        "Sensing-planner": ("#d62728", "s", "--"),
+        "Genie-planner (H = 0.5 s)": ("#ff7f0e", "^", "-."),
+        "Cost-aware oracle": ("#7f7f7f", "D", ":"),
+        "Instantaneous oracle": ("#000000", "x", ":"),
     }
-    fig, ax = plt.subplots(figsize=(COLUMN_IN, 2.3))
+    fig, ax = plt.subplots(figsize=(COLUMN_IN, 2.5))
     x = data["x"]
+    n = len(data["series"])
     for k, (name, rows) in enumerate(data["series"].items()):
         mean = np.array([r["mean"] for r in rows])
         ci = np.array([r["ci"] for r in rows])
         color, marker, ls = style[name]
-        dx = (k - 1.5) * 0.35  # small horizontal offset so CI bars do not overlap
+        dx = (k - (n - 1) / 2) * 0.25
         lo = np.maximum(mean - ci, 1e-3)
-        ax.errorbar(x + dx, mean, yerr=[mean - lo, mean + ci - mean], color=color, marker=marker, ls=ls,
-                    capsize=1.5, elinewidth=0.6, label=name, markerfacecolor="white" if name != "A3" else color)
+        ax.errorbar(x + dx, mean, yerr=[mean - lo, mean + ci - mean], color=color, marker=marker, ls=ls, capsize=1.2, elinewidth=0.5,
+                    lw=0.9, markersize=3.0, markerfacecolor="white" if marker not in ("x",) else color, label=name)
     ax.axvline(data["ref_x"], color="gray", lw=0.6, ls=":")
-    ax.text(data["ref_x"] - 0.4, 0.95, "3GPP\nreference", transform=ax.get_xaxis_transform(), ha="right", va="top", fontsize=6.5, color="gray")
+    ax.text(data["ref_x"] - 0.4, 0.97, "3GPP\nreference", transform=ax.get_xaxis_transform(), ha="right", va="top", fontsize=6.5, color="gray")
     ax.set_yscale("log")
     ax.set_xlabel("Link margin above SNR$_\\mathrm{req}$ [dB]")
     ax.set_ylabel("Outage at 400 Mbit/s [s/UE-min]")
     ax.set_xticks([0, 5, 10, 15, 20, 25, 30, round(data["ref_x"], 1)])
     ax.set_xticklabels(["0", "5", "10", "15", "20", "25", "30", f"{data['ref_x']:.1f}"])
     ax.grid(True, which="major", alpha=0.6)
-    ax.legend(loc="lower left", frameon=False, ncol=2, handlelength=2.2, columnspacing=1.0)
-    path = save(fig, "fig_outage_margin.pdf")
-    print(f"wrote {path}")
+    ax.legend(loc="lower left", frameon=False, ncol=2, fontsize=6.2, handlelength=2.2, columnspacing=0.8)
+    print(f"wrote {save(fig, 'fig_outage_margin.pdf')}")
 
 
 if __name__ == "__main__":
