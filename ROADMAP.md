@@ -1,9 +1,8 @@
 # ROADMAP — goals, milestones, acceptance criteria
 
-Venue: OPEN — WoWMoM 2027 (regular, 10 pages, double-blind, deadline
-1 Dec 2026 23:59 AoE) or WCNC 2027 (6 pages, not blind, EDAS). The
-humans decide. Never prepare or support a simultaneous submission of this
-work to two venues (double submission is prohibited by IEEE).
+Venue: WCNC 2027 (6 pages, not blind, EDAS; deadline: <fill in>).
+WoWMoM is dropped. Never prepare or support a simultaneous submission of
+this work to two venues (double submission is prohibited by IEEE).
 Feature freeze: 15 Nov 2026 (after that: experiments, figures, writing only).
 
 ## How the agent works with this file
@@ -56,6 +55,17 @@ Feature freeze: 15 Nov 2026 (after that: experiments, figures, writing only).
 - H4 There is a sweet spot in the fraction of resources spent on sensing
   that maximises net communication performance.
 
+Outcomes (after M3):
+- H1 partially supported: (b) image-method ghost handling helps at a fixed
+  false-alarm budget (not at identical parameters); (c) map-constrained
+  tracking helps; (a) clutter subtraction is a null result.
+- H2 not supported: the sensing xApp, the hybrid (A3 + xApp), the genie
+  (perfect prediction, first-round policy) and the onset-advance genie do
+  not beat A3 at any margin (95 % CIs). The policy-independent foresight
+  bound is 1-8 % of A3 outage (per-job mean, 5 dB to the 3GPP reference;
+  0 % at 0 dB; pooled up to 15 % at the reference).
+- H3 and H4 are not decisive given H2.
+
 ## Established findings
 M1/M1.5 (tuning seeds; re-run on evaluation seeds in M5):
 - Cars never block LoS at O-RU heights 5 m and 8 m; bus/truck and
@@ -65,7 +75,7 @@ M1/M1.5 (tuning seeds; re-run on evaluation seeds in M5):
 - The second O-RU (other cell) is unblocked in ~56-59% of bus/truck
   outages (power ~ -7 dB) but only ~25-29% of pedestrian outages.
 - Oracle cell selection cuts the 10 dB outage rate by roughly 50-70%.
-M2 (evaluation seeds; PRELIMINARY until the velocity sanity test passes):
+M2 (evaluation seeds; velocity sanity test passed):
 - (a) Twin vs. blind clutter subtraction: null (maps differ by ~1e-10).
 - (b) Image-method ghost handling: no bus/truck Pd change at identical
   parameters, 14-21% fewer unmatched clusters; at a fixed budget of 4
@@ -75,6 +85,17 @@ M2 (evaluation seeds; PRELIMINARY until the velocity sanity test passes):
   pedestrian 0.28 -> 0.45; cross-lane velocity RMSE ~2 -> ~0.5 m/s.
 - Confirmed track 0.5 s before a 10 dB LoS event (map tracker):
   bus/truck ~82-88%, pedestrian ~54-62%.
+M3 (evaluation seeds; 3GPP TR 38.802 budget, 400 Mbit/s service rate,
+model B every 10 ms; results/M3/report.md):
+- Onset: bus/truck LoS loss rises slowly (10-90 % onset p50 0.50 s,
+  p10-p90 0.10-1.09 s); pedestrian onset is abrupt (p50 0.01 s,
+  p90 0.37 s). 72 % of bus/truck and 29 % of pedestrian 10 dB events are
+  actionable (other cell clear).
+- Handover interruption dominates the A3-oracle gap at margins >= 15 dB
+  (e.g. 0.15 of 0.19 s/UE-min at the 3GPP reference); at 0-10 dB
+  wrong-cell lag is larger.
+- Interruption-free handover (tau_HO = 0) closes 35-97 % of the
+  A3-oracle gap (35-42 % at 0-10 dB, 97 % at the 3GPP reference).
 
 ---
 
@@ -90,7 +111,7 @@ Street canyon, lamppost 5 m / facade 8 m, cars/buses/trucks/pedestrians,
 Best available alternative path, second O-RU availability per blocker
 class, both-blocked share, oracle cell-selection bound.
 
-## M2 — Sensing pipeline — IN REVIEW
+## M2 — Sensing pipeline — DONE
 Setup: monostatic radar at oru-0, ideal full duplex (explicit assumption);
 TX one element, RX 8x8; numerology 3, one sensing symbol per slot
 (PRF 8 kHz), CPI 256 slots (32 ms), overhead 1/14 as a parameter;
@@ -126,7 +147,12 @@ The detector operating point (FA budget) is NOT chosen in M2; it is
 chosen in M3 from the false-handover cost.
 Stretch (only after human approval): radar at oru-1 too, track fusion.
 
-## M3 — Blockage prediction and xApp logic — TODO
+## M3 — Blockage prediction and xApp logic — DONE
+Outcome: H2 not supported (see Outcomes). Rework with 3GPP link budget,
+margin sweep 0-30 dB, analytic model B every 10 ms, hybrid, Pareto
+fronts, headroom decomposition, genie and onset-advance genie bounds,
+foresight bound and tau_HO = 0; report in results/M3/report.md.
+Plan as originally written:
 Goal: proactive inter-cell handover from tracks, with the RIC loop modelled.
 Inputs: final M2 configuration; comm carrier 1024 subcarriers.
 Build (`xapp/`):
@@ -152,27 +178,28 @@ Metrics: prediction precision/recall and lead time; outage time and
 throughput; switches per UE-minute; ping-pong rate; false-handover rate;
 all split by blocker class. Acceptance: evidence for H2 and H3.
 
-## M4 — O-RAN loop latency — TODO (after M3; human-provided container)
+## M4 — O-RAN loop latency — DEFERRED (journal extension)
+Not part of the conference paper; H3 is not decisive given H2.
 The humans provide a running OAI/FlexRIC container. Connect it to this
 project and measure indication -> control round-trip (CDF, summary
 stats). Until then, M3 uses the E2-delay sweep. Do not start M4 until the
 humans say so.
 
 ## M5 — Experiments and figures — TODO
-- Sweeps: traffic density, sensing overhead (H4), E2 delay (H3),
-  prediction horizon; robustness run with the random components of the
-  TR 38.901 models enabled (random_sigma_s, random_phases, random_xpr).
+- Paper figures, one command each (`scripts/fig_*.py`), from saved
+  results, written to `paper/figs/`: `fig_onset.pdf`,
+  `fig_outage_margin.pdf`, `fig_headroom.pdf`.
+- Robustness run with the random components of the TR 38.901 models
+  enabled (random_sigma_s, random_phases, random_xpr).
 - Re-run the M1/M1.5 characterization on evaluation seeds for the paper.
-- One command per figure (`scripts/fig_*.py`), from saved results.
-- `paper/numbers.tex`: every number quoted in the paper is generated by a
-  script from results (no hand-copied numbers).
+- `paper/numbers.tex`: defines the macros listed in the header comment of
+  `paper/main.tex` (`\newcommand`, plain values); every number quoted in
+  the paper is generated by a script from results (no hand-copied numbers).
 - IEEE-ready figures: vector PDF, single-column width, readable fonts.
 - A short video of the scenario for the presentation.
 Acceptance: every paper figure and number regenerates with one command.
 
 ## M6 — Artefact and submission support — TODO
 - Clean README for reproduction, pinned environment, license.
-- If the venue is double-blind: anonymized mirror; no names, affiliations,
-  org names, emails, grant numbers or identifying paths anywhere (code,
-  notebooks, figures, PDF metadata).
+- The venue (WCNC) is not blind: no anonymized mirror needed.
 - Writing is done by the humans; the agent supports with numbers/tables.
