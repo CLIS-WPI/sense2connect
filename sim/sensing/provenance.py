@@ -58,6 +58,31 @@ def require(meta: dict[str, Any], *, kind: str, extra: dict[str, Any] | None = N
             raise CacheRefused(f"{kind} cache {field} does not match the current tree")
 
 
+def scoped_version(sources: list[Path]) -> dict[str, str]:
+    """Content hash of the producing sources and the configs.
+
+    For caches that are expensive to rebuild and depend only on a few
+    modules (the comm geometry trace). Edits elsewhere in the tree do not
+    invalidate them; edits to ``sources`` or the configs do.
+    """
+    digest = hashlib.sha256()
+    for path in sorted(Path(item) for item in sources):
+        digest.update(str(path.relative_to(ROOT)).encode("utf-8"))
+        digest.update(path.read_bytes())
+    return {"source_hash": digest.hexdigest(), "config_hash": _version()["config_hash"]}
+
+
+def require_scoped(meta: dict[str, Any], *, kind: str, sources: list[Path]) -> None:
+    """Raise when a scoped cache entry is not from the current sources and configs."""
+    got = meta.get("provenance")
+    if not isinstance(got, dict) or got.get("kind") != kind:
+        raise CacheRefused(f"{kind} cache has no scoped provenance")
+    expected = scoped_version(sources)
+    for field in ("source_hash", "config_hash"):
+        if got.get(field) != expected[field]:
+            raise CacheRefused(f"{kind} cache {field} does not match the current sources")
+
+
 @lru_cache(maxsize=1)
 def _git(*args: str) -> str | bytes:
     command = ["git", "-c", "safe.directory=*", *args]
