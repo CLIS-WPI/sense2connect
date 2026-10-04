@@ -124,6 +124,242 @@ Reading: the cost-aware oracle closes far more of the gap than the foresight-rec
 
 Of 2571 blockage-caused wrong-cell steps of A3 (A3's cell unusable, other usable, A3's cell usable unblocked): 925 (36 %) have LoS loss < 10 dB on A3's cell; 426 (17 %) have the other cell at >= 3 dB LoS loss but still usable; 1051 (41 %) meet at least one of the two and are outside the genie's trigger (serving LoS >= 10 dB, other < 3 dB); 1520 (59 %) satisfy both trigger conditions. All margins are in `dporacle.json` (`genie_trigger_diagnosis`).
 
+## Equal-effort reactive baselines and a receding-horizon planner
+
+**Added after the cost-aware-oracle result** (`scripts/run_m5_planner.py`). Tuning on tuning seeds per margin, evaluation on evaluation seeds, tau_HO 20 ms, E2 delay 20 ms. A3 (wide): offset {0,1,3,6,10,15} dB x hysteresis {0,1,3,6,10,15} dB x TTT {40..640} ms (180 points). A5: serving filtered SNR < SNR_req + t1 and neighbour > SNR_req + t2 for TTT, t1 {-3,0,3,6,10} dB x t2 {0,3,6,10} dB x TTT {40..640} ms (100 points); A5 was added to the simulator with a vectorised-vs-reference equality test, and the existing schemes are unchanged (regression identical). Best reactive = lower tuning objective. Planner (xApp v2): at each 0.1 s report, from the current cell, a Viterbi over horizon H on predicted SNR of both cells (switches only at future 0.1 s epochs, switch = tau_HO outage), first decision applied after the E2 delay; no A3 underneath, no hold. Genie-planner: true future blocked SNR, no overhead. Sensing-planner: unblocked SNR along the UE path (digital-twin radio map) minus the predicted model-B LoS loss of the tracked blockers (final M2 map tracker, budget 2 or 4 tuned per H, UE fix sigma 1 m), overhead charged. Diagnostic (not a policy): the sensing-planner model with the true LoS loss, overhead charged. The planner's first decision equals an exhaustive search on 300 random small cases.
+
+### Tuned reactive parameters (tuning seeds)
+
+| Margin | A3 wide offset/hyst/TTT | A5 t1/t2/TTT | Best reactive | Genie-planner tuned H | Sensing-planner tuned H (budget) |
+|---|---|---|---|---|---|
+| 0 dB | 0/0/40 | 0/0/40 | a5 | 0.5 s | 0.5 s (2) |
+| 5 dB | 0/0/40 | 0/0/40 | a5 | 3.0 s | 1.0 s (4) |
+| 10 dB | 0/0/40 | 0/0/40 | a5 | 3.0 s | 0.5 s (4) |
+| 15 dB | 0/0/40 | 3/0/40 | a5 | 2.0 s | 0.5 s (4) |
+| 20 dB | 1/1/40 | 3/0/40 | a5 | 2.0 s | 1.0 s (2) |
+| 25 dB | 1/3/40 | 3/0/40 | a5 | 3.0 s | 3.0 s (4) |
+| 30 dB | 3/6/40 | 3/0/40 | a5 | 3.0 s | 2.0 s (4) |
+| 3GPP short-range reference | 1/10/40 | 3/6/40 | a5 | 0.5 s | 2.0 s (4) |
+| v1 radio (high margin) | 1/10/40 | 3/0/40 | a5 | 0.5 s | 0.5 s (2) |
+
+### Value of foresight (best reactive vs cost-aware oracle, 0.1 s epochs, tau_HO 20 ms)
+
+| Margin | Best reactive | Cost-aware | Difference [s/UE-min] | Share of best-reactive gap | bus/truck | pedestrian | car |
+|---|---|---|---|---|---|---|---|
+| 0 dB | 34.665 ± 2.766 | 34.559 ± 2.768 | 0.106 | 100 % | 34 % | 44 % | 22 % |
+| 5 dB | 9.227 ± 1.359 | 9.036 ± 1.355 | 0.191 | 74 % | 26 % | 40 % | 7 % |
+| 10 dB | 3.292 ± 0.711 | 2.971 ± 0.683 | 0.321 | 76 % | 32 % | 46 % | -1 % |
+| 15 dB | 1.998 ± 0.453 | 1.766 ± 0.419 | 0.233 | 71 % | 19 % | 53 % | -1 % |
+| 20 dB | 1.180 ± 0.289 | 0.985 ± 0.260 | 0.195 | 70 % | 13 % | 56 % | 1 % |
+| 25 dB | 0.462 ± 0.170 | 0.345 ± 0.154 | 0.117 | 72 % | 11 % | 58 % | 3 % |
+| 30 dB | 0.169 ± 0.092 | 0.118 ± 0.088 | 0.051 | 73 % | 16 % | 57 % | 1 % |
+| 3GPP short-range reference | 0.079 ± 0.045 | 0.023 ± 0.016 | 0.056 | 89 % | 24 % | 64 % | 1 % |
+| v1 radio (high margin) | 0.040 ± 0.014 | 0.014 ± 0.011 | 0.025 | 87 % | 17 % | 67 % | 3 % |
+
+Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle), pooled steps; class = dominant LoS blocker of the best reactive scheme's cell (net steps).
+
+### Per-margin results (evaluation seeds; outage at the service rate [s/UE-min], mean ± 95 % CI over 40 jobs)
+
+#### 0 dB
+
+| Scheme | Outage_req | HO / UE-min | Ping-pong |
+|---|---|---|---|
+| A3 (wide grid) | 34.663 ± 2.761 | 15.511 ± 1.842 | 0.321 ± 0.034 |
+| A5 | 34.665 ± 2.766 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| best reactive = a5 | (as above) | | |
+| genie-planner, H = 0.5 s (tuned) | 34.559 ± 2.768 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| genie-planner, H = 1.0 s | 34.559 ± 2.768 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| genie-planner, H = 2.0 s | 34.559 ± 2.768 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| genie-planner, H = 3.0 s | 34.559 ± 2.768 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| sensing-planner, H = 0.5 s, budget 2 (tuned) | 36.228 ± 2.776 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| sensing-planner, H = 1.0 s, budget 2 | 36.228 ± 2.776 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| sensing-planner, H = 2.0 s, budget 2 | 36.228 ± 2.776 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| sensing-planner, H = 3.0 s, budget 2 | 36.228 ± 2.776 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| diagnostic: true-LoS-loss planner, H = 0.5 s | 36.047 ± 2.771 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| diagnostic: true-LoS-loss planner, H = 1.0 s | 36.047 ± 2.771 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| diagnostic: true-LoS-loss planner, H = 2.0 s | 36.047 ± 2.771 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| diagnostic: true-LoS-loss planner, H = 3.0 s | 36.047 ± 2.771 | 1.502 ± 0.000 | 0.000 ± 0.000 |
+| cost-aware oracle (0.1 s epochs) | 34.559 ± 2.768 | — | — |
+| instantaneous oracle | 34.559 ± 2.768 | 0 | 0 |
+
+#### 5 dB
+
+| Scheme | Outage_req | HO / UE-min | Ping-pong |
+|---|---|---|---|
+| A3 (wide grid) | 9.342 ± 1.372 | 15.511 ± 1.842 | 0.321 ± 0.034 |
+| A5 | 9.227 ± 1.359 | 3.518 ± 0.409 | 0.079 ± 0.029 |
+| best reactive = a5 | (as above) | | |
+| genie-planner, H = 0.5 s | 9.058 ± 1.355 | 3.543 ± 0.412 | 0.086 ± 0.030 |
+| genie-planner, H = 1.0 s | 9.058 ± 1.355 | 3.543 ± 0.412 | 0.086 ± 0.030 |
+| genie-planner, H = 2.0 s | 9.058 ± 1.355 | 3.543 ± 0.412 | 0.086 ± 0.030 |
+| genie-planner, H = 3.0 s (tuned) | 9.057 ± 1.355 | 3.543 ± 0.412 | 0.086 ± 0.030 |
+| sensing-planner, H = 0.5 s, budget 4 | 12.195 ± 1.535 | 8.763 ± 1.480 | 0.406 ± 0.054 |
+| sensing-planner, H = 1.0 s, budget 4 (tuned) | 12.196 ± 1.534 | 8.813 ± 1.488 | 0.408 ± 0.054 |
+| sensing-planner, H = 2.0 s, budget 4 | 12.197 ± 1.535 | 8.863 ± 1.477 | 0.415 ± 0.052 |
+| sensing-planner, H = 3.0 s, budget 4 | 12.199 ± 1.536 | 8.863 ± 1.477 | 0.415 ± 0.052 |
+| diagnostic: true-LoS-loss planner, H = 0.5 s | 10.535 ± 1.394 | 3.468 ± 0.390 | 0.076 ± 0.027 |
+| diagnostic: true-LoS-loss planner, H = 1.0 s | 10.528 ± 1.393 | 3.468 ± 0.390 | 0.076 ± 0.027 |
+| diagnostic: true-LoS-loss planner, H = 2.0 s | 10.523 ± 1.393 | 3.468 ± 0.390 | 0.076 ± 0.027 |
+| diagnostic: true-LoS-loss planner, H = 3.0 s | 10.521 ± 1.393 | 3.468 ± 0.390 | 0.076 ± 0.027 |
+| cost-aware oracle (0.1 s epochs) | 9.036 ± 1.355 | — | — |
+| instantaneous oracle | 8.969 ± 1.354 | 0 | 0 |
+
+#### 10 dB
+
+| Scheme | Outage_req | HO / UE-min | Ping-pong |
+|---|---|---|---|
+| A3 (wide grid) | 3.319 ± 0.702 | 15.511 ± 1.842 | 0.321 ± 0.034 |
+| A5 | 3.292 ± 0.711 | 5.921 ± 0.817 | 0.092 ± 0.037 |
+| best reactive = a5 | (as above) | | |
+| genie-planner, H = 0.5 s | 2.993 ± 0.685 | 6.134 ± 0.858 | 0.098 ± 0.036 |
+| genie-planner, H = 1.0 s | 2.992 ± 0.685 | 6.134 ± 0.858 | 0.098 ± 0.036 |
+| genie-planner, H = 2.0 s | 2.992 ± 0.685 | 6.084 ± 0.842 | 0.098 ± 0.036 |
+| genie-planner, H = 3.0 s (tuned) | 2.991 ± 0.685 | 6.059 ± 0.843 | 0.098 ± 0.036 |
+| sensing-planner, H = 0.5 s, budget 4 (tuned) | 9.068 ± 1.727 | 23.723 ± 3.106 | 0.540 ± 0.034 |
+| sensing-planner, H = 1.0 s, budget 4 | 9.077 ± 1.732 | 23.748 ± 3.104 | 0.542 ± 0.034 |
+| sensing-planner, H = 2.0 s, budget 4 | 9.079 ± 1.731 | 23.773 ± 3.085 | 0.544 ± 0.034 |
+| sensing-planner, H = 3.0 s, budget 4 | 9.084 ± 1.732 | 23.848 ± 3.073 | 0.545 ± 0.034 |
+| diagnostic: true-LoS-loss planner, H = 0.5 s | 3.493 ± 0.761 | 6.034 ± 0.935 | 0.090 ± 0.037 |
+| diagnostic: true-LoS-loss planner, H = 1.0 s | 3.493 ± 0.761 | 6.034 ± 0.935 | 0.090 ± 0.037 |
+| diagnostic: true-LoS-loss planner, H = 2.0 s | 3.492 ± 0.761 | 6.034 ± 0.935 | 0.090 ± 0.037 |
+| diagnostic: true-LoS-loss planner, H = 3.0 s | 3.489 ± 0.762 | 6.009 ± 0.935 | 0.090 ± 0.037 |
+| cost-aware oracle (0.1 s epochs) | 2.971 ± 0.683 | — | — |
+| instantaneous oracle | 2.871 ± 0.676 | 0 | 0 |
+
+#### 15 dB
+
+| Scheme | Outage_req | HO / UE-min | Ping-pong |
+|---|---|---|---|
+| A3 (wide grid) | 2.053 ± 0.433 | 15.511 ± 1.842 | 0.321 ± 0.034 |
+| A5 | 1.998 ± 0.453 | 6.898 ± 1.153 | 0.159 ± 0.036 |
+| best reactive = a5 | (as above) | | |
+| genie-planner, H = 0.5 s | 1.783 ± 0.420 | 5.771 ± 0.920 | 0.113 ± 0.030 |
+| genie-planner, H = 1.0 s | 1.783 ± 0.420 | 5.771 ± 0.920 | 0.113 ± 0.030 |
+| genie-planner, H = 2.0 s (tuned) | 1.782 ± 0.419 | 5.771 ± 0.920 | 0.113 ± 0.030 |
+| genie-planner, H = 3.0 s | 1.782 ± 0.419 | 5.771 ± 0.920 | 0.113 ± 0.030 |
+| sensing-planner, H = 0.5 s, budget 4 (tuned) | 4.785 ± 1.057 | 15.336 ± 2.270 | 0.457 ± 0.043 |
+| sensing-planner, H = 1.0 s, budget 4 | 4.785 ± 1.057 | 15.336 ± 2.270 | 0.457 ± 0.043 |
+| sensing-planner, H = 2.0 s, budget 4 | 4.784 ± 1.057 | 15.285 ± 2.282 | 0.457 ± 0.043 |
+| sensing-planner, H = 3.0 s, budget 4 | 4.784 ± 1.057 | 15.285 ± 2.282 | 0.457 ± 0.043 |
+| diagnostic: true-LoS-loss planner, H = 0.5 s | 1.953 ± 0.472 | 5.521 ± 0.880 | 0.111 ± 0.029 |
+| diagnostic: true-LoS-loss planner, H = 1.0 s | 1.953 ± 0.472 | 5.496 ± 0.882 | 0.109 ± 0.028 |
+| diagnostic: true-LoS-loss planner, H = 2.0 s | 1.952 ± 0.472 | 5.496 ± 0.882 | 0.109 ± 0.028 |
+| diagnostic: true-LoS-loss planner, H = 3.0 s | 1.952 ± 0.472 | 5.496 ± 0.882 | 0.109 ± 0.028 |
+| cost-aware oracle (0.1 s epochs) | 1.766 ± 0.419 | — | — |
+| instantaneous oracle | 1.672 ± 0.409 | 0 | 0 |
+
+#### 20 dB
+
+| Scheme | Outage_req | HO / UE-min | Ping-pong |
+|---|---|---|---|
+| A3 (wide grid) | 1.256 ± 0.282 | 13.633 ± 1.598 | 0.297 ± 0.039 |
+| A5 | 1.180 ± 0.289 | 6.585 ± 1.099 | 0.191 ± 0.041 |
+| best reactive = a5 | (as above) | | |
+| genie-planner, H = 0.5 s | 0.997 ± 0.261 | 4.895 ± 0.932 | 0.070 ± 0.027 |
+| genie-planner, H = 1.0 s | 0.997 ± 0.261 | 4.895 ± 0.932 | 0.070 ± 0.027 |
+| genie-planner, H = 2.0 s (tuned) | 0.996 ± 0.261 | 4.845 ± 0.910 | 0.068 ± 0.027 |
+| genie-planner, H = 3.0 s | 0.996 ± 0.261 | 4.845 ± 0.910 | 0.068 ± 0.027 |
+| sensing-planner, H = 0.5 s, budget 2 | 2.576 ± 0.577 | 3.618 ± 0.720 | 0.184 ± 0.051 |
+| sensing-planner, H = 1.0 s, budget 2 (tuned) | 2.576 ± 0.577 | 3.593 ± 0.699 | 0.183 ± 0.051 |
+| sensing-planner, H = 2.0 s, budget 2 | 2.577 ± 0.578 | 3.543 ± 0.689 | 0.185 ± 0.051 |
+| sensing-planner, H = 3.0 s, budget 2 | 2.577 ± 0.578 | 3.543 ± 0.689 | 0.185 ± 0.051 |
+| diagnostic: true-LoS-loss planner, H = 0.5 s | 1.105 ± 0.298 | 5.020 ± 0.884 | 0.092 ± 0.034 |
+| diagnostic: true-LoS-loss planner, H = 1.0 s | 1.105 ± 0.297 | 4.995 ± 0.870 | 0.092 ± 0.034 |
+| diagnostic: true-LoS-loss planner, H = 2.0 s | 1.104 ± 0.297 | 4.970 ± 0.867 | 0.091 ± 0.034 |
+| diagnostic: true-LoS-loss planner, H = 3.0 s | 1.104 ± 0.297 | 4.970 ± 0.867 | 0.091 ± 0.034 |
+| cost-aware oracle (0.1 s epochs) | 0.985 ± 0.260 | — | — |
+| instantaneous oracle | 0.902 ± 0.251 | 0 | 0 |
+
+#### 25 dB
+
+| Scheme | Outage_req | HO / UE-min | Ping-pong |
+|---|---|---|---|
+| A3 (wide grid) | 0.584 ± 0.171 | 11.805 ± 1.511 | 0.246 ± 0.036 |
+| A5 | 0.462 ± 0.170 | 4.482 ± 1.091 | 0.081 ± 0.037 |
+| best reactive = a5 | (as above) | | |
+| genie-planner, H = 0.5 s | 0.352 ± 0.154 | 2.804 ± 0.503 | 0.024 ± 0.017 |
+| genie-planner, H = 1.0 s | 0.351 ± 0.154 | 2.804 ± 0.503 | 0.024 ± 0.017 |
+| genie-planner, H = 2.0 s | 0.351 ± 0.154 | 2.779 ± 0.477 | 0.022 ± 0.016 |
+| genie-planner, H = 3.0 s (tuned) | 0.351 ± 0.154 | 2.779 ± 0.477 | 0.022 ± 0.016 |
+| sensing-planner, H = 0.5 s, budget 2 | 1.262 ± 0.401 | 1.565 ± 0.362 | 0.071 ± 0.036 |
+| sensing-planner, H = 1.0 s, budget 2 | 1.262 ± 0.401 | 1.565 ± 0.362 | 0.071 ± 0.036 |
+| sensing-planner, H = 2.0 s, budget 4 | 1.256 ± 0.380 | 4.181 ± 0.965 | 0.199 ± 0.054 |
+| sensing-planner, H = 3.0 s, budget 4 (tuned) | 1.256 ± 0.380 | 4.181 ± 0.965 | 0.199 ± 0.054 |
+| diagnostic: true-LoS-loss planner, H = 0.5 s | 0.427 ± 0.161 | 3.067 ± 0.542 | 0.029 ± 0.017 |
+| diagnostic: true-LoS-loss planner, H = 1.0 s | 0.426 ± 0.161 | 3.067 ± 0.542 | 0.029 ± 0.017 |
+| diagnostic: true-LoS-loss planner, H = 2.0 s | 0.426 ± 0.161 | 3.042 ± 0.519 | 0.029 ± 0.017 |
+| diagnostic: true-LoS-loss planner, H = 3.0 s | 0.425 ± 0.161 | 3.017 ± 0.515 | 0.029 ± 0.017 |
+| cost-aware oracle (0.1 s epochs) | 0.345 ± 0.154 | — | — |
+| instantaneous oracle | 0.300 ± 0.152 | 0 | 0 |
+
+#### 30 dB
+
+| Scheme | Outage_req | HO / UE-min | Ping-pong |
+|---|---|---|---|
+| A3 (wide grid) | 0.255 ± 0.109 | 5.371 ± 0.772 | 0.109 ± 0.028 |
+| A5 | 0.169 ± 0.092 | 1.790 ± 0.397 | 0.042 ± 0.028 |
+| best reactive = a5 | (as above) | | |
+| genie-planner, H = 0.5 s | 0.125 ± 0.088 | 1.214 ± 0.285 | 0.016 ± 0.016 |
+| genie-planner, H = 1.0 s | 0.125 ± 0.088 | 1.189 ± 0.269 | 0.014 ± 0.016 |
+| genie-planner, H = 2.0 s | 0.125 ± 0.087 | 1.189 ± 0.269 | 0.014 ± 0.016 |
+| genie-planner, H = 3.0 s (tuned) | 0.125 ± 0.087 | 1.189 ± 0.269 | 0.014 ± 0.016 |
+| sensing-planner, H = 0.5 s, budget 2 | 0.555 ± 0.263 | 0.776 ± 0.172 | 0.009 ± 0.013 |
+| sensing-planner, H = 1.0 s, budget 2 | 0.555 ± 0.263 | 0.776 ± 0.172 | 0.009 ± 0.013 |
+| sensing-planner, H = 2.0 s, budget 4 (tuned) | 0.510 ± 0.243 | 2.003 ± 0.492 | 0.084 ± 0.037 |
+| sensing-planner, H = 3.0 s, budget 4 | 0.510 ± 0.243 | 2.003 ± 0.492 | 0.084 ± 0.037 |
+| diagnostic: true-LoS-loss planner, H = 0.5 s | 0.153 ± 0.100 | 1.214 ± 0.304 | 0.010 ± 0.011 |
+| diagnostic: true-LoS-loss planner, H = 1.0 s | 0.152 ± 0.100 | 1.189 ± 0.289 | 0.007 ± 0.010 |
+| diagnostic: true-LoS-loss planner, H = 2.0 s | 0.151 ± 0.100 | 1.202 ± 0.291 | 0.007 ± 0.010 |
+| diagnostic: true-LoS-loss planner, H = 3.0 s | 0.151 ± 0.101 | 1.202 ± 0.291 | 0.007 ± 0.010 |
+| cost-aware oracle (0.1 s epochs) | 0.118 ± 0.088 | — | — |
+| instantaneous oracle | 0.099 ± 0.086 | 0 | 0 |
+
+#### 3GPP short-range reference
+
+| Scheme | Outage_req | HO / UE-min | Ping-pong |
+|---|---|---|---|
+| A3 (wide grid) | 0.140 ± 0.034 | 4.820 ± 0.696 | 0.084 ± 0.026 |
+| A5 | 0.079 ± 0.045 | 0.764 ± 0.199 | 0.003 ± 0.006 |
+| best reactive = a5 | (as above) | | |
+| genie-planner, H = 0.5 s (tuned) | 0.032 ± 0.016 | 0.739 ± 0.230 | 0.000 ± 0.000 |
+| genie-planner, H = 1.0 s | 0.032 ± 0.016 | 0.739 ± 0.230 | 0.000 ± 0.000 |
+| genie-planner, H = 2.0 s | 0.032 ± 0.016 | 0.714 ± 0.216 | 0.000 ± 0.000 |
+| genie-planner, H = 3.0 s | 0.032 ± 0.016 | 0.714 ± 0.216 | 0.000 ± 0.000 |
+| sensing-planner, H = 0.5 s, budget 4 | 0.132 ± 0.063 | 0.826 ± 0.227 | 0.012 ± 0.015 |
+| sensing-planner, H = 1.0 s, budget 4 | 0.132 ± 0.063 | 0.826 ± 0.227 | 0.012 ± 0.015 |
+| sensing-planner, H = 2.0 s, budget 4 (tuned) | 0.132 ± 0.063 | 0.826 ± 0.227 | 0.012 ± 0.015 |
+| sensing-planner, H = 3.0 s, budget 4 | 0.132 ± 0.063 | 0.826 ± 0.227 | 0.012 ± 0.015 |
+| diagnostic: true-LoS-loss planner, H = 0.5 s | 0.039 ± 0.020 | 0.776 ± 0.238 | 0.004 ± 0.008 |
+| diagnostic: true-LoS-loss planner, H = 1.0 s | 0.039 ± 0.020 | 0.776 ± 0.238 | 0.004 ± 0.008 |
+| diagnostic: true-LoS-loss planner, H = 2.0 s | 0.039 ± 0.020 | 0.776 ± 0.238 | 0.004 ± 0.008 |
+| diagnostic: true-LoS-loss planner, H = 3.0 s | 0.039 ± 0.020 | 0.776 ± 0.238 | 0.004 ± 0.008 |
+| cost-aware oracle (0.1 s epochs) | 0.023 ± 0.016 | — | — |
+| instantaneous oracle | 0.016 ± 0.013 | 0 | 0 |
+
+#### v1 radio (high margin)
+
+| Scheme | Outage_req | HO / UE-min | Ping-pong |
+|---|---|---|---|
+| A3 (wide grid) | 0.119 ± 0.023 | 4.820 ± 0.696 | 0.084 ± 0.026 |
+| A5 | 0.040 ± 0.014 | 0.638 ± 0.183 | 0.006 ± 0.012 |
+| best reactive = a5 | (as above) | | |
+| genie-planner, H = 0.5 s (tuned) | 0.022 ± 0.010 | 0.501 ± 0.117 | 0.000 ± 0.000 |
+| genie-planner, H = 1.0 s | 0.022 ± 0.010 | 0.501 ± 0.117 | 0.000 ± 0.000 |
+| genie-planner, H = 2.0 s | 0.022 ± 0.010 | 0.501 ± 0.117 | 0.000 ± 0.000 |
+| genie-planner, H = 3.0 s | 0.022 ± 0.010 | 0.501 ± 0.117 | 0.000 ± 0.000 |
+| sensing-planner, H = 0.5 s, budget 2 (tuned) | 0.088 ± 0.043 | 0.501 ± 0.000 | 0.000 ± 0.000 |
+| sensing-planner, H = 1.0 s, budget 2 | 0.088 ± 0.043 | 0.501 ± 0.000 | 0.000 ± 0.000 |
+| sensing-planner, H = 2.0 s, budget 2 | 0.088 ± 0.043 | 0.501 ± 0.000 | 0.000 ± 0.000 |
+| sensing-planner, H = 3.0 s, budget 2 | 0.088 ± 0.043 | 0.501 ± 0.000 | 0.000 ± 0.000 |
+| diagnostic: true-LoS-loss planner, H = 0.5 s | 0.026 ± 0.011 | 0.526 ± 0.126 | 0.000 ± 0.000 |
+| diagnostic: true-LoS-loss planner, H = 1.0 s | 0.026 ± 0.011 | 0.526 ± 0.126 | 0.000 ± 0.000 |
+| diagnostic: true-LoS-loss planner, H = 2.0 s | 0.026 ± 0.011 | 0.526 ± 0.126 | 0.000 ± 0.000 |
+| diagnostic: true-LoS-loss planner, H = 3.0 s | 0.026 ± 0.011 | 0.526 ± 0.126 | 0.000 ± 0.000 |
+| cost-aware oracle (0.1 s epochs) | 0.014 ± 0.011 | — | — |
+| instantaneous oracle | 0.011 ± 0.010 | 0 | 0 |
+
+Reading (planner): the genie-planner reaches the cost-aware bound at every margin, and the horizon hardly matters (0.5 s suffices). The sensing-planner is worse than the best reactive scheme at every margin. The true-LoS-loss diagnostic separates the causes: with perfect blockage prediction the same planner model beats the best reactive scheme at margins >= 15 dB even with the sensing overhead, and loses at 0-10 dB (overhead and the 'unblocked SNR minus LoS loss' approximation). The gap between the diagnostic and the sensing-planner is the blockage-prediction error of the current tracker/predictor (false and missed blockages, no measurement feedback in the plan as specified).
+
 ## paper/numbers.tex vs the defaults in main.tex
 
 main.tex lists 39 macros; numbers.tex defines 39. Not defined: none.
