@@ -1416,7 +1416,7 @@
     "a5": 0.03968452679018527
    }
   },
-  "note": "beats A5 at every margin from this one up"
+  "note": "lower mean than A5 at every margin from this one up; 95 % CIs overlap at every such margin (not significant, unpaired)"
  },
  "numValueRange": {
   "value": "70--89\\%",
@@ -1488,58 +1488,235 @@
   "note": ""
  },
  "numPlanHorizon": {
-  "value": "--",
+  "value": "0.5",
   "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; genie-planner vs cost-aware oracle (0.1 s epochs, tau_HO 20 ms), all margins",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; genie-planner vs cost-aware oracle (0.1 s epochs, tau_HO 20 ms), all margins incl. the v1-radio point",
   "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "smallest H with (genie-planner - cost-aware) / cost-aware <= 5 % of the mean outage at every margin",
+  "aggregation": "RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute)",
   "raw": {
-   "0.5": {
-    "0 dB": 0.0,
-    "5 dB": 0.0024938346864695395,
-    "10 dB": 0.0073318725771111485,
-    "15 dB": 0.009713556437890089,
-    "20 dB": 0.011941056910569096,
-    "25 dB": 0.018847408481333965,
-    "30 dB": 0.061571125265392816,
-    "3GPP short-range reference": 0.3675675675675675,
-    "v1 radio (high margin)": 0.5130434782608695
+   "relative_excess": {
+    "0.5": {
+     "0 dB": 0.0,
+     "5 dB": 0.0024938346864695395,
+     "10 dB": 0.0073318725771111485,
+     "15 dB": 0.009713556437890089,
+     "20 dB": 0.011941056910569096,
+     "25 dB": 0.018847408481333965,
+     "30 dB": 0.061571125265392816,
+     "3GPP short-range reference": 0.3675675675675675,
+     "v1 radio (high margin)": 0.5130434782608695
+    },
+    "1.0": {
+     "0 dB": 0.0,
+     "5 dB": 0.002438416137881489,
+     "10 dB": 0.007247598179673187,
+     "15 dB": 0.00957175269427117,
+     "20 dB": 0.011432926829268417,
+     "25 dB": 0.017397607828923575,
+     "30 dB": 0.06050955414012723,
+     "3GPP short-range reference": 0.3675675675675675,
+     "v1 radio (high margin)": 0.5130434782608695
+    },
+    "2.0": {
+     "0 dB": 0.0,
+     "5 dB": 0.0024107068635873656,
+     "10 dB": 0.00695263778863995,
+     "15 dB": 0.009288145207033456,
+     "20 dB": 0.010670731707317175,
+     "25 dB": 0.01667270750271846,
+     "30 dB": 0.05626326963906573,
+     "3GPP short-range reference": 0.3621621621621623,
+     "v1 radio (high margin)": 0.5130434782608695
+    },
+    "3.0": {
+     "0 dB": 0.0,
+     "5 dB": 0.0023829975892932422,
+     "10 dB": 0.006657677397606561,
+     "15 dB": 0.009146341463414536,
+     "20 dB": 0.010670731707317175,
+     "25 dB": 0.015947807176513343,
+     "30 dB": 0.05626326963906573,
+     "3GPP short-range reference": 0.3621621621621623,
+     "v1 radio (high margin)": 0.5130434782608695
+    }
    },
-   "1.0": {
-    "0 dB": 0.0,
-    "5 dB": 0.002438416137881489,
-    "10 dB": 0.007247598179673187,
-    "15 dB": 0.00957175269427117,
-    "20 dB": 0.011432926829268417,
-    "25 dB": 0.017397607828923575,
-    "30 dB": 0.06050955414012723,
-    "3GPP short-range reference": 0.3675675675675675,
-    "v1 radio (high margin)": 0.5130434782608695
-   },
-   "2.0": {
-    "0 dB": 0.0,
-    "5 dB": 0.0024107068635873656,
-    "10 dB": 0.00695263778863995,
-    "15 dB": 0.009288145207033456,
-    "20 dB": 0.010670731707317175,
-    "25 dB": 0.01667270750271846,
-    "30 dB": 0.05626326963906573,
-    "3GPP short-range reference": 0.3621621621621623,
-    "v1 radio (high margin)": 0.5130434782608695
-   },
-   "3.0": {
-    "0 dB": 0.0,
-    "5 dB": 0.0023829975892932422,
-    "10 dB": 0.006657677397606561,
-    "15 dB": 0.009146341463414536,
-    "20 dB": 0.010670731707317175,
-    "25 dB": 0.015947807176513343,
-    "30 dB": 0.05626326963906573,
-    "3GPP short-range reference": 0.3621621621621623,
-    "v1 radio (high margin)": 0.5130434782608695
+   "absolute_excess_s_per_ue_min": {
+    "0.5": {
+     "0 dB": 0.0,
+     "5 dB": 0.022533800701051376,
+     "10 dB": 0.021782674011016745,
+     "15 dB": 0.017150726089133927,
+     "20 dB": 0.011767651477215813,
+     "25 dB": 0.006509764646970506,
+     "30 dB": 0.007260891337005512,
+     "3GPP short-range reference": 0.008512769153730594,
+     "v1 radio (high margin)": 0.007386079118678016
+    },
+    "1.0": {
+     "0 dB": 0.0,
+     "5 dB": 0.022033049574362806,
+     "10 dB": 0.021532298447672016,
+     "15 dB": 0.016900350525788754,
+     "20 dB": 0.01126690035052591,
+     "25 dB": 0.006009013520280437,
+     "30 dB": 0.007135703555332981,
+     "3GPP short-range reference": 0.008512769153730594,
+     "v1 radio (high margin)": 0.007386079118678016
+    },
+    "2.0": {
+     "0 dB": 0.0,
+     "5 dB": 0.021782674011017633,
+     "10 dB": 0.020655983975964354,
+     "15 dB": 0.01639959939909863,
+     "20 dB": 0.010515773660490835,
+     "25 dB": 0.005758637956935431,
+     "30 dB": 0.006634952428642954,
+     "3GPP short-range reference": 0.00838758137205809,
+     "v1 radio (high margin)": 0.007386079118678016
+    },
+    "3.0": {
+     "0 dB": 0.0,
+     "5 dB": 0.02153229844767246,
+     "10 dB": 0.019779669504256248,
+     "15 dB": 0.016149223835753457,
+     "20 dB": 0.010515773660490835,
+     "25 dB": 0.005508262393590424,
+     "30 dB": 0.006634952428642954,
+     "3GPP short-range reference": 0.00838758137205809,
+     "v1 radio (high margin)": 0.007386079118678016
+    }
    }
   },
-  "note": "no H meets the 5 % criterion at every margin; see raw for the per-margin relative excess"
+  "note": ""
+ },
+ "numAthreeWideRef": {
+  "value": "0.14",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; 3GPP reference; A3 on the equal-effort wide grid (offset/hysteresis up to 15 dB, TTT 40-640 ms), tuned on tuning seeds: {'offset_db': 1.0, 'hysteresis_db': 10.0, 'ttt_s': 0.04}; the A3 curve in fig_outage_margin.pdf",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.13958437656484726,
+  "note": ""
+ },
+ "x.trueloss_vs_a5.15db.ci_overlap": {
+  "value": "yes",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 15 dB; true-LoS-loss planner (H = 0.5 s) vs A5; 95 % CI = 1.96 sd / sqrt(n) over 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "do the two 95 % CIs of the mean outage overlap",
+  "raw": {
+   "trueloss": {
+    "mean": 1.952553830746119,
+    "ci": 0.47233548737607456,
+    "n": 40
+   },
+   "a5": {
+    "mean": 1.9984977466199296,
+    "ci": 0.45282170186290693,
+    "n": 40
+   }
+  },
+  "note": ""
+ },
+ "x.trueloss_vs_a5.20db.ci_overlap": {
+  "value": "yes",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 20 dB; true-LoS-loss planner (H = 1.0 s) vs A5; 95 % CI = 1.96 sd / sqrt(n) over 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "do the two 95 % CIs of the mean outage overlap",
+  "raw": {
+   "trueloss": {
+    "mean": 1.1049073610415623,
+    "ci": 0.29721002105536054,
+    "n": 40
+   },
+   "a5": {
+    "mean": 1.18014521782674,
+    "ci": 0.28858162902128937,
+    "n": 40
+   }
+  },
+  "note": ""
+ },
+ "x.trueloss_vs_a5.25db.ci_overlap": {
+  "value": "yes",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 25 dB; true-LoS-loss planner (H = 3.0 s) vs A5; 95 % CI = 1.96 sd / sqrt(n) over 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "do the two 95 % CIs of the mean outage overlap",
+  "raw": {
+   "trueloss": {
+    "mean": 0.42526289434151227,
+    "ci": 0.16068906166445363,
+    "n": 40
+   },
+   "a5": {
+    "mean": 0.4621932899349023,
+    "ci": 0.16986922799882306,
+    "n": 40
+   }
+  },
+  "note": ""
+ },
+ "x.trueloss_vs_a5.30db.ci_overlap": {
+  "value": "yes",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 30 dB; true-LoS-loss planner (H = 2.0 s) vs A5; 95 % CI = 1.96 sd / sqrt(n) over 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "do the two 95 % CIs of the mean outage overlap",
+  "raw": {
+   "trueloss": {
+    "mean": 0.15110165247871807,
+    "ci": 0.10049904276028969,
+    "n": 40
+   },
+   "a5": {
+    "mean": 0.16925388082123183,
+    "ci": 0.09239776593819102,
+    "n": 40
+   }
+  },
+  "note": ""
+ },
+ "x.trueloss_vs_a5.ref.ci_overlap": {
+  "value": "yes",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 3GPP short-range reference; true-LoS-loss planner (H = 2.0 s) vs A5; 95 % CI = 1.96 sd / sqrt(n) over 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "do the two 95 % CIs of the mean outage overlap",
+  "raw": {
+   "trueloss": {
+    "mean": 0.03893340010015022,
+    "ci": 0.020235055625056387,
+    "n": 40
+   },
+   "a5": {
+    "mean": 0.07936905358037055,
+    "ci": 0.04482618942764592,
+    "n": 40
+   }
+  },
+  "note": ""
+ },
+ "x.trueloss_vs_a5.v1.ci_overlap": {
+  "value": "yes",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin v1 radio (high margin); true-LoS-loss planner (H = 0.5 s) vs A5; 95 % CI = 1.96 sd / sqrt(n) over 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "do the two 95 % CIs of the mean outage overlap",
+  "raw": {
+   "trueloss": {
+    "mean": 0.025663495242864293,
+    "ci": 0.01093478984515808,
+    "n": 40
+   },
+   "a5": {
+    "mean": 0.03968452679018527,
+    "ci": 0.013743250840991905,
+    "n": 40
+   }
+  },
+  "note": ""
  },
  "numSensePlanHO": {
   "value": "23.7",

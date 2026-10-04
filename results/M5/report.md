@@ -358,11 +358,24 @@ Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle
 | cost-aware oracle (0.1 s epochs) | 0.014 ± 0.011 | — | — |
 | instantaneous oracle | 0.011 ± 0.010 | 0 | 0 |
 
-Reading (planner): the genie-planner reaches the cost-aware bound at every margin, and the horizon hardly matters (0.5 s suffices). The sensing-planner is worse than the best reactive scheme at every margin. The true-LoS-loss diagnostic separates the causes: with perfect blockage prediction the same planner model beats the best reactive scheme at margins >= 15 dB even with the sensing overhead, and loses at 0-10 dB (overhead and the 'unblocked SNR minus LoS loss' approximation). The gap between the diagnostic and the sensing-planner is the blockage-prediction error of the current tracker/predictor (false and missed blockages, no measurement feedback in the plan as specified).
+True-LoS-loss planner vs A5 from 15 dB up (sensing-planner's tuned H; 95 % CI = 1.96 sd / sqrt(40) over evaluation jobs):
+
+| Margin | True-LoS-loss planner | A5 | 95 % CIs overlap |
+|---|---|---|---|
+| 15db | 1.953 ± 0.472 | 1.998 ± 0.453 | yes |
+| 20db | 1.105 ± 0.297 | 1.180 ± 0.289 | yes |
+| 25db | 0.425 ± 0.161 | 0.462 ± 0.170 | yes |
+| 30db | 0.151 ± 0.100 | 0.169 ± 0.092 | yes |
+| ref | 0.039 ± 0.020 | 0.079 ± 0.045 | yes |
+| v1 | 0.026 ± 0.011 | 0.040 ± 0.014 | yes |
+
+The true-LoS-loss planner's mean outage is below A5's at every margin from 15 dB up, but the 95 % CIs overlap at every one of these margins (unpaired comparison over jobs); 'beats A5' refers to the means.
+
+Reading (planner): the genie-planner reaches the cost-aware bound at every margin, and the horizon hardly matters (0.5 s suffices). The sensing-planner is worse than the best reactive scheme at every margin. The true-LoS-loss diagnostic separates the causes: with perfect blockage prediction the same planner model has a lower mean outage than the best reactive scheme at margins >= 15 dB even with the sensing overhead, and loses at 0-10 dB (overhead and the 'unblocked SNR minus LoS loss' approximation). The gap between the diagnostic and the sensing-planner is the blockage-prediction error of the current tracker/predictor (false and missed blockages, no measurement feedback in the plan as specified).
 
 ## paper/numbers.tex vs the defaults in main.tex
 
-main.tex lists 39 macros; numbers.tex defines 58. Not defined: none.
+main.tex lists 39 macros; numbers.tex defines 59. Not defined: none.
 
 | Macro | main.tex default (blue) | numbers.tex | Source script | Aggregation |
 |---|---|---|---|---|
@@ -420,13 +433,14 @@ Extra macros (added after the planner round; not in the main.tex header list, de
 | `\numSensePlanTen` | 9.07 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
 | `\numSensePlanRef` | 0.13 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
 | `\numTrueLossRef` | 0.04 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numTrueLossFrom` | 15 | scripts/run_m5_planner.py | lowest margin [dB] where the mean outage is below A5's | beats A5 at every margin from this one up |
+| `\numTrueLossFrom` | 15 | scripts/run_m5_planner.py | lowest margin [dB] where the mean outage is below A5's | lower mean than A5 at every margin from this one up; 95 % CIs overlap at every such margin (not significant, unpaired) |
+| `\numAthreeWideRef` | 0.14 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
 | `\numValueRange` | 70--89\% | scripts/run_m5_planner.py | POOLED over evaluation jobs: (best reactive - cost-aware) / (best reactive - instantaneous oracle) outage steps; min-max over margins |  |
 | `\numValuePedRange` | 40--64\% | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |  |
 | `\numValueBusRange` | 11--32\% | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |  |
 | `\numValuePedTen` | 46\% | scripts/run_m5_planner.py | net closed steps (pedestrian) / best-reactive-to-oracle gap, pooled |  |
 | `\numValueBusTen` | 32\% | scripts/run_m5_planner.py | net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled |  |
-| `\numPlanHorizon` | -- | scripts/run_m5_planner.py | smallest H with (genie-planner - cost-aware) / cost-aware <= 5 % of the mean outage at every margin | no H meets the 5 % criterion at every margin; see raw for the per-margin relative excess |
+| `\numPlanHorizon` | 0.5 | scripts/run_m5_planner.py | RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute) |  |
 | `\numSensePlanHO` | 23.7 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute | margin not specified in the request; 10 dB used |
 | `\numSensePlanPP` | 0.54 | scripts/run_m5_planner.py | mean over evaluation jobs of the per-job ping-pong rate | margin not specified in the request; 10 dB used |
 | `\numAfiveHO` | 5.9 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute | margin not specified in the request; 10 dB used |
