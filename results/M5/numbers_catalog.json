@@ -1,0 +1,412 @@
+{
+ "numEventsPerMin": {
+  "value": "8.5",
+  "script": "scripts/fig_blockage_table.py -> results/M5/characterization.json, blockage_table.json",
+  "config": "configs/m2_scenario.yaml two-O-RU config (8x8, 1024 SC), comm traces at 0.1 s, serving cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "pooled over all jobs and both mounts",
+  "raw": 8.5,
+  "note": ""
+ },
+ "numBusShare": {
+  "value": "44--47\\%",
+  "script": "scripts/fig_blockage_table.py -> results/M5/characterization.json, blockage_table.json",
+  "config": "configs/m2_scenario.yaml two-O-RU config (8x8, 1024 SC), comm traces at 0.1 s, serving cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "min-max over mounts of the per-mount pooled share",
+  "raw": {
+   "lamppost": 0.46827794561933533,
+   "facade": 0.44412607449856734
+  },
+  "note": ""
+ },
+ "numPedShare": {
+  "value": "53--56\\%",
+  "script": "scripts/fig_blockage_table.py -> results/M5/characterization.json, blockage_table.json",
+  "config": "configs/m2_scenario.yaml two-O-RU config (8x8, 1024 SC), comm traces at 0.1 s, serving cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "min-max over mounts of the per-mount pooled share",
+  "raw": {
+   "lamppost": 0.5317220543806647,
+   "facade": 0.5558739255014327
+  },
+  "note": ""
+ },
+ "numSameCellLoss": {
+  "value": "26--34",
+  "script": "scripts/fig_blockage_table.py -> results/M5/characterization.json, blockage_table.json",
+  "config": "configs/m2_scenario.yaml two-O-RU config (8x8, 1024 SC), comm traces at 0.1 s, serving cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s; M1.5 part-1 definition (best_alt_db) on the serving cell",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "min-max over mounts of the per-mount median over events (loss in dB, sign dropped)",
+  "raw": {
+   "lamppost": 33.609112807829646,
+   "facade": 25.82389215786617
+  },
+  "note": ""
+ },
+ "numOtherCellBus": {
+  "value": "68--71\\%",
+  "script": "scripts/fig_blockage_table.py -> results/M5/characterization.json, blockage_table.json",
+  "config": "configs/m2_scenario.yaml two-O-RU config (8x8, 1024 SC), comm traces at 0.1 s, serving cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s; other cell clear = LoS loss < 3 dB on every 10 dB snapshot",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "min-max over mounts of the per-mount pooled share",
+  "raw": {
+   "lamppost": 0.6774193548387096,
+   "facade": 0.7096774193548387
+  },
+  "note": ""
+ },
+ "numOtherCellPed": {
+  "value": "27--34\\%",
+  "script": "scripts/fig_blockage_table.py -> results/M5/characterization.json, blockage_table.json",
+  "config": "configs/m2_scenario.yaml two-O-RU config (8x8, 1024 SC), comm traces at 0.1 s, serving cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s; other cell clear = LoS loss < 3 dB on every 10 dB snapshot",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "min-max over mounts of the per-mount pooled share",
+  "raw": {
+   "lamppost": 0.2727272727272727,
+   "facade": 0.3402061855670103
+  },
+  "note": ""
+ },
+ "numOnsetBus": {
+  "value": "0.50",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json (event_stats)",
+  "config": "10 ms analytic model B, fixed cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "median over all evaluation events of the class (pooled over mounts)",
+  "raw": 0.5,
+  "note": ""
+ },
+ "numOnsetPed": {
+  "value": "0.01",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json (event_stats)",
+  "config": "10 ms analytic model B, fixed cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "median over all evaluation events of the class (pooled over mounts)",
+  "raw": 0.01,
+  "note": ""
+ },
+ "numBusPd": {
+  "value": "0.94",
+  "script": "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)",
+  "config": "final M2 config: detector budget 4 FA/CPI, blind clutter, image-method ghost handling (budget-4 image/blind pick), map-constrained tracker (MAP_TUNED)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "pooled over all evaluation jobs (track hits / ground-truth samples)",
+  "raw": 0.9409249482881047,
+  "note": ""
+ },
+ "numPedPd": {
+  "value": "0.46",
+  "script": "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)",
+  "config": "final M2 config: detector budget 4 FA/CPI, blind clutter, image-method ghost handling (budget-4 image/blind pick), map-constrained tracker (MAP_TUNED)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "pooled over all evaluation jobs",
+  "raw": 0.4646772539977453,
+  "note": ""
+ },
+ "numFA": {
+  "value": "3.9",
+  "script": "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)",
+  "config": "final M2 config: detector budget 4 FA/CPI, blind clutter, image-method ghost handling (budget-4 image/blind pick), map-constrained tracker (MAP_TUNED)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "pooled: false alarms / CPIs over all evaluation jobs",
+  "raw": 3.8725,
+  "note": ""
+ },
+ "numLeadBus": {
+  "value": "84--90\\%",
+  "script": "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)",
+  "config": "final M2 config: detector budget 4 FA/CPI, blind clutter, image-method ghost handling (budget-4 image/blind pick), map-constrained tracker (MAP_TUNED); 10 dB LoS events on oru-0 (M2 event definition), confirmed track in the class gate 0.5 s before onset",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "min-max over mounts of the per-mount pooled share",
+  "raw": {
+   "lamppost": 0.8414096916299559,
+   "facade": 0.8962264150943396
+  },
+  "note": ""
+ },
+ "numLeadPed": {
+  "value": "53--63\\%",
+  "script": "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)",
+  "config": "final M2 config: detector budget 4 FA/CPI, blind clutter, image-method ghost handling (budget-4 image/blind pick), map-constrained tracker (MAP_TUNED); 10 dB LoS events on oru-0 (M2 event definition), confirmed track in the class gate 0.5 s before onset",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "min-max over mounts of the per-mount pooled share",
+  "raw": {
+   "lamppost": 0.5329341317365269,
+   "facade": 0.6329787234042553
+  },
+  "note": ""
+ },
+ "numMapBus": {
+  "value": "0.82 to 0.90",
+  "script": "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)",
+  "config": "detector budget 4 FA/CPI, blind clutter, NO ghost handling (budget-4 none/blind pick: Pfa 1e-5, train 4, eps 3 m); same detections for both trackers; unconstrained EKF (association 6 m, coast 4, q 1.0) -> map-constrained tracker (MAP_TUNED)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "pooled over all evaluation jobs",
+  "raw": [
+   0.8238245191565559,
+   0.9000339600506313
+  ],
+  "note": ""
+ },
+ "numMapPed": {
+  "value": "0.28 to 0.45",
+  "script": "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)",
+  "config": "detector budget 4 FA/CPI, blind clutter, NO ghost handling (budget-4 none/blind pick: Pfa 1e-5, train 4, eps 3 m); same detections for both trackers; unconstrained EKF (association 6 m, coast 4, q 1.0) -> map-constrained tracker (MAP_TUNED)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "pooled over all evaluation jobs",
+  "raw": [
+   0.2771023760610572,
+   0.44876483319650723
+  ],
+  "note": ""
+ },
+ "numMapCross": {
+  "value": "2.0 to 0.5",
+  "script": "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)",
+  "config": "detector budget 4 FA/CPI, blind clutter, NO ghost handling (budget-4 none/blind pick: Pfa 1e-5, train 4, eps 3 m); same detections for both trackers; unconstrained EKF (association 6 m, coast 4, q 1.0) -> map-constrained tracker (MAP_TUNED); bus/truck cross-lane velocity RMSE [m/s], tracks older than 1 s",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "pooled RMSE over all matched track samples",
+  "raw": [
+   1.9736063373467942,
+   0.5252612126377735
+  ],
+  "note": ""
+ },
+ "numGhostGain": {
+  "value": "0.82 to 0.88",
+  "script": "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)",
+  "config": "UNCONSTRAINED EKF tracker (as in M2); detector budget 4 FA/CPI, blind clutter: no-ghost pick (Pfa 1e-5, eps 3 m) -> image-method pick (Pfa 1e-3, eps 3 m, ghost association 6 m)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "pooled over all evaluation jobs and both mounts",
+  "raw": [
+   0.8238245191565559,
+   0.8793800747121114
+  ],
+  "note": "the earlier default 0.80 to 0.86 was the lamppost-only value from the M2 report; this value pools both mounts"
+ },
+ "numRefMargin": {
+  "value": "35.9",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105",
+  "seeds": "tuning seeds 101-105 (median over tuning jobs, UEs, 10 ms steps)",
+  "aggregation": "median best-cell unblocked SNR minus SNR_req",
+  "raw": 35.90939224628288,
+  "note": ""
+ },
+ "numSNRreq": {
+  "value": "9.3",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "Shannon SNR for 400 Mbit/s on 122.88 MHz, no overhead",
+  "seeds": "n/a",
+  "aggregation": "n/a",
+  "raw": 9.31867797580479,
+  "note": ""
+ },
+ "numOverhead": {
+  "value": "2.3\\%",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "(1/14 sensing symbols per slot) x CPI duty cycle 0.32",
+  "seeds": "n/a",
+  "aggregation": "n/a",
+  "raw": 0.022857142857142857,
+  "note": ""
+ },
+ "numAthreeTen": {
+  "value": "3.43",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; A3 tuned on tuning seeds (24-point grid)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)",
+  "raw": 3.426014021031547,
+  "note": ""
+ },
+ "numOracleTen": {
+  "value": "2.87",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; oracle cell selection (max post-model-B power, no interruption)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)",
+  "raw": 2.8705558337506263,
+  "note": ""
+ },
+ "numGenieTen": {
+  "value": "3.48",
+  "script": "scripts/run_m3_genie.py -> results/M3/genie.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; genie + A3, first-round policy, ground-truth prediction, NO sensing overhead",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)",
+  "raw": 3.4765898848272405,
+  "note": ""
+ },
+ "numHybridTen": {
+  "value": "5.32",
+  "script": "scripts/run_m3_hybrid.py -> results/M3/hybrid.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; hybrid A3 + xApp, jointly tuned (400-point grid)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)",
+  "raw": 5.31885327991988,
+  "note": ""
+ },
+ "numAthreeRef": {
+  "value": "0.20",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; A3 tuned on tuning seeds (24-point grid)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)",
+  "raw": 0.20267901852779166,
+  "note": ""
+ },
+ "numOracleRef": {
+  "value": "0.02",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; oracle cell selection (max post-model-B power, no interruption)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)",
+  "raw": 0.01602403605408112,
+  "note": ""
+ },
+ "numGenieRef": {
+  "value": "0.23",
+  "script": "scripts/run_m3_genie.py -> results/M3/genie.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; genie + A3, first-round policy, ground-truth prediction, NO sensing overhead",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)",
+  "raw": 0.23259889834752126,
+  "note": ""
+ },
+ "numHybridRef": {
+  "value": "0.33",
+  "script": "scripts/run_m3_hybrid.py -> results/M3/hybrid.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; hybrid A3 + xApp, jointly tuned (400-point grid)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)",
+  "raw": 0.32786680020030046,
+  "note": ""
+ },
+ "numXappTen": {
+  "value": "6.25",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; sensing xApp + A3 (A3 held off during the xApp hold), budget-2/4 detector as tuned",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)",
+  "raw": 6.247120681021533,
+  "note": ""
+ },
+ "numGenieMatch": {
+  "value": "87\\%",
+  "script": "scripts/run_m3_genie.py -> results/M3/genie.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; genie + A3, first-round policy, ground-truth prediction, NO sensing overhead; a handover matches when it leaves the fixed cell within [event start - 2 s, event end] of a 10 dB event of that UE",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over evaluation jobs of the per-job share of genie-triggered handovers that match",
+  "raw": 0.8710488466641717,
+  "note": ""
+ },
+ "numAthreeMatch": {
+  "value": "44\\%",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; A3 tuned on tuning seeds (24-point grid); a handover matches when it leaves the fixed cell within [event start - 2 s, event end] of a 10 dB event of that UE",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over evaluation jobs of the per-job share of A3 handovers that match",
+  "raw": 0.44129022913568566,
+  "note": ""
+ },
+ "numGeniePreBus": {
+  "value": "70\\%",
+  "script": "scripts/run_m3_genie.py -> results/M3/genie.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; genie + A3, first-round policy, ground-truth prediction, NO sensing overhead; bus/truck 10 dB events with a matching handover before event start (proactive recall, all events)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over evaluation jobs with bus/truck events of the per-job share",
+  "raw": 0.6968998718998718,
+  "note": ""
+ },
+ "numAthreePreBus": {
+  "value": "23\\%",
+  "script": "scripts/run_m3.py -> results/M3/metrics.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; A3 tuned on tuning seeds (24-point grid); bus/truck 10 dB events with a matching handover before event start (proactive recall, all events)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over evaluation jobs with bus/truck events of the per-job share",
+  "raw": 0.2273397398397398,
+  "note": ""
+ },
+ "numForesightRange": {
+  "value": "2--9\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margins 5-30 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED share of A3 outage over evaluation jobs (sum of steps / sum of A3 outage steps); min-max over margins 5-30 dB",
+  "raw": {
+   "5 dB": 0.01698502495840266,
+   "10 dB": 0.09394526254247816,
+   "15 dB": 0.058729867107599976,
+   "20 dB": 0.07174172977281786,
+   "25 dB": 0.08938906752411575,
+   "30 dB": 0.0935720097640358
+  },
+  "note": ""
+ },
+ "numForesightRef": {
+  "value": "16\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; 3GPP reference margin",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED share of A3 outage over evaluation jobs",
+  "raw": 0.1624459542927733,
+  "note": ""
+ },
+ "numForesightMaxAbs": {
+  "value": "0.32",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; all margins",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "max over margins of the mean over evaluation jobs of blockage-caused wrong-cell time [s/UE-min]",
+  "raw": {
+   "0 dB": 0.0,
+   "5 dB": 0.1597396094141212,
+   "10 dB": 0.32185778668002,
+   "15 dB": 0.1200550826239359,
+   "20 dB": 0.09013520280420631,
+   "25 dB": 0.05220330495743615,
+   "30 dB": 0.028793189784677008,
+   "3GPP short-range reference": 0.032924386579869805,
+   "v1 radio (high margin)": 0.017526289434151226
+  },
+  "note": ""
+ },
+ "numTauZeroLow": {
+  "value": "35--42\\%",
+  "script": "scripts/run_m3_genie.py -> results/M3/genie.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; A3 retuned at tau_HO = 0 on tuning seeds; gap = A3 - oracle outage (means over evaluation jobs); margins 0 dB-10 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "share of the A3-oracle gap closed, 1 - gap(0)/gap(20 ms), from means over jobs; min-max over margins",
+  "raw": {
+   "0 dB": 0.38322717622077984,
+   "5 dB": 0.34865020103389,
+   "10 dB": 0.42032905116069375
+  },
+  "note": ""
+ },
+ "numTauZeroHigh": {
+  "value": "68--93\\%",
+  "script": "scripts/run_m3_genie.py -> results/M3/genie.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; A3 retuned at tau_HO = 0 on tuning seeds; gap = A3 - oracle outage (means over evaluation jobs); margins 15 dB-30 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "share of the A3-oracle gap closed, 1 - gap(0)/gap(20 ms), from means over jobs; min-max over margins",
+  "raw": {
+   "15 dB": 0.6769851951547776,
+   "20 dB": 0.7454096045197742,
+   "25 dB": 0.8703703703703703,
+   "30 dB": 0.9303721488595439
+  },
+  "note": ""
+ },
+ "numTauZeroRef": {
+  "value": "97\\%",
+  "script": "scripts/run_m3_genie.py -> results/M3/genie.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; A3 retuned at tau_HO = 0 on tuning seeds; gap = A3 - oracle outage (means over evaluation jobs); 3GPP reference margin",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "1 - gap(0)/gap(20 ms), from means over jobs",
+  "raw": 0.9651240778001341,
+  "note": ""
+ }
+}
