@@ -1291,6 +1291,283 @@
   "raw": 0.9347826086956522,
   "note": ""
  },
+ "numAfiveTen": {
+  "value": "3.29",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 10 dB; A5 tuned on tuning seeds (t1/t2/TTT = {'t1_db': 0.0, 't2_db': 0.0, 'ttt_s': 0.04})",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 3.29243865798698,
+  "note": ""
+ },
+ "numCostOracleTen": {
+  "value": "2.97",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 10 dB; cost-aware oracle, switches at 0.1 s epochs, tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 2.9709564346519777,
+  "note": ""
+ },
+ "numGeniePlanTen": {
+  "value": "2.99",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 10 dB; genie-planner, H = 0.5 s, true future SNR, no overhead",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 2.9927391086629944,
+  "note": ""
+ },
+ "numSensePlanTen": {
+  "value": "9.07",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 10 dB; sensing-planner, H = 0.5 s and detector budget 4 tuned on tuning seeds, overhead charged",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 9.0678517776665,
+  "note": ""
+ },
+ "numAfiveRef": {
+  "value": "0.08",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 3GPP short-range reference; A5 tuned on tuning seeds (t1/t2/TTT = {'t1_db': 3.0, 't2_db': 6.0, 'ttt_s': 0.04})",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.07936905358037055,
+  "note": ""
+ },
+ "numCostOracleRef": {
+  "value": "0.02",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 3GPP short-range reference; cost-aware oracle, switches at 0.1 s epochs, tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.023159739609414122,
+  "note": ""
+ },
+ "numGeniePlanRef": {
+  "value": "0.03",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 3GPP short-range reference; genie-planner, H = 0.5 s, true future SNR, no overhead",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.031672508763144716,
+  "note": ""
+ },
+ "numSensePlanRef": {
+  "value": "0.13",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 3GPP short-range reference; sensing-planner, H = 2.0 s and detector budget 4 tuned on tuning seeds, overhead charged",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.13232348522784176,
+  "note": ""
+ },
+ "numTrueLossRef": {
+  "value": "0.04",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; 3GPP reference; diagnostic planner with the TRUE LoS loss (unblocked SNR minus true LoS loss), overhead charged, H = 2.0 s (the sensing-planner's tuned H at this margin)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.03893340010015022,
+  "note": ""
+ },
+ "numTrueLossFrom": {
+  "value": "15",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; true-LoS-loss planner (sensing-planner's tuned H per margin) vs A5, comparison of means",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "lowest margin [dB] where the mean outage is below A5's",
+  "raw": {
+   "0 dB": {
+    "trueloss": 36.04744616925388,
+    "a5": 34.66487230846269
+   },
+   "5 dB": {
+    "trueloss": 10.528042063094642,
+    "a5": 9.226840260390585
+   },
+   "10 dB": {
+    "trueloss": 3.493365047571357,
+    "a5": 3.29243865798698
+   },
+   "15 dB": {
+    "trueloss": 1.952553830746119,
+    "a5": 1.9984977466199296
+   },
+   "20 dB": {
+    "trueloss": 1.1049073610415623,
+    "a5": 1.18014521782674
+   },
+   "25 dB": {
+    "trueloss": 0.42526289434151227,
+    "a5": 0.4621932899349023
+   },
+   "30 dB": {
+    "trueloss": 0.15110165247871807,
+    "a5": 0.16925388082123183
+   },
+   "3GPP short-range reference": {
+    "trueloss": 0.03893340010015022,
+    "a5": 0.07936905358037055
+   },
+   "v1 radio (high margin)": {
+    "trueloss": 0.025663495242864293,
+    "a5": 0.03968452679018527
+   }
+  },
+  "note": "beats A5 at every margin from this one up"
+ },
+ "numValueRange": {
+  "value": "70--89\\%",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; best reactive = A5 (all margins); cost-aware oracle at 0.1 s epochs, tau_HO 20 ms; margins 5-30 dB and the 3GPP reference",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: (best reactive - cost-aware) / (best reactive - instantaneous oracle) outage steps; min-max over margins",
+  "raw": {
+   "5 dB": 0.7404172731683649,
+   "10 dB": 0.7620178041543026,
+   "15 dB": 0.713463751438435,
+   "20 dB": 0.6995051731893838,
+   "25 dB": 0.7204633204633205,
+   "30 dB": 0.7321428571428571,
+   "3GPP short-range reference": 0.8873517786561265
+  },
+  "note": ""
+ },
+ "numValuePedRange": {
+  "value": "40--64\\%",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; best reactive = A5 (all margins); cost-aware oracle at 0.1 s epochs, tau_HO 20 ms; pedestrian; margins 5-30 dB and the 3GPP reference",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins",
+  "raw": {
+   "5 dB": 0.4027171276079573,
+   "10 dB": 0.458160237388724,
+   "15 dB": 0.5301112389719984,
+   "20 dB": 0.5578047683310842,
+   "25 dB": 0.583011583011583,
+   "30 dB": 0.5714285714285714,
+   "3GPP short-range reference": 0.6403162055335968
+  },
+  "note": ""
+ },
+ "numValueBusRange": {
+  "value": "11--32\\%",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; best reactive = A5 (all margins); cost-aware oracle at 0.1 s epochs, tau_HO 20 ms; bus/truck; margins 5-30 dB and the 3GPP reference",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins",
+  "raw": {
+   "5 dB": 0.26297913634158177,
+   "10 dB": 0.31572700296735906,
+   "15 dB": 0.19064058304564635,
+   "20 dB": 0.1349527665317139,
+   "25 dB": 0.10656370656370656,
+   "30 dB": 0.15535714285714286,
+   "3GPP short-range reference": 0.23517786561264822
+  },
+  "note": ""
+ },
+ "numValuePedTen": {
+  "value": "46\\%",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; best reactive = A5 (all margins); cost-aware oracle at 0.1 s epochs, tau_HO 20 ms; pedestrian; margin 10 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "net closed steps (pedestrian) / best-reactive-to-oracle gap, pooled",
+  "raw": 0.458160237388724,
+  "note": ""
+ },
+ "numValueBusTen": {
+  "value": "32\\%",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; best reactive = A5 (all margins); cost-aware oracle at 0.1 s epochs, tau_HO 20 ms; bus/truck; margin 10 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled",
+  "raw": 0.31572700296735906,
+  "note": ""
+ },
+ "numPlanHorizon": {
+  "value": "--",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; genie-planner vs cost-aware oracle (0.1 s epochs, tau_HO 20 ms), all margins",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "smallest H with (genie-planner - cost-aware) / cost-aware <= 5 % of the mean outage at every margin",
+  "raw": {
+   "0.5": {
+    "0 dB": 0.0,
+    "5 dB": 0.0024938346864695395,
+    "10 dB": 0.0073318725771111485,
+    "15 dB": 0.009713556437890089,
+    "20 dB": 0.011941056910569096,
+    "25 dB": 0.018847408481333965,
+    "30 dB": 0.061571125265392816,
+    "3GPP short-range reference": 0.3675675675675675,
+    "v1 radio (high margin)": 0.5130434782608695
+   },
+   "1.0": {
+    "0 dB": 0.0,
+    "5 dB": 0.002438416137881489,
+    "10 dB": 0.007247598179673187,
+    "15 dB": 0.00957175269427117,
+    "20 dB": 0.011432926829268417,
+    "25 dB": 0.017397607828923575,
+    "30 dB": 0.06050955414012723,
+    "3GPP short-range reference": 0.3675675675675675,
+    "v1 radio (high margin)": 0.5130434782608695
+   },
+   "2.0": {
+    "0 dB": 0.0,
+    "5 dB": 0.0024107068635873656,
+    "10 dB": 0.00695263778863995,
+    "15 dB": 0.009288145207033456,
+    "20 dB": 0.010670731707317175,
+    "25 dB": 0.01667270750271846,
+    "30 dB": 0.05626326963906573,
+    "3GPP short-range reference": 0.3621621621621623,
+    "v1 radio (high margin)": 0.5130434782608695
+   },
+   "3.0": {
+    "0 dB": 0.0,
+    "5 dB": 0.0023829975892932422,
+    "10 dB": 0.006657677397606561,
+    "15 dB": 0.009146341463414536,
+    "20 dB": 0.010670731707317175,
+    "25 dB": 0.015947807176513343,
+    "30 dB": 0.05626326963906573,
+    "3GPP short-range reference": 0.3621621621621623,
+    "v1 radio (high margin)": 0.5130434782608695
+   }
+  },
+  "note": "no H meets the 5 % criterion at every margin; see raw for the per-margin relative excess"
+ },
+ "numSensePlanHO": {
+  "value": "23.7",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 10 dB; sensing-planner (tuned H)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over evaluation jobs of handovers per UE-minute",
+  "raw": 23.72308462694041,
+  "note": "margin not specified in the request; 10 dB used"
+ },
+ "numSensePlanPP": {
+  "value": "0.54",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 10 dB; sensing-planner (tuned H); ping-pong = share of handovers back to the previous cell within 1 s",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over evaluation jobs of the per-job ping-pong rate",
+  "raw": 0.5402185773944936,
+  "note": "margin not specified in the request; 10 dB used"
+ },
+ "numAfiveHO": {
+  "value": "5.9",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 10 dB; A5 (tuned)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over evaluation jobs of handovers per UE-minute",
+  "raw": 5.921382073109664,
+  "note": "margin not specified in the request; 10 dB used"
+ },
  "numTauZeroRef": {
   "value": "97\\%",
   "script": "scripts/run_m3_genie.py -> results/M3/genie.json",
