@@ -276,11 +276,13 @@ def _grid(spec: dict) -> list[dict[str, float]]:
     return [dict(zip(keys, values)) for values in itertools.product(*[spec[k] for k in keys])]
 
 
-def make_lanes(jobs, combos, snr_m, built, scheme, a3, rw, budget_info, *, e2_s=None, tau_ho_s=None, hybrid=False) -> tuple[Lanes, list[tuple]]:
+def make_lanes(jobs, combos, snr_m, built, scheme, a3, rw, budget_info, *, e2_s=None, tau_ho_s=None, hybrid=False, min_start_s=None) -> tuple[Lanes, list[tuple]]:
     """Lanes for (combo, job, UE).
 
     ``hybrid``: xApp lanes whose handovers set no hold at all, so A3 stays
     active the whole time (it may hand back, and it handles every return).
+    ``min_start_s``: keep only triggers whose predicted blockage start is at
+    least this far after the report (onset-advance policy); None = all.
     """
     e2 = rw["e2"]
     pr = rw["predict"]
@@ -297,11 +299,14 @@ def make_lanes(jobs, combos, snr_m, built, scheme, a3, rw, budget_info, *, e2_s=
                     from xapp.predict_torch import trigger_table
 
                     source = p["budget"] if isinstance(p["budget"], str) else int(p["budget"])  # detector budget, or "genie"
-                    key = (job, source, float(p["horizon_s"]))
+                    key = (job, source, float(p["horizon_s"]), min_start_s)
                     if key not in _TRIG:
                         table = trigger_table(data[f"pred_{source}"], data["taus"], float(p["horizon_s"]), float(pr["los_block_db"]), float(pr["los_clear_db"]))
                         end = np.nan_to_num(table["end_s"], nan=0.0)
-                        _TRIG[key] = (table["trigger"], np.round(end / DT_COMM).astype(np.int64))
+                        trig_ok = table["trigger"]
+                        if min_start_s is not None:
+                            trig_ok = trig_ok & (np.nan_to_num(table["start_s"], nan=-1.0) >= float(min_start_s) - 1e-9)
+                        _TRIG[key] = (trig_ok, np.round(end / DT_COMM).astype(np.int64))
                     trig.append(_TRIG[key][0][:, u, :])
                     trig_end.append(np.zeros_like(_TRIG[key][1][:, u, :]) if hybrid else _TRIG[key][1][:, u, :])
                 rows.append(p)

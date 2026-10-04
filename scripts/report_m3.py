@@ -368,6 +368,9 @@ def main() -> None:
     gen = ROOT / "results" / "M3" / "genie.json"
     if gen.exists():
         _genie_section(add, json.loads(gen.read_text()), m, json.loads(hyb.read_text()) if hyb.exists() else None)
+    gen2 = ROOT / "results" / "M3" / "genie2.json"
+    if gen2.exists() and gen.exists():
+        _genie2_section(add, json.loads(gen2.read_text()), json.loads(gen.read_text()))
     if args.regression and args.regression.exists():
         reg = json.loads(args.regression.read_text())
         add("### Regression check: the follow-up code changes did not change the existing schemes")
@@ -432,10 +435,89 @@ def _observations(add, m: dict, labels: list[str]) -> None:
             if gc["a3_gap_tau_default"] > 0:
                 closed.append(f"{r['label']} {100.0 * (1.0 - gc['a3_gap_tau0'] / gc['a3_gap_tau_default']):.0f} %")
         add("- Interruption-free handover (tau_HO = 0) closes this share of the A3-to-oracle gap: " + ", ".join(closed) + " (section 12).")
+    gen2 = ROOT / "results" / "M3" / "genie2.json"
+    if gen2.exists():
+        g2 = json.loads(gen2.read_text())
+        shares = ", ".join(f"{r['label']} {100 * r['foresight']['all']['share_of_a3_outage_pooled']:.1f} %" for r in g2["margins"])
+        add("- Policy-independent foresight bound (wrong-cell time inside 10 dB events while the other cell was usable, pooled share of A3 "
+            "outage_req): " + shares + " (section 13).")
+        tau2 = f"{g2['tau_ho_default_s']:.3f}"
+        cmp = [(r["label"], _better(r["tau_ho"][tau2]["onset_genie_no_overhead"]["outage_req_s_per_min"], r1["tau_ho"][tau2]["a3"]["outage_req_s_per_min"]))
+               for r, r1 in zip(g2["margins"], json.loads((ROOT / "results" / "M3" / "genie.json").read_text())["margins"])]
+        groups = {k: [lab for lab, v in cmp if v == k] for k in ("lower", "overlap", "higher")}
+        add(f"- Onset-advance genie (added after the first genie result; no overhead) vs A3: lower at {groups['lower'] or 'no margin'}; "
+            f"overlapping at {groups['overlap'] or 'no margin'}; higher at {groups['higher'] or 'no margin'} (section 13).")
     ref = labels.index("3GPP short-range reference")
     gap = m["evaluation"][ref]["a3"]["outage_req_s_per_min"]["mean"] - m["evaluation"][ref]["oracle"]["outage_req_s_per_min"]["mean"]
     add(f"- At the 3GPP short-range reference the A3-to-oracle gap is {gap:.3f} s/UE-min; the decomposition in section 11 splits every "
         "margin's gap into wrong-cell lag and handover interruption.")
+    add("")
+
+
+def _genie2_section(add, g2: dict, g: dict) -> None:
+    tau = f"{g2['tau_ho_default_s']:.3f}"
+    add("## 13. Third follow-up (genie bound only): foresight bound and an onset-advance genie policy")
+    add("")
+    add("This concerns the genie bound only; the sensing xApp and its predictor are unchanged.")
+    add("")
+    add("### Policy-independent foresight bound")
+    add("")
+    add("With the tuned A3 (tau_HO = 20 ms, main-run parameters) on the evaluation seeds: wrong-cell time inside 10 dB events of the UE, i.e. "
+        "steps where the serving cell is below the service rate while the other cell is at or above it, per blocker class (class of the "
+        "event), in s/UE-min and as a share of A3's total outage_req (per job, mean ± 95 % CI; and pooled over all jobs). This is the most that "
+        "any blockage prediction can recover from A3's outage under any policy: prediction cannot remove handover interruption (b) or "
+        "time when both cells are unusable (c). Wrong-cell time outside events (path-loss driven cell changes) is not blockage foresight "
+        "and is not counted.")
+    add("")
+    add("| Margin | A3 outage_req | Class | Foresight-recoverable [s/UE-min] | Share of A3 outage (per job) | Share (pooled) |")
+    add("|---|---|---|---|---|---|")
+    for r in g2["margins"]:
+        fs = r["foresight"]
+        for c in ("all", "bus/truck", "pedestrian"):
+            pooled = fs[c]["share_of_a3_outage_pooled"]
+            add(f"| {r['label']} | {f(fs['a3_outage_req']) if c == 'all' else ''} | {c} | {f(fs[c]['s_per_ue_min'])} | "
+                f"{f(fs[c]['share_of_a3_outage_per_job'], 100, 1)} % | {'—' if pooled is None else f'{100 * pooled:.1f} %'} |")
+    add("")
+    add("No 10 dB events are caused by cars, so the car class is omitted.")
+    add("")
+    add("### Genie, onset-advance policy")
+    add("")
+    add("**This policy was added after the first genie result** (section 12), to test whether a different use of perfect prediction helps. "
+        "A3 is always active and there is no global hold. The genie (ground-truth LoS loss) only advances a handover when the predicted "
+        f"blockage of the serving cell starts at least {g2['min_predicted_start_s'] * 1e3:.0f} ms after the report (E2 loop delay + 10 ms, so the "
+        "switch lands before onset) and the other cell is predicted clear (< 3 dB) for the predicted blockage; the other cell's filtered SNR "
+        "must exceed serving − 10 dB as before. After such a handover A3's hand-back is blocked only until the predicted end of the "
+        "blockage. Grid H {0.5,1,2,3} s (4 points), A3 underlay = the A3 tuned at that margin and tau_HO, tuned on tuning seeds per margin.")
+    add("")
+    add("| Margin | tau_HO | A3 | genie, 1st policy (no ovh.) | onset genie (no ovh.) | onset genie (with ovh.) | onset H [s] | onset HO/UE-min | onset precision | onset proactive recall |")
+    add("|---|---|---|---|---|---|---|---|---|---|")
+    for r2, r1 in zip(g2["margins"], g["margins"]):
+        for t in (tau, "0.000"):
+            b2, b1 = r2["tau_ho"][t], r1["tau_ho"][t]
+            x = b2["onset_genie_no_overhead"]
+            e = x["events"].get("all|all", {})
+            add(f"| {r2['label']} | {float(t) * 1e3:.0f} ms | {f(b1['a3']['outage_req_s_per_min'])} | {f(b1['genie_no_overhead']['outage_req_s_per_min'])} | "
+                f"{f(x['outage_req_s_per_min'])} | {f(b2['onset_genie']['outage_req_s_per_min'])} | {b2['onset_genie_no_overhead_params']['horizon_s']:.1f} | "
+                f"{f(x['ho_per_min'], 1, 1)} | {f(x['precision'], 1, 2)} | {f(e.get('proactive_recall'), 1, 2) if e else '—'} |")
+    add("")
+    add("Outage_req in s/UE-min (mean ± 95 % CI, 40 evaluation jobs).")
+    add("")
+    add(f"Decomposition at tau_HO = {float(tau) * 1e3:.0f} ms (s/UE-min, no overhead):")
+    add("")
+    add("| Margin | Scheme | (a) in 10 dB events | (a) outside events | (b) interruption | (c) both unusable |")
+    add("|---|---|---|---|---|---|")
+    for r2, r1 in zip(g2["margins"], g["margins"]):
+        for name, d in (("A3", r1["tau_ho"][tau]["a3_decomp"]), ("genie, 1st policy", r1["tau_ho"][tau]["genie_no_overhead_decomp"]),
+                        ("onset genie", r2["tau_ho"][tau]["onset_genie_no_overhead_decomp"])):
+            add(f"| {r2['label']} | {name} | {f(d['a_in_events'])} | {f(d['a_outside_events'])} | {f(d['b_interruption'])} | {f(d['c_both_unusable'])} |")
+    add("")
+    cmp = [(r2["label"], _better(r2["tau_ho"][tau]["onset_genie_no_overhead"]["outage_req_s_per_min"], r1["tau_ho"][tau]["a3"]["outage_req_s_per_min"]))
+           for r2, r1 in zip(g2["margins"], g["margins"])]
+    groups = {k: [lab for lab, v in cmp if v == k] for k in ("lower", "overlap", "higher")}
+    add(f"Onset genie (no overhead) vs A3 at tau_HO = {float(tau) * 1e3:.0f} ms (95 % CIs): lower at {groups['lower'] or 'no margin'}; "
+        f"overlapping at {groups['overlap'] or 'no margin'}; higher at {groups['higher'] or 'no margin'}.")
+    add("")
+    add(f"Third follow-up wall time: {g2['wall_s']:.0f} s.")
     add("")
 
 
