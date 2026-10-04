@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -240,7 +241,7 @@ def catalog() -> dict[str, dict[str, Any]]:
                         put(f"x.{v}.{tag}.{ttag}.gap_closed", _pct(blk[f"{v}_gap_closed_pooled"]), script=sd, config=M3_CFG + f"; margin {r['label']}; tau_HO {float(t) * 1e3:.0f} ms",
                             aggregation="POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps", raw=blk[f"{v}_gap_closed_pooled"])
     _planner_macros(put, R5, M3_CFG, EVAL)
-    _paired_extras(put, R5, M3_CFG)
+    _paired_extras(put, R5, M3_CFG, out.get("numTrueLossFrom", {}).get("value"))
     _review_bc_macros(put, R5, M3_CFG)
     rref = next(r for r in gen["margins"] if r["label"] == "3GPP short-range reference")
     put("numTauZeroRef", _pct(closed(rref)), script=gn[0], config=tcfg + "; 3GPP reference margin", aggregation="1 - gap(0)/gap(20 ms), from means over jobs", raw=closed(rref))
@@ -366,7 +367,7 @@ def _planner_macros(put, R5: Path, M3_CFG: str, EVAL: str) -> None:
         aggregation="mean over evaluation jobs of handovers per UE-minute", raw=r10["a5"]["eval"]["ho_per_min"]["mean"], note="margin not specified in the request; 10 dB used")
 
 
-def _paired_extras(put, R5: Path, M3_CFG: str) -> None:
+def _paired_extras(put, R5: Path, M3_CFG: str, true_loss_from: str | None) -> None:
     """Catalog extras: paired per-job comparisons vs A5 (statistics only)."""
     pf = R5 / "paired.json"
     if not pf.exists():
@@ -381,6 +382,19 @@ def _paired_extras(put, R5: Path, M3_CFG: str) -> None:
                 config=M3_CFG + f"; margin {r['label']}; {name} (H = {r['H_s']:.1f} s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
                 aggregation="paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
                 raw=v)
+    if true_loss_from in (None, "--"):
+        return
+    lo = float(true_loss_from)
+    sel = [r for r in pj["margins"] if (lo <= r["margin_db"] <= 30.0) or r["label"] == "3GPP short-range reference"]
+    ps = {r["label"]: r["trueloss_vs_a5"]["wilcoxon_p_two_sided"] for r in sel}
+    pmax = max(ps.values())
+    shown = math.ceil(pmax * 10 ** (1 - math.floor(math.log10(pmax)))) / 10 ** (1 - math.floor(math.log10(pmax)))  # 2 significant digits, rounded up
+    bonf = pmax * len(ps)
+    put("numPairedMaxP", f"{shown:.2g}", script=sp,
+        config=M3_CFG + f"; true-LoS-loss planner (sensing-planner's tuned H) vs A5, 40 evaluation jobs; margins {lo:.0f}-30 dB plus the 3GPP reference ({len(ps)} margins)",
+        aggregation="max over those margins of the two-sided Wilcoxon signed-rank p (zero differences dropped); rounded UP to 2 significant digits so that p <= value holds",
+        raw={"p_per_margin": ps, "p_max": pmax, "n_margins": len(ps), "bonferroni_p_max_times_n": bonf},
+        note=f"Bonferroni: p_max x {len(ps)} = {bonf:.3g} " + ("< 0.05 (holds)" if bonf < 0.05 else ">= 0.05 (does NOT hold)"))
 
 
 def _review_bc_macros(put, R5: Path, M3_CFG: str) -> None:
