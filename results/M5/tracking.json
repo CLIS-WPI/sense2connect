@@ -82,6 +82,43 @@
       }
      }
     }
+   },
+   "summary": {
+    "false_clusters_per_cpi": 5.280625,
+    "false_alarms_per_cpi": 4.006333333333333,
+    "cluster_fragment_per_cpi": 1.2742916666666666,
+    "cluster_ghost_per_cpi": 0.12366666666666666,
+    "cluster_other_per_cpi": 3.8826666666666667,
+    "track_fragment_per_cpi": 1.8972083333333334,
+    "track_ghost_per_cpi": 0.25616666666666665,
+    "track_other_per_cpi": 7.2195833333333335,
+    "ghost_track_rate": 0.49757462480230924,
+    "classes": {
+     "bus/truck": {
+      "gt_samples": 64782,
+      "detection_pd": 0.7001173165385447,
+      "track_pd": 0.8238245191565559,
+      "position_rmse_m": 2.9063117478526475,
+      "velocity_rmse_mps": 5.118651120031574,
+      "ospa_m": 2.89903641173954
+     },
+     "pedestrian": {
+      "gt_samples": 254581,
+      "detection_pd": 0.23528464418004486,
+      "track_pd": 0.2771023760610572,
+      "position_rmse_m": 0.8268229216268317,
+      "velocity_rmse_mps": 2.2387671093661985,
+      "ospa_m": 1.2555980852186297
+     },
+     "car": {
+      "gt_samples": 172232,
+      "detection_pd": 0.5194737331041851,
+      "track_pd": 0.5993659714803289,
+      "position_rmse_m": 1.6693286902873337,
+      "velocity_rmse_mps": 4.503951282420007,
+      "ospa_m": 1.996337315355729
+     }
+    }
    }
   },
   "noghost|map": {
@@ -153,6 +190,43 @@
        "0.5": 0,
        "1.0": 0
       }
+     }
+    }
+   },
+   "summary": {
+    "false_clusters_per_cpi": 5.280625,
+    "false_alarms_per_cpi": 4.006333333333333,
+    "cluster_fragment_per_cpi": 1.2742916666666666,
+    "cluster_ghost_per_cpi": 0.12366666666666666,
+    "cluster_other_per_cpi": 3.8826666666666667,
+    "track_fragment_per_cpi": 3.5965416666666665,
+    "track_ghost_per_cpi": 0.2595,
+    "track_other_per_cpi": 9.099625,
+    "ghost_track_rate": 0.510248924728536,
+    "classes": {
+     "bus/truck": {
+      "gt_samples": 64782,
+      "detection_pd": 0.7001173165385447,
+      "track_pd": 0.9000339600506313,
+      "position_rmse_m": 2.470732761506829,
+      "velocity_rmse_mps": 3.87805543684036,
+      "ospa_m": 1.9602345829123453
+     },
+     "pedestrian": {
+      "gt_samples": 254581,
+      "detection_pd": 0.23528464418004486,
+      "track_pd": 0.44876483319650723,
+      "position_rmse_m": 0.5534300258679974,
+      "velocity_rmse_mps": 1.4695121015092694,
+      "ospa_m": 0.9733373164399058
+     },
+     "car": {
+      "gt_samples": 172232,
+      "detection_pd": 0.5194737331041851,
+      "track_pd": 0.7309443076780157,
+      "position_rmse_m": 1.2989106112291806,
+      "velocity_rmse_mps": 2.783393760467086,
+      "ospa_m": 1.4746277006048742
      }
     }
    }
@@ -228,6 +302,43 @@
       }
      }
     }
+   },
+   "summary": {
+    "false_clusters_per_cpi": 5.401125,
+    "false_alarms_per_cpi": 3.8725,
+    "cluster_fragment_per_cpi": 1.528625,
+    "cluster_ghost_per_cpi": 0.057916666666666665,
+    "cluster_other_per_cpi": 3.814583333333333,
+    "track_fragment_per_cpi": 2.269791666666667,
+    "track_ghost_per_cpi": 0.15095833333333333,
+    "track_other_per_cpi": 7.202458333333333,
+    "ghost_track_rate": 0.4923228107273878,
+    "classes": {
+     "bus/truck": {
+      "gt_samples": 64782,
+      "detection_pd": 0.7657065234169985,
+      "track_pd": 0.8793800747121114,
+      "position_rmse_m": 2.7440517377596674,
+      "velocity_rmse_mps": 4.895404009115444,
+      "ospa_m": 2.5669890212896216
+     },
+     "pedestrian": {
+      "gt_samples": 254581,
+      "detection_pd": 0.2535499507033125,
+      "track_pd": 0.28349326933274677,
+      "position_rmse_m": 0.8290347762973271,
+      "velocity_rmse_mps": 2.174728165294672,
+      "ospa_m": 1.2532004525624423
+     },
+     "car": {
+      "gt_samples": 172232,
+      "detection_pd": 0.5504958428166659,
+      "track_pd": 0.6329834177156394,
+      "position_rmse_m": 1.6466051789367824,
+      "velocity_rmse_mps": 4.545747142511183,
+      "ospa_m": 1.9283574422179954
+     }
+    }
    }
   },
   "image|map": {
@@ -299,6 +410,43 @@
        "0.5": 0,
        "1.0": 0
       }
+     }
+    }
+   },
+   "summary": {
+    "false_clusters_per_cpi": 5.401125,
+    "false_alarms_per_cpi": 3.8725,
+    "cluster_fragment_per_cpi": 1.528625,
+    "cluster_ghost_per_cpi": 0.057916666666666665,
+    "cluster_other_per_cpi": 3.814583333333333,
+    "track_fragment_per_cpi": 4.244,
+    "track_ghost_per_cpi": 0.12858333333333333,
+    "track_other_per_cpi": 9.079291666666666,
+    "ghost_track_rate": 0.5096468961336642,
+    "classes": {
+     "bus/truck": {
+      "gt_samples": 64782,
+      "detection_pd": 0.7657065234169985,
+      "track_pd": 0.9409249482881047,
+      "position_rmse_m": 2.188542244895496,
+      "velocity_rmse_mps": 3.4691093361077407,
+      "ospa_m": 1.5669040588639673
+     },
+     "pedestrian": {
+      "gt_samples": 254581,
+      "detection_pd": 0.2535499507033125,
+      "track_pd": 0.4646772539977453,
+      "position_rmse_m": 0.5668516391431944,
+      "velocity_rmse_mps": 1.4420906403806968,
+      "ospa_m": 0.9643234810133418
+     },
+     "car": {
+      "gt_samples": 172232,
+      "detection_pd": 0.5504958428166659,
+      "track_pd": 0.762750243857123,
+      "position_rmse_m": 1.2576294698835222,
+      "velocity_rmse_mps": 2.8131947886392443,
+      "ospa_m": 1.3820070947466438
      }
     }
    }

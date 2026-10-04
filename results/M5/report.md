@@ -456,9 +456,148 @@ Cars never cause 10 dB events; all car-attributed closable gap comes from sub-10
 
 The bus/truck onset is resolved at 10 ms (median 0.49 s at 1 ms vs 0.50 s). The pedestrian median equals the time step at both resolutions (1 ms and 10 ms): with the model-B screen of a 0.5 m pedestrian the LoS loss is effectively a step; the onset is below the 1 ms resolution, i.e. 'abrupt' is a property of the model, not a measured rise time.
 
+## After block A review: grid-aligned cost-aware oracle -- ADDED AFTER REVIEW
+
+`scripts/review_grid_oracle.py`. Same Viterbi (union objective, tau_HO 20 ms), switches only on the planner's decision grid (k mod 10 = 3, i.e. 0.1 s epochs offset by the E2 delay + 10 ms). The any-step oracle stays THE bound; the grid-aligned oracle is the bound for policies that act only at E2 decision epochs and is used for \numPlanHorizon. Checks: instantaneous <= any-step <= grid-aligned on every job; no planner (any H) beats the grid-aligned oracle on any job.
+
+| Margin | Any-step | Grid-aligned | Grid cost | Instantaneous | Planner jobs below grid oracle |
+|---|---|---|---|---|---|
+| 0 dB | 34.559 | 34.559 | +0.0 % | 34.559 | 0 |
+| 5 dB | 9.020 | 9.053 | +0.4 % | 8.969 | 0 |
+| 10 dB | 2.953 | 2.982 | +1.0 % | 2.871 | 0 |
+| 15 dB | 1.747 | 1.772 | +1.4 % | 1.672 | 0 |
+| 20 dB | 0.969 | 0.988 | +2.0 % | 0.902 | 0 |
+| 25 dB | 0.341 | 0.345 | +1.0 % | 0.300 | 0 |
+| 30 dB | 0.117 | 0.118 | +0.3 % | 0.099 | 0 |
+| 3GPP short-range reference | 0.023 | 0.023 | +1.1 % | 0.016 | 0 |
+| v1 radio (high margin) | 0.014 | 0.014 | +0.0 % | 0.011 | 0 |
+
+## External review, block B -- ADDED AFTER REVIEW
+
+### B5 Error-injection ablation of the planner's blockage prediction (`scripts/review_b5_ablation.py`; diagnostic)
+
+Planner = the sensing-planner model (unblocked SNR minus predicted LoS loss, overhead charged, H tuned per margin and condition on tuning seeds); tracks = ground truth at each report (true positions, velocities, sizes; constant-velocity extrapolation), then one error type injected. Measured final-tracker rates (image ghosts, budget 4, map tracker): miss = 1 - track Pd bus/truck 6 %, pedestrian 54 %, car 24 %; false confirmed tracks 13.5 per CPI; position sigma per axis bus/truck 1.55 m, pedestrian 0.40 m, car 0.89 m; velocity sigma per axis bus/truck 2.45 m/s, pedestrian 1.02 m/s, car 1.99 m/s. Spurious tracks are bus boxes on a random lane or pedestrian boxes on a random sidewalk (1/2 each) at a uniform position, independent per report (assumption). Cells: mean outage [s/UE-min] and the paired difference to A5 (mean per-job difference, * = 95 % CI excludes 0 and Wilcoxon p < 0.05).
+
+| Condition | 0 dB | 5 dB | 10 dB | 15 dB | 20 dB | 25 dB | 30 dB | ref | v1 |
+|---|---|---|---|---|---|---|---|---|---|
+| baseline | 36.057 (+1.392*) | 10.492 (+1.265*) | 3.498 (+0.206) | 1.957 (-0.042) | 1.114 (-0.067*) | 0.437 (-0.026) | 0.155 (-0.014) | 0.039 (-0.040*) | 0.026 (-0.013*) |
+| miss 0.1 | 36.056 (+1.391*) | 10.525 (+1.299*) | 3.570 (+0.277) | 1.993 (-0.006) | 1.138 (-0.042*) | 0.463 (+0.001) | 0.175 (+0.005) | 0.047 (-0.033) | 0.028 (-0.011*) |
+| miss 0.2 | 36.055 (+1.390*) | 10.624 (+1.397*) | 3.646 (+0.353*) | 2.062 (+0.063) | 1.190 (+0.010) | 0.494 (+0.031) | 0.200 (+0.031) | 0.063 (-0.016) | 0.041 (+0.001) |
+| miss 0.3 | 36.055 (+1.390*) | 10.608 (+1.381*) | 3.710 (+0.418*) | 2.102 (+0.103*) | 1.211 (+0.031) | 0.521 (+0.058*) | 0.220 (+0.051*) | 0.076 (-0.003) | 0.051 (+0.012) |
+| miss 0.4 | 36.052 (+1.387*) | 10.775 (+1.548*) | 3.866 (+0.574*) | 2.162 (+0.164*) | 1.270 (+0.090*) | 0.604 (+0.142*) | 0.252 (+0.083*) | 0.083 (+0.004) | 0.063 (+0.023) |
+| miss 0.5 | 36.053 (+1.388*) | 10.807 (+1.580*) | 4.004 (+0.712*) | 2.290 (+0.292*) | 1.347 (+0.167*) | 0.645 (+0.183*) | 0.296 (+0.127*) | 0.115 (+0.036) | 0.075 (+0.035*) |
+| spurious 1x | 36.153 (+1.488*) | 10.571 (+1.344*) | 4.439 (+1.146*) | 2.714 (+0.715*) | 1.641 (+0.461*) | 0.785 (+0.323*) | 0.338 (+0.169*) | 0.133 (+0.053*) | 0.094 (+0.055*) |
+| spurious 2x | 36.420 (+1.755*) | 10.699 (+1.473*) | 4.726 (+1.433*) | 3.122 (+1.124*) | 2.021 (+0.841*) | 1.114 (+0.652*) | 0.606 (+0.436*) | 0.283 (+0.204*) | 0.194 (+0.154*) |
+| noise 0.5 | 36.051 (+1.386*) | 11.026 (+1.799*) | 4.731 (+1.439*) | 2.889 (+0.890*) | 1.720 (+0.540*) | 0.849 (+0.387*) | 0.394 (+0.225*) | 0.115 (+0.035) | 0.070 (+0.031) |
+| noise 1.0 | 36.051 (+1.386*) | 11.453 (+2.226*) | 5.905 (+2.612*) | 3.337 (+1.338*) | 1.988 (+0.808*) | 1.090 (+0.627*) | 0.441 (+0.271*) | 0.130 (+0.051*) | 0.090 (+0.050*) |
+| noise 2.0 | 36.052 (+1.387*) | 11.746 (+2.519*) | 6.623 (+3.330*) | 4.031 (+2.033*) | 2.297 (+1.117*) | 1.127 (+0.665*) | 0.434 (+0.265*) | 0.133 (+0.054*) | 0.075 (+0.036*) |
+| noise 4.0 | 36.057 (+1.392*) | 12.206 (+2.979*) | 7.797 (+4.505*) | 4.884 (+2.886*) | 2.904 (+1.724*) | 1.335 (+0.872*) | 0.522 (+0.353*) | 0.238 (+0.158*) | 0.152 (+0.112*) |
+| noise measured | 36.052 (+1.387*) | 11.030 (+1.803*) | 4.903 (+1.611*) | 2.915 (+0.917*) | 1.771 (+0.591*) | 0.805 (+0.342*) | 0.360 (+0.191*) | 0.125 (+0.046*) | 0.068 (+0.028) |
+| combined measured | 36.092 (+1.427*) | 12.087 (+2.860*) | 8.749 (+5.457*) | 5.058 (+3.060*) | 2.731 (+1.551*) | 1.351 (+0.889*) | 0.532 (+0.363*) | 0.151 (+0.071*) | 0.087 (+0.048*) |
+| miss measured | 36.050 (+1.386*) | 10.761 (+1.534*) | 3.970 (+0.677*) | 2.222 (+0.223*) | 1.299 (+0.119*) | 0.579 (+0.117*) | 0.274 (+0.105*) | 0.097 (+0.018) | 0.055 (+0.015) |
+
+Which error type drives the collapse? Each error alone at its measured rate (paired mean difference to A5, s/UE-min):
+
+| Margin | miss (measured) | spurious (1x measured) | position/velocity noise (measured) | sum of the three | combined (measured) | largest single |
+|---|---|---|---|---|---|---|
+| 0 dB | +1.386 | +1.488 | +1.387 | +4.261 | +1.427 | spurious 1x |
+| 5 dB | +1.534 | +1.344 | +1.803 | +4.682 | +2.860 | noise measured |
+| 10 dB | +0.677 | +1.146 | +1.611 | +3.434 | +5.457 | noise measured |
+| 15 dB | +0.223 | +0.715 | +0.917 | +1.855 | +3.060 | noise measured |
+| 20 dB | +0.119 | +0.461 | +0.591 | +1.171 | +1.551 | noise measured |
+| 25 dB | +0.117 | +0.323 | +0.342 | +0.782 | +0.889 | noise measured |
+| 30 dB | +0.105 | +0.169 | +0.191 | +0.464 | +0.363 | noise measured |
+| 3GPP short-range reference | +0.018 | +0.053 | +0.046 | +0.117 | +0.071 | spurious 1x |
+| v1 radio (high margin) | +0.015 | +0.055 | +0.028 | +0.098 | +0.048 | spurious 1x |
+
+At 0-5 dB every condition pays about the same sensing-overhead penalty (cf. B6 diagnostic: A5 + overhead). From 10 dB up the single measured errors rank as in the last column; the combined case exceeds the sum of the singles at mid margins. With perfect tracks (baseline) the planner beats A5 from 15 dB up; this is lost already at miss 0.1-0.2, spurious 1x or 0.5 m / 0.5 m/s noise.
+
+### B6 Robust planner (post-review baseline, `scripts/review_b6_robust.py`)
+
+A5 runs by default; at each E2 decision epoch the planner may only ADVANCE a handover (plan switches and the serving cell is predicted >= 10 dB blocked within H) or VETO A5 until the next epoch (plan stays and the other cell is predicted >= 10 dB blocked within H), using only confirmed map-tracker tracks older than T_c; sensing overhead charged. Tuned per margin on tuning seeds over T_c {0.3, 0.5, 1, 2} s x H {0.5, 1, 2} s x budget {2, 4}. Simulator support (planner mask, veto) has a vectorised-vs-reference equality test; existing schemes unchanged. T_c = 0 predictions match the cached M3 predictions within 4.5e-05 dB (BLAS thread count differs in the replay).
+
+| Margin | Tuned T_c / H / budget | Robust planner | A5 | Paired diff [95 % CI] | Wilcoxon p | HO / UE-min |
+|---|---|---|---|---|---|---|
+| 0 dB | 2.0 s / 2.0 s / 4 | 36.092 | 34.665 | +1.4269 [+1.2539, +1.5998] | 1.8e-12 | 1.5 |
+| 5 dB | 2.0 s / 0.5 s / 2 | 11.214 | 9.227 | +1.9869 [+1.7031, +2.2706] | 1.8e-12 | 6.7 |
+| 10 dB | 2.0 s / 0.5 s / 2 | 5.854 | 3.292 | +2.5617 [+1.9408, +3.1826] | 3.6e-08 | 15.1 |
+| 15 dB | 2.0 s / 0.5 s / 2 | 3.058 | 1.998 | +1.0593 [+0.7273, +1.3914] | 3.6e-08 | 12.0 |
+| 20 dB | 2.0 s / 0.5 s / 2 | 1.607 | 1.180 | +0.4271 [+0.2799, +0.5743] | 1e-07 | 7.8 |
+| 25 dB | 2.0 s / 0.5 s / 2 | 0.677 | 0.462 | +0.2151 [+0.1248, +0.3053] | 1.9e-07 | 5.0 |
+| 30 dB | 2.0 s / 1.0 s / 2 | 0.281 | 0.169 | +0.1122 [+0.0432, +0.1812] | 8.3e-06 | 2.4 |
+| 3GPP short-range reference | 2.0 s / 0.5 s / 2 | 0.112 | 0.079 | +0.0325 [+0.0028, +0.0623] | 0.015 | 1.2 |
+| v1 radio (high margin) | 2.0 s / 0.5 s / 2 | 0.053 | 0.040 | +0.0133 [+0.0018, +0.0248] | 0.037 | 0.8 |
+
+Diagnostic (tuned parameters, evaluation seeds; paired difference to A5 in brackets): which part of the robust planner loses?
+
+| Margin | A5 + overhead | advance only | veto only | advance + veto (check) |
+|---|---|---|---|---|
+| 0 dB | 36.114 (+1.450) | 36.059 (+1.394) | 36.147 (+1.482) | 36.092 (+1.427) |
+| 5 dB | 10.600 (+1.373) | 10.870 (+1.643) | 10.739 (+1.513) | 11.214 (+1.987) |
+| 10 dB | 3.572 (+0.280) | 4.761 (+1.468) | 3.859 (+0.567) | 5.854 (+2.562) |
+| 15 dB | 2.036 (+0.038) | 2.731 (+0.732) | 2.264 (+0.265) | 3.058 (+1.059) |
+| 20 dB | 1.219 (+0.039) | 1.498 (+0.318) | 1.351 (+0.171) | 1.607 (+0.427) |
+| 25 dB | 0.479 (+0.017) | 0.589 (+0.127) | 0.559 (+0.097) | 0.677 (+0.215) |
+| 30 dB | 0.180 (+0.011) | 0.235 (+0.066) | 0.215 (+0.046) | 0.281 (+0.112) |
+| 3GPP short-range reference | 0.081 (+0.002) | 0.090 (+0.011) | 0.090 (+0.011) | 0.112 (+0.033) |
+| v1 radio (high margin) | 0.041 (+0.001) | 0.047 (+0.007) | 0.044 (+0.004) | 0.053 (+0.013) |
+
+## External review, block C -- ADDED AFTER REVIEW
+
+C7: \numRelRedTen / \numAbsRedTen / \numRelRedRef / \numAbsRedRef = A5 -> any-step cost-aware oracle reduction (see the macro table below).
+
+### C8 Main results by traffic density (`scripts/review_c8_density.py`; 20 evaluation jobs per density; mean ± 95 % CI)
+
+#### 10 dB
+
+| Scheme | low | high |
+|---|---|---|
+| A3 (wide) | 2.174 ± 0.551 | 4.463 ± 1.091 |
+| A5 | 2.146 ± 0.571 | 4.439 ± 1.105 |
+| genie-planner H=0.5 | 1.923 ± 0.554 | 4.063 ± 1.076 |
+| sensing-planner H=0.5 | 5.890 ± 1.549 | 12.246 ± 2.400 |
+| true-LoS-loss planner H=0.5 | 2.270 ± 0.660 | 4.716 ± 1.157 |
+| cost-aware oracle (any step) | 1.899 ± 0.552 | 4.006 ± 1.074 |
+| cost-aware oracle (grid-aligned) | 1.914 ± 0.553 | 4.050 ± 1.077 |
+| instantaneous oracle | 1.844 ± 0.547 | 3.897 ± 1.072 |
+| robust planner (B6) | 4.010 ± 1.121 | 7.699 ± 1.762 |
+| A5 -> any-step oracle reduction | 0.246 ± 0.046 (11 % of A5) | 0.433 ± 0.064 (10 % of A5) |
+
+#### 20 dB
+
+| Scheme | low | high |
+|---|---|---|
+| A3 (wide) | 0.740 ± 0.227 | 1.773 ± 0.408 |
+| A5 | 0.683 ± 0.241 | 1.677 ± 0.429 |
+| genie-planner H=0.5 | 0.554 ± 0.227 | 1.440 ± 0.387 |
+| sensing-planner H=1.0 | 1.659 ± 0.558 | 3.493 ± 0.845 |
+| true-LoS-loss planner H=1.0 | 0.619 ± 0.267 | 1.590 ± 0.442 |
+| cost-aware oracle (any step) | 0.535 ± 0.226 | 1.403 ± 0.382 |
+| cost-aware oracle (grid-aligned) | 0.545 ± 0.226 | 1.432 ± 0.385 |
+| instantaneous oracle | 0.488 ± 0.223 | 1.316 ± 0.374 |
+| robust planner (B6) | 0.977 ± 0.328 | 2.237 ± 0.630 |
+| A5 -> any-step oracle reduction | 0.148 ± 0.032 (22 % of A5) | 0.274 ± 0.067 (16 % of A5) |
+
+#### 3GPP short-range reference
+
+| Scheme | low | high |
+|---|---|---|
+| A3 (wide) | 0.077 ± 0.015 | 0.202 ± 0.054 |
+| A5 | 0.023 ± 0.010 | 0.136 ± 0.083 |
+| genie-planner H=0.5 | 0.010 ± 0.005 | 0.053 ± 0.028 |
+| sensing-planner H=2.0 | 0.037 ± 0.023 | 0.228 ± 0.111 |
+| true-LoS-loss planner H=2.0 | 0.014 ± 0.008 | 0.064 ± 0.037 |
+| cost-aware oracle (any step) | 0.003 ± 0.005 | 0.043 ± 0.029 |
+| cost-aware oracle (grid-aligned) | 0.003 ± 0.005 | 0.043 ± 0.029 |
+| instantaneous oracle | 0.002 ± 0.003 | 0.030 ± 0.025 |
+| robust planner (B6) | 0.027 ± 0.012 | 0.197 ± 0.117 |
+| A5 -> any-step oracle reduction | 0.019 ± 0.008 (86 % of A5) | 0.093 ± 0.068 (69 % of A5) |
+
+All margins are in `results/M5/review_c8.json`.
+
 ## paper/numbers.tex vs the defaults in main.tex
 
-main.tex lists 45 macros; numbers.tex defines 59. Not defined: none.
+main.tex lists 45 macros; numbers.tex defines 65. Not defined: none.
 
 | Macro | main.tex default (blue) | numbers.tex | Source script | Aggregation |
 |---|---|---|---|---|
@@ -468,8 +607,8 @@ main.tex lists 45 macros; numbers.tex defines 59. Not defined: none.
 | `\numSameCellLoss` | 26--34 | 26--34 | scripts/fig_blockage_table.py | min-max over mounts of the per-mount median over events (loss in dB, sign dropped) |
 | `\numOtherCellBus` | 68--71\% | 68--71\% | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
 | `\numOtherCellPed` | 27--34\% | 27--34\% | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
-| `\numOnsetBus` | 0.50 | 0.50 | scripts/run_m3.py | median over all evaluation events of the class (pooled over mounts) |
-| `\numOnsetPed` | 0.01 | 0.01 | scripts/run_m3.py | median over all evaluation events of the class (pooled over mounts) |
+| `\numOnsetBus` | 0.50 | 0.49 **changed** | scripts/review_a34.py | median 10-90 % onset over all evaluation bus/truck events [s] |
+| `\numOnsetPed` | 0.01 | $\le$0.001 **changed** | scripts/review_a34.py | median 10-90 % onset over all evaluation pedestrian events; equals the 1 ms resolution, so stated as an upper bound [s] |
 | `\numBusPd` | 0.94 | 0.94 | scripts/run_m5_tracking.py | pooled over all evaluation jobs (track hits / ground-truth samples) |
 | `\numPedPd` | 0.46 | 0.46 | scripts/run_m5_tracking.py | pooled over all evaluation jobs |
 | `\numFA` | 3.9 | 3.9 | scripts/run_m5_tracking.py | pooled: false alarms / CPIs over all evaluation jobs |
@@ -503,7 +642,7 @@ main.tex lists 45 macros; numbers.tex defines 59. Not defined: none.
 | `\numValueBusRange` | 11--32\% | 12--31\% **changed** | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |
 | `\numValuePedTen` | 46\% | 51\% **changed** | scripts/run_m5_planner.py | net closed steps (pedestrian) / best-reactive-to-oracle gap, pooled |
 | `\numValueBusTen` | 32\% | 31\% **changed** | scripts/run_m5_planner.py | net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled |
-| `\numPlanHorizon` | 0.5 | -- **changed** | scripts/run_m5_planner.py | RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute) |
+| `\numPlanHorizon` | 0.5 | 0.5 | scripts/run_m5_planner.py | RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute) |
 | `\numSensePlanHO` | 23.7 | 23.7 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute |
 | `\numSensePlanPP` | 0.54 | 0.54 | scripts/run_m5_planner.py | mean over evaluation jobs of the per-job ping-pong rate |
 | `\numAfiveHO` | 5.9 | 5.9 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute |
@@ -513,6 +652,12 @@ Extra macros (added after the planner round; not in the main.tex header list, de
 
 | Macro | numbers.tex | Source script | Aggregation | Note |
 |---|---|---|---|---|
+| `\numGridCost` | 2.0\% | scripts/review_grid_oracle.py | max over margins of (grid-aligned - any-step) / any-step mean outage over evaluation jobs |  |
+| `\numOnsetPedFast` | 62\% | scripts/review_a34.py | share of evaluation pedestrian events whose 10-90 % onset at 1 ms is below 10 ms |  |
+| `\numRelRedTen` | 10\% | scripts/run_m5_planner.py | (A5 - oracle) / A5 of the mean outages over evaluation jobs |  |
+| `\numAbsRedTen` | 0.34 | scripts/run_m5_planner.py | A5 - oracle of the mean outages over evaluation jobs [s/UE-min] |  |
+| `\numRelRedRef` | 71\% | scripts/run_m5_planner.py | (A5 - oracle) / A5 of the mean outages over evaluation jobs |  |
+| `\numAbsRedRef` | 0.056 | scripts/run_m5_planner.py | A5 - oracle of the mean outages over evaluation jobs [s/UE-min] |  |
 | `\numHybridTen` | 5.32 | scripts/run_m3_hybrid.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |  |
 | `\numGenieRef` | 0.23 | scripts/run_m3_genie.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |  |
 | `\numHybridRef` | 0.33 | scripts/run_m3_hybrid.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |  |

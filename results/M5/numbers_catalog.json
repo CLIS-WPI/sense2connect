@@ -69,21 +69,36 @@
   "note": ""
  },
  "numOnsetBus": {
-  "value": "0.50",
-  "script": "scripts/run_m3.py -> results/M3/metrics.json (event_stats)",
-  "config": "10 ms analytic model B, fixed cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
+  "value": "0.49",
+  "script": "scripts/review_a34.py -> results/M5/review_a34.json (after review A4)",
+  "config": "model B evaluated analytically every 1 ms on the LoS segment of the event cell from exact analytic poses (no re-trace); events = 10 dB LoS events at 10 ms, fixed cell = strongest unblocked, min gap 0.5 s",
   "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "median over all evaluation events of the class (pooled over mounts)",
-  "raw": 0.5,
+  "aggregation": "median 10-90 % onset over all evaluation bus/truck events [s]",
+  "raw": {
+   "median_1ms": 0.492,
+   "median_10ms": 0.5
+  },
   "note": ""
  },
  "numOnsetPed": {
-  "value": "0.01",
-  "script": "scripts/run_m3.py -> results/M3/metrics.json (event_stats)",
-  "config": "10 ms analytic model B, fixed cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
+  "value": "$\\le$0.001",
+  "script": "scripts/review_a34.py -> results/M5/review_a34.json (after review A4)",
+  "config": "model B evaluated analytically every 1 ms on the LoS segment of the event cell from exact analytic poses (no re-trace); events = 10 dB LoS events at 10 ms, fixed cell = strongest unblocked, min gap 0.5 s",
   "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "median over all evaluation events of the class (pooled over mounts)",
-  "raw": 0.01,
+  "aggregation": "median 10-90 % onset over all evaluation pedestrian events; equals the 1 ms resolution, so stated as an upper bound [s]",
+  "raw": {
+   "median_1ms": 0.001,
+   "median_10ms": 0.01
+  },
+  "note": ""
+ },
+ "numOnsetPedFast": {
+  "value": "62\\%",
+  "script": "scripts/review_a34.py -> results/M5/review_a34.json (after review A4)",
+  "config": "model B evaluated analytically every 1 ms on the LoS segment of the event cell from exact analytic poses (no re-trace); events = 10 dB LoS events at 10 ms, fixed cell = strongest unblocked, min gap 0.5 s",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "share of evaluation pedestrian events whose 10-90 % onset at 1 ms is below 10 ms",
+  "raw": 0.6178010471204188,
   "note": ""
  },
  "numBusPd": {
@@ -1487,107 +1502,174 @@
   "raw": 0.313946587537092,
   "note": ""
  },
+ "numGridCost": {
+  "value": "2.0\\%",
+  "script": "scripts/review_grid_oracle.py -> results/M5/grid_oracle.json (after review)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; grid-aligned cost-aware oracle (switches only at 0.1 s epochs offset by tau_E2 + 10 ms) vs any-step cost-aware oracle, tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "max over margins of (grid-aligned - any-step) / any-step mean outage over evaluation jobs",
+  "raw": {
+   "0 dB": 0.0,
+   "5 dB": 0.003566719866768196,
+   "10 dB": 0.009793945560926047,
+   "15 dB": 0.014117815680091609,
+   "20 dB": 0.01963063412114163,
+   "25 dB": 0.010267693436010309,
+   "30 dB": 0.003205128205128303,
+   "3GPP short-range reference": 0.010869565217391285,
+   "v1 radio (high margin)": 0.0
+  },
+  "note": ""
+ },
+ "numRelRedTen": {
+  "value": "10\\%",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json and scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 10 dB; A5 (tuned) -> any-step cost-aware oracle (tau_HO 20 ms); after review C7",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "(A5 - oracle) / A5 of the mean outages over evaluation jobs",
+  "raw": {
+   "a5": 3.29243865798698,
+   "oracle_any": 2.9526790185277916
+  },
+  "note": ""
+ },
+ "numAbsRedTen": {
+  "value": "0.34",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json and scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 10 dB; A5 (tuned) -> any-step cost-aware oracle (tau_HO 20 ms); after review C7",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "A5 - oracle of the mean outages over evaluation jobs [s/UE-min]",
+  "raw": {
+   "a5": 3.29243865798698,
+   "oracle_any": 2.9526790185277916
+  },
+  "note": ""
+ },
+ "numRelRedRef": {
+  "value": "71\\%",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json and scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 3GPP short-range reference; A5 (tuned) -> any-step cost-aware oracle (tau_HO 20 ms); after review C7",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "(A5 - oracle) / A5 of the mean outages over evaluation jobs",
+  "raw": {
+   "a5": 0.07936905358037055,
+   "oracle_any": 0.02303455182774161
+  },
+  "note": ""
+ },
+ "numAbsRedRef": {
+  "value": "0.056",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json and scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; margin 3GPP short-range reference; A5 (tuned) -> any-step cost-aware oracle (tau_HO 20 ms); after review C7",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "A5 - oracle of the mean outages over evaluation jobs [s/UE-min]",
+  "raw": {
+   "a5": 0.07936905358037055,
+   "oracle_any": 0.02303455182774161
+  },
+  "note": ""
+ },
  "numPlanHorizon": {
-  "value": "--",
-  "script": "scripts/run_m5_planner.py -> results/M5/planner.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; genie-planner vs cost-aware oracle (any-step, tau_HO 20 ms; review A1), all margins incl. the v1-radio point",
+  "value": "0.5",
+  "script": "scripts/run_m5_planner.py -> results/M5/planner.json and scripts/review_grid_oracle.py -> results/M5/grid_oracle.json (after review)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE COST-AWARE-ORACLE RESULT; genie-planner vs the GRID-ALIGNED cost-aware oracle (0.1 s epochs offset by tau_E2, tau_HO 20 ms; after review), all margins incl. the v1-radio point",
   "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
   "aggregation": "RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute)",
   "raw": {
    "relative_excess": {
     "0.5": {
      "0 dB": 0.0,
-     "5 dB": 0.004205121088057492,
-     "10 dB": 0.01356737047401002,
-     "15 dB": 0.020567579188763153,
-     "20 dB": 0.028800206638253834,
-     "25 dB": 0.03080308030803093,
-     "30 dB": 0.0683760683760685,
-     "3GPP short-range reference": 0.375,
+     "5 dB": 0.0006361323155216316,
+     "10 dB": 0.003736826636436099,
+     "15 dB": 0.006359974560101954,
+     "20 dB": 0.00899303356554779,
+     "25 dB": 0.020326678765880138,
+     "30 dB": 0.06496272630457935,
+     "3GPP short-range reference": 0.3602150537634409,
      "v1 radio (high margin)": 0.5263157894736841
     },
     "1.0": {
      "0 dB": 0.0,
-     "5 dB": 0.0041496079383803244,
-     "10 dB": 0.013482574408547554,
-     "15 dB": 0.02042425111079259,
-     "20 dB": 0.028283611003487082,
-     "25 dB": 0.029336266960029365,
-     "30 dB": 0.06730769230769224,
-     "3GPP short-range reference": 0.375,
+     "5 dB": 0.0005808164619981736,
+     "10 dB": 0.0036528530041567316,
+     "15 dB": 0.006218641792099605,
+     "20 dB": 0.008486383787207204,
+     "25 dB": 0.01887477313974574,
+     "30 dB": 0.06389776357827458,
+     "3GPP short-range reference": 0.3602150537634409,
      "v1 radio (high margin)": 0.5263157894736841
     },
     "2.0": {
      "0 dB": 0.0,
-     "5 dB": 0.004121851363541642,
-     "10 dB": 0.01318578817942855,
-     "15 dB": 0.020137594954851592,
-     "20 dB": 0.02750871755133673,
-     "25 dB": 0.028602860286028663,
-     "30 dB": 0.06303418803418803,
-     "3GPP short-range reference": 0.3695652173913046,
+     "5 dB": 0.0005531585352363464,
+     "10 dB": 0.003358945291178573,
+     "15 dB": 0.005935976256095031,
+     "20 dB": 0.007726409119696097,
+     "25 dB": 0.01814882032667862,
+     "30 dB": 0.059637912673056334,
+     "3GPP short-range reference": 0.3548387096774196,
      "v1 radio (high margin)": 0.5263157894736841
     },
     "3.0": {
      "0 dB": 0.0,
-     "5 dB": 0.00409409478870296,
-     "10 dB": 0.012889001950309398,
-     "15 dB": 0.019994266876881026,
-     "20 dB": 0.02750871755133673,
-     "25 dB": 0.027869453612027962,
-     "30 dB": 0.06303418803418803,
-     "3GPP short-range reference": 0.3695652173913046,
+     "5 dB": 0.0005255006084745193,
+     "10 dB": 0.0030650375782002655,
+     "15 dB": 0.005794643488092683,
+     "20 dB": 0.007726409119696097,
+     "25 dB": 0.017422867513611502,
+     "30 dB": 0.059637912673056334,
+     "3GPP short-range reference": 0.3548387096774196,
      "v1 radio (high margin)": 0.5263157894736841
     }
    },
    "absolute_excess_s_per_ue_min": {
     "0.5": {
      "0 dB": 0.0,
-     "5 dB": 0.03793189784676798,
-     "10 dB": 0.04006009013520284,
-     "15 dB": 0.03592889334001015,
-     "20 dB": 0.02791687531296938,
-     "25 dB": 0.01051577366049078,
-     "30 dB": 0.008012018027040574,
-     "3GPP short-range reference": 0.008637956935403104,
+     "5 dB": 0.005758637956935431,
+     "10 dB": 0.011141712568853102,
+     "15 dB": 0.011266900350526132,
+     "20 dB": 0.008888332498748097,
+     "25 dB": 0.007010515773660464,
+     "30 dB": 0.007636454682023036,
+     "3GPP short-range reference": 0.008387581372058087,
      "v1 radio (high margin)": 0.007511266900350524
     },
     "1.0": {
      "0 dB": 0.0,
-     "5 dB": 0.03743114672007941,
-     "10 dB": 0.03980971457185811,
-     "15 dB": 0.035678517776664975,
-     "20 dB": 0.027416124186279478,
-     "25 dB": 0.01001502253380071,
-     "30 dB": 0.007886830245368043,
-     "3GPP short-range reference": 0.008637956935403104,
+     "5 dB": 0.005257886830246861,
+     "10 dB": 0.010891337005508372,
+     "15 dB": 0.011016524787180959,
+     "20 dB": 0.008387581372058195,
+     "25 dB": 0.006509764646970395,
+     "30 dB": 0.007511266900350505,
+     "3GPP short-range reference": 0.008387581372058087,
      "v1 radio (high margin)": 0.007511266900350524
     },
     "2.0": {
      "0 dB": 0.0,
-     "5 dB": 0.03718077115673424,
-     "10 dB": 0.03893340010015045,
-     "15 dB": 0.03517776664997485,
-     "20 dB": 0.026664997496244403,
-     "25 dB": 0.009764646970455704,
-     "30 dB": 0.007386079118678016,
-     "3GPP short-range reference": 0.008512769153730601,
+     "5 dB": 0.0050075112669016875,
+     "10 dB": 0.01001502253380071,
+     "15 dB": 0.010515773660490835,
+     "20 dB": 0.007636454682023119,
+     "25 dB": 0.0062593890836253885,
+     "30 dB": 0.007010515773660478,
+     "3GPP short-range reference": 0.008262393590385584,
      "v1 radio (high margin)": 0.007511266900350524
     },
     "3.0": {
      "0 dB": 0.0,
-     "5 dB": 0.036930395593389065,
-     "10 dB": 0.038057085628442344,
-     "15 dB": 0.03492739108662968,
-     "20 dB": 0.026664997496244403,
-     "25 dB": 0.009514271407110697,
-     "30 dB": 0.007386079118678016,
-     "3GPP short-range reference": 0.008512769153730601,
+     "5 dB": 0.004757135703556514,
+     "10 dB": 0.009138708062092604,
+     "15 dB": 0.010265398097145662,
+     "20 dB": 0.007636454682023119,
+     "25 dB": 0.006009013520280382,
+     "30 dB": 0.007010515773660478,
+     "3GPP short-range reference": 0.008262393590385584,
      "v1 radio (high margin)": 0.007511266900350524
     }
    }
   },
-  "note": "no H meets the rule at every margin"
+  "note": ""
  },
  "numAthreeWideRef": {
   "value": "0.14",
