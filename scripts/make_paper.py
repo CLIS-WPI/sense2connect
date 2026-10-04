@@ -197,6 +197,31 @@ def catalog() -> dict[str, dict[str, Any]]:
         vals = {r["label"]: closed(r) for r in gen["margins"] if r["label"] in labs}
         put(macro, _rng(list(vals.values()), "{:.0f}", pct=True), script=gn[0], config=tcfg + f"; margins {labs[0]}-{labs[-1]}",
             aggregation="share of the A3-oracle gap closed, 1 - gap(0)/gap(20 ms), from means over jobs; min-max over margins", raw=vals)
+    # --- extra (not in main.tex): A3-oracle gap shares and the cost-aware oracle
+    for r in fs["margins"]:
+        tag = {"3GPP short-range reference": "ref", "v1 radio (high margin)": "v1"}.get(r["label"], r["label"].replace(" dB", "db"))
+        gs = r["a3_oracle_gap_pooled"]
+        for key in ("foresight_recoverable_share", "interruption_share", "distance_caused_share"):
+            if gs[key] is not None:
+                put(f"x.gap.{tag}.{key}", _pct(gs[key]), script=sf, config=fcfg + f"; margin {r['label']}",
+                    aggregation="POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)", raw=gs[key])
+    dpo = R5 / "dporacle.json"
+    if dpo.exists():
+        dp = json.loads(dpo.read_text())
+        sd = "scripts/run_m5_dporacle.py -> results/M5/dporacle.json"
+        for r in dp["margins"]:
+            tag = {"3GPP short-range reference": "ref", "v1 radio (high margin)": "v1"}.get(r["label"], r["label"].replace(" dB", "db"))
+            for t in ("0.020", "0.000"):
+                blk = r[t]
+                ttag = "tau20" if t == "0.020" else "tau0"
+                for v in ("costaware_any", "costaware_epoch"):
+                    put(f"x.{v}.{tag}.{ttag}.outage", f"{blk[v]['mean']:.2f}", script=sd,
+                        config=M3_CFG + f"; margin {r['label']}; tau_HO {float(t) * 1e3:.0f} ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, "
+                        + ("switches at any 10 ms step" if v == "costaware_any" else "switches only at 0.1 s epochs"),
+                        aggregation="mean over 40 evaluation jobs [s/UE-min]", raw=blk[v]["mean"])
+                    if blk[f"{v}_gap_closed_pooled"] is not None:
+                        put(f"x.{v}.{tag}.{ttag}.gap_closed", _pct(blk[f"{v}_gap_closed_pooled"]), script=sd, config=M3_CFG + f"; margin {r['label']}; tau_HO {float(t) * 1e3:.0f} ms",
+                            aggregation="POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps", raw=blk[f"{v}_gap_closed_pooled"])
     rref = next(r for r in gen["margins"] if r["label"] == "3GPP short-range reference")
     put("numTauZeroRef", _pct(closed(rref)), script=gn[0], config=tcfg + "; 3GPP reference margin", aggregation="1 - gap(0)/gap(20 ms), from means over jobs", raw=closed(rref))
     return out

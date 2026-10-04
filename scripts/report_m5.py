@@ -90,6 +90,140 @@ def main() -> None:
         n = lambda c: f(r[f"new_blockage_caused|{c}"]["share_of_a3_outage_pooled"], 1, 100) + " %"  # noqa: E731
         add(f"| {r['label']} | {o('bus/truck')} | {o('pedestrian')} | {n('bus/truck')} | {n('pedestrian')} | {n('car')} | {n('no LoS blocker')} |")
     add("")
+    dpo = R5 / "dporacle.json"
+    if dpo.exists():
+        dp = json.loads(dpo.read_text())
+        add("## Critical check: cost-aware oracle (upper bound for any foresight policy)")
+        add("")
+        add("`scripts/run_m5_dporacle.py`. Per lane, a Viterbi over the serving cell in 10 ms steps with perfect knowledge of both cells' "
+            "blocked SNR minimises outage at the service rate; every switch costs tau_HO of outage (switches may "
+            "start from any state, as in the simulator); initial cell free; no sensing overhead. Variants: switches at "
+            "any 10 ms step, or only at 0.1 s E2 epochs. Checks: the Viterbi equals an exhaustive search on 2400 random small lanes, and at "
+            "tau_HO = 0 with any-step switching it equals the instantaneous oracle at every margin. Outage at the service rate, "
+            "s/UE-min, mean ± 95 % CI over 40 evaluation jobs; gap closed = (A3 − cost-aware) / (A3 − instantaneous oracle), pooled.")
+        add("")
+        for t, name in (("0.020", "tau_HO = 20 ms"), ("0.000", "tau_HO = 0 (A3 and genies retuned at 0)")):
+            add(f"### {name}")
+            add("")
+            add("| Margin | A3 | Genie (1st policy, no ovh.) | Onset genie (no ovh.) | Cost-aware, any step | Cost-aware, 0.1 s epochs | Instantaneous oracle | Gap closed (any / epochs) |")
+            add("|---|---|---|---|---|---|---|---|")
+            ci = lambda x: "—" if x is None or x.get("mean") is None else f"{x['mean']:.3f} ± {x['ci']:.3f}"  # noqa: E731
+            pc = lambda x: "—" if x is None else f"{100 * x:.0f} %"  # noqa: E731
+            for r in dp["margins"]:
+                b = r[t]
+                add(f"| {r['label']} | {ci(b['a3'])} | {ci(b['genie_no_overhead'])} | {ci(b['onset_genie_no_overhead'])} | {ci(b['costaware_any'])} | "
+                    f"{ci(b['costaware_epoch'])} | {ci(b['oracle_inst'])} | {pc(b['costaware_any_gap_closed_pooled'])} / {pc(b['costaware_epoch_gap_closed_pooled'])} |")
+            add("")
+        add("Gap closed by the cost-aware oracle (any step, tau_HO = 20 ms) split by blocker class: net steps (A3 in outage and the oracle "
+            "not, minus the reverse) by the dominant LoS blocker of A3's cell at that step, as a share of the A3-oracle gap (pooled).")
+        add("")
+        add("| Margin | bus/truck | pedestrian | car | no LoS blocker | total |")
+        add("|---|---|---|---|---|---|")
+        for r in dp["margins"]:
+            byc = r["0.020"]["costaware_any_gap_closed_by_class_pooled"]
+            if byc["bus/truck"] is None:
+                continue
+            add(f"| {r['label']} | " + " | ".join(f"{100 * byc[c]:.1f} %" for c in ("bus/truck", "pedestrian", "car", "no LoS blocker"))
+                + f" | {100 * r['0.020']['costaware_any_gap_closed_pooled']:.1f} % |")
+        add("")
+        add("A3-oracle gap shares (pooled; `foresight.json` `a3_oracle_gap_pooled`): foresight-recoverable (blockage-caused wrong cell), "
+            "distance-caused wrong cell, interruption.")
+        add("")
+        add("| Margin | Gap [s/UE-min] | Foresight-recoverable | Distance-caused | Interruption | Cost-aware closes |")
+        add("|---|---|---|---|---|---|")
+        for r, d in zip(fs["margins"], dp["margins"]):
+            g = r["a3_oracle_gap_pooled"]
+            pc = lambda x: "—" if x is None else f"{100 * x:.0f} %"  # noqa: E731
+            add(f"| {r['label']} | {g['gap_s_per_ue_min_pooled']:.3f} | {pc(g['foresight_recoverable_share'])} | {pc(g['distance_caused_share'])} | "
+                f"{pc(g['interruption_share'])} | {pc(d['0.020']['costaware_any_gap_closed_pooled'])} |")
+        add("")
+        add("Reading: the cost-aware oracle closes far more of the gap than the foresight-recoverable share alone, most visibly at high "
+            "margins where interruption dominates. A3's interruption time is not unavoidable: a policy that knows the future SNR of both "
+            "cells avoids most of A3's handovers (and the switching they cost) and still serves the blockages. The genie with the "
+            "first-round and onset-advance policies realises none of this (it does not beat A3 within the CIs).")
+        add("")
+        r10 = next(r for r in dp["margins"] if r["label"] == "10 dB")["0.020"]["genie_trigger_diagnosis"]
+        n = max(r10["n"], 1)
+        add("### Genie diagnosis at 10 dB")
+        add("")
+        add(f"Of {r10['n']} blockage-caused wrong-cell steps of A3 (A3's cell unusable, other usable, A3's cell usable unblocked): "
+            f"{r10['los_lt10']} ({100 * r10['los_lt10'] / n:.0f} %) have LoS loss < 10 dB on A3's cell; {r10['other_ge3_usable']} "
+            f"({100 * r10['other_ge3_usable'] / n:.0f} %) have the other cell at >= 3 dB LoS loss but still usable; {r10['either']} "
+            f"({100 * r10['either'] / n:.0f} %) meet at least one of the two and are outside the genie's trigger (serving LoS >= 10 dB, other "
+            f"< 3 dB); {r10['both_conditions_met']} ({100 * r10['both_conditions_met'] / n:.0f} %) satisfy both trigger conditions. All margins "
+            "are in `dporacle.json` (`genie_trigger_diagnosis`).")
+        add("")
+    pl = R5 / "planner.json"
+    if pl.exists():
+        P = json.loads(pl.read_text())
+        ci = lambda x: "—" if x is None or x.get("mean") is None else f"{x['mean']:.3f} ± {x['ci']:.3f}"  # noqa: E731
+        add("## Equal-effort reactive baselines and a receding-horizon planner")
+        add("")
+        add("**Added after the cost-aware-oracle result** (`scripts/run_m5_planner.py`). Tuning on tuning seeds per margin, evaluation "
+            "on evaluation seeds, tau_HO 20 ms, E2 delay 20 ms. A3 (wide): offset {0,1,3,6,10,15} dB x hysteresis {0,1,3,6,10,15} dB x TTT "
+            "{40..640} ms (180 points). A5: serving filtered SNR < SNR_req + t1 and neighbour > SNR_req + t2 for TTT, t1 {-3,0,3,6,10} dB x "
+            "t2 {0,3,6,10} dB x TTT {40..640} ms (100 points); A5 was added to the simulator with a vectorised-vs-reference equality test, "
+            "and the existing schemes are unchanged (regression identical). Best reactive = lower tuning objective. Planner (xApp v2): "
+            "at each 0.1 s report, from the current cell, a Viterbi over horizon H on predicted SNR of both cells (switches only at future "
+            "0.1 s epochs, switch = tau_HO outage), first decision applied after the E2 delay; no A3 underneath, no hold. Genie-planner: "
+            "true future blocked SNR, no overhead. Sensing-planner: unblocked SNR along the UE path (digital-twin radio map) minus the "
+            "predicted model-B LoS loss of the tracked blockers (final M2 map tracker, budget 2 or 4 tuned per H, UE fix sigma 1 m), "
+            "overhead charged. Diagnostic (not a policy): the sensing-planner model with the true LoS loss, overhead charged. The "
+            "planner's first decision equals an exhaustive search on 300 random small cases.")
+        add("")
+        add("### Tuned reactive parameters (tuning seeds)")
+        add("")
+        add("| Margin | A3 wide offset/hyst/TTT | A5 t1/t2/TTT | Best reactive | Genie-planner tuned H | Sensing-planner tuned H (budget) |")
+        add("|---|---|---|---|---|---|")
+        for r in P["margins"]:
+            a, b5 = r["a3_wide"]["params"], r["a5"]["params"]
+            sh = f"{r['sensing_planner_tuned_H']:.1f}"
+            add(f"| {r['label']} | {a['offset_db']:.0f}/{a['hysteresis_db']:.0f}/{a['ttt_s'] * 1e3:.0f} | {b5['t1_db']:.0f}/{b5['t2_db']:.0f}/{b5['ttt_s'] * 1e3:.0f} | "
+                f"{r['best_reactive']} | {r['genie_planner_tuned_H']:.1f} s | {sh} s ({r['sensing_planner'][sh]['budget']}) |")
+        add("")
+        add("### Value of foresight (best reactive vs cost-aware oracle, 0.1 s epochs, tau_HO 20 ms)")
+        add("")
+        add("| Margin | Best reactive | Cost-aware | Difference [s/UE-min] | Share of best-reactive gap | bus/truck | pedestrian | car |")
+        add("|---|---|---|---|---|---|---|---|")
+        for r in P["margins"]:
+            v = r["value_of_foresight"]
+            bc = v["by_class_share_of_gap_pooled"]
+            pc = lambda x: "—" if x is None else f"{100 * x:.0f} %"  # noqa: E731
+            add(f"| {r['label']} | {ci(r[r['best_reactive']]['eval']['outage_req_s_per_min'])} | {ci(v['costaware_epoch'])} | "
+                f"{v['best_reactive_minus_costaware_s_per_ue_min']:.3f} | {pc(v['share_of_best_reactive_gap_pooled'])} | {pc(bc['bus/truck'])} | "
+                f"{pc(bc['pedestrian'])} | {pc(bc['car'])} |")
+        add("")
+        add("Share = (best reactive − cost-aware) / (best reactive − instantaneous oracle), pooled steps; class = dominant LoS blocker of the "
+            "best reactive scheme's cell (net steps).")
+        add("")
+        add("### Per-margin results (evaluation seeds; outage at the service rate [s/UE-min], mean ± 95 % CI over 40 jobs)")
+        add("")
+        dpj = json.loads((R5 / "dporacle.json").read_text())
+        for r, dr in zip(P["margins"], dpj["margins"]):
+            add(f"#### {r['label']}")
+            add("")
+            add("| Scheme | Outage_req | HO / UE-min | Ping-pong |")
+            add("|---|---|---|---|")
+            row = lambda name, agg: add(f"| {name} | {ci(agg['outage_req_s_per_min'])} | {ci(agg['ho_per_min'])} | {ci(agg['ping_pong'])} |")  # noqa: E731
+            row("A3 (wide grid)", r["a3_wide"]["eval"])
+            row("A5", r["a5"]["eval"])
+            add(f"| best reactive = {r['best_reactive']} | (as above) | | |")
+            for h, v in r["genie_planner"].items():
+                row(f"genie-planner, H = {h} s" + (" (tuned)" if float(h) == r["genie_planner_tuned_H"] else ""), v["eval"])
+            for h, v in r["sensing_planner"].items():
+                row(f"sensing-planner, H = {h} s, budget {v['budget']}" + (" (tuned)" if float(h) == r["sensing_planner_tuned_H"] else ""), v["eval"])
+            for h, v in r["diag_trueloss_planner"].items():
+                row(f"diagnostic: true-LoS-loss planner, H = {h} s", v["eval"])
+            add(f"| cost-aware oracle (0.1 s epochs) | {ci(dr['0.020']['costaware_epoch'])} | — | — |")
+            add(f"| instantaneous oracle | {ci(r['oracle_inst']['outage_req_s_per_min'])} | 0 | 0 |")
+            add("")
+        add("Reading (planner): the genie-planner reaches the cost-aware bound at every margin, and the horizon hardly matters (0.5 s "
+            "suffices). The sensing-planner is worse than the best reactive scheme at every margin. The true-LoS-loss diagnostic separates "
+            "the causes: with perfect blockage prediction the same planner model beats the best reactive scheme at margins >= 15 dB even "
+            "with the sensing overhead, and loses at 0-10 dB (overhead and the 'unblocked SNR minus LoS loss' approximation). The gap "
+            "between the diagnostic and the sensing-planner is the blockage-prediction error of the current tracker/predictor (false "
+            "and missed blockages, no measurement feedback in the plan as specified).")
+        add("")
     add("## paper/numbers.tex vs the defaults in main.tex")
     add("")
     missing = [m for m in defaults if m not in defined]

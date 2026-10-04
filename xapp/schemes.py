@@ -33,7 +33,7 @@ from typing import Any
 import numpy as np
 
 SCHEMES = ("a3", "trend", "xapp")
-REASON = {"a3": 1, "trend": 2, "xapp": 3}
+REASON = {"a3": 1, "trend": 2, "xapp": 3, "a5": 4}
 
 
 @dataclass
@@ -60,6 +60,10 @@ class Lanes:
     report_steps: int = 10
     dt_s: float = 0.01
     extra: dict[str, Any] = field(default_factory=dict)
+    # A5 (added after the cost-aware-oracle result): serving filtered SNR < a5_thr1 AND
+    # neighbour filtered SNR > a5_thr2 for TTT steps [dB, SNR scale]; used on a5 lanes only
+    a5_thr1: np.ndarray | None = None
+    a5_thr2: np.ndarray | None = None
 
 
 def simulate(lanes: Lanes, *, bandwidth_hz: float, rate_req_bps: float, max_se: float) -> dict[str, Any]:
@@ -80,6 +84,9 @@ def simulate(lanes: Lanes, *, bandwidth_hz: float, rate_req_bps: float, max_se: 
     hist = np.zeros((n_l, w_max))
     a = lanes.filter_a
     thresh = lanes.offset_db + lanes.hysteresis_db
+    is_a5 = lanes.scheme == REASON["a5"]
+    thr1 = lanes.a5_thr1 if lanes.a5_thr1 is not None else np.full(n_l, -np.inf)
+    thr2 = lanes.a5_thr2 if lanes.a5_thr2 is not None else np.full(n_l, np.inf)
     is_trend = lanes.scheme == REASON["trend"]
     is_xapp = lanes.scheme == REASON["xapp"]
     n_reports = 0 if lanes.trigger is None else lanes.trigger.shape[1]
@@ -160,11 +167,11 @@ def simulate(lanes: Lanes, *, bandwidth_hz: float, rate_req_bps: float, max_se: 
                 pending[fire] = other[fire]
                 pending_reason[fire] = REASON["trend"]
         free = free & (pending < 0)
-        cond = free & (f_o - f_s > thresh)
+        cond = free & np.where(is_a5, (f_s < thr1) & (f_o > thr2), f_o - f_s > thresh)
         clock = np.where(cond, clock + 1, 0)
         fire = cond & (clock >= lanes.ttt_steps)
         pending[fire] = other[fire]
-        pending_reason[fire] = REASON["a3"]
+        pending_reason[fire] = np.where(is_a5[fire], REASON["a5"], REASON["a3"])
         clock[fire] = 0
 
     if ho_lane:
@@ -266,12 +273,16 @@ def simulate_scalar(lanes: Lanes, lane: int, *, bandwidth_hz: float, rate_req_bp
                 if -slope * float(lanes.trend_horizon_s[lane]) >= float(lanes.drop_db[lane]) and float(snr[k, other]) > s_srv:
                     pending = (other, REASON["trend"])
         if free and pending is None:
-            if filt[other] - filt[serving] > float(lanes.offset_db[lane]) + float(lanes.hysteresis_db[lane]):
+            if scheme == REASON["a5"]:
+                fires = filt[serving] < float(lanes.a5_thr1[lane]) and filt[other] > float(lanes.a5_thr2[lane])
+            else:
+                fires = filt[other] - filt[serving] > float(lanes.offset_db[lane]) + float(lanes.hysteresis_db[lane])
+            if fires:
                 clock += 1
             else:
                 clock = 0
             if clock >= int(lanes.ttt_steps[lane]):
-                pending = (other, REASON["a3"])
+                pending = (other, REASON["a5"] if scheme == REASON["a5"] else REASON["a3"])
                 clock = 0
         else:
             clock = 0

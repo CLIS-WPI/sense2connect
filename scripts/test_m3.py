@@ -218,6 +218,27 @@ class SchemeEqualityTest(unittest.TestCase):
             trigger_end_steps=rng.integers(0, 300, size=trig.shape),
         )
 
+    def test_a5_vectorised_matches_scalar(self) -> None:
+        from xapp.schemes import REASON, simulate, simulate_scalar
+
+        lanes = self._lanes()
+        n = lanes.snr_db.shape[0]
+        lanes.scheme = np.array([REASON["a5"]] * 4 + list(lanes.scheme[4:]))
+        lanes.a5_thr1 = np.array([5.0, 10.0, 12.0, 8.0] + [0.0] * (n - 4))
+        lanes.a5_thr2 = np.array([8.0, 6.0, 12.0, 10.0] + [0.0] * (n - 4))
+        kw = {"bandwidth_hz": 122.88e6, "rate_req_bps": 4e8, "max_se": 7.4063}
+        vec = simulate(lanes, **kw)
+        total = 0
+        for lane in range(n):
+            ref = simulate_scalar(lanes, lane, **kw)
+            sel = vec["handovers"]["lane"] == lane
+            got = list(zip(vec["handovers"]["step"][sel], vec["handovers"]["from"][sel], vec["handovers"]["to"][sel], vec["handovers"]["reason"][sel]))
+            self.assertEqual([tuple(int(x) for x in g) for g in got], [tuple(int(x) for x in r) for r in ref["handovers"]], f"lane {lane}")
+            self.assertTrue(np.array_equal(vec["outage_req"][lane], ref["outage_req"]))
+            if lane < 4:
+                total += len(ref["handovers"])
+        self.assertGreater(total, 3)
+
     def test_vectorised_matches_scalar(self) -> None:
         from xapp.schemes import simulate, simulate_scalar
 

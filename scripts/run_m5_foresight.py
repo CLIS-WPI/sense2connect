@@ -18,7 +18,9 @@ the loss is on other paths only).
 The old definition (wrong-cell time inside 10 dB events of the fixed,
 strongest-unblocked cell, by event class) is recomputed on the same lanes
 for comparison; both splits of the wrong-cell time must sum to the same
-total.
+total. The A3-oracle gap (A3 outage minus instantaneous-oracle outage =
+wrong cell + interruption, pooled) is split into foresight-recoverable
+(blockage-caused), distance-caused and interruption shares.
 
 Writes results/M5/foresight.json.
 """
@@ -122,6 +124,13 @@ def decompose_margin(mi, jobs, built, snr_all, info, rw, raw, bw, rate_req, a3p,
             "share_of_a3_outage_pooled": (sum(v[key] for v in per_job.values()) / tot_out) if tot_out else None,
         }
     tot = {k_: sum(v[k_] for v in per_job.values()) for k_ in ("wrong_total", "new_blockage_caused", "new_distance_caused", "old_in_events", "old_outside_events", "outage", "c_both_unusable", "b_interruption")}
+    gap = tot["outage"] - tot["c_both_unusable"]  # A3 - instantaneous oracle (oracle outage = both cells unusable), pooled steps
+    res["a3_oracle_gap_pooled"] = {
+        "gap_s_per_ue_min_pooled": gap * R.DT_COMM / (minutes * sum(v["n_ue"] for v in per_job.values())),
+        "foresight_recoverable_share": (tot["new_blockage_caused"] / gap) if gap > 0 else None,
+        "distance_caused_share": (tot["new_distance_caused"] / gap) if gap > 0 else None,
+        "interruption_share": (tot["b_interruption"] / gap) if gap > 0 else None,
+    }
     res["checks"] = {
         "new_split_sums": tot["new_blockage_caused"] + tot["new_distance_caused"] == tot["wrong_total"],
         "old_split_sums": tot["old_in_events"] + tot["old_outside_events"] == tot["wrong_total"],
