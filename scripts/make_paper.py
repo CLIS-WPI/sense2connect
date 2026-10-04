@@ -7,8 +7,8 @@ Steps:
 2. Build the number catalog from results (results/M5/numbers_catalog.json):
    every value the paper may quote, under a descriptive key, as a plain
    string with its precision fixed here.
-3. Read the macro names from the header comment of paper/main.tex (lines
-   like ``% \\Name: definition``), map each to a catalog key (MACRO_MAP)
+3. Read the macro names (every ``\\num...`` token) from the header comment of
+   paper/main.tex, map each to a catalog key (MACRO_MAP, default: same name)
    and write paper/numbers.tex (``\\newcommand{\\Name}{value}``). Every
    macro in main.tex without a mapping, and every mapped key missing from
    the catalog, is reported; numbers.tex then defines only the rest.
@@ -39,9 +39,9 @@ FIGURE_SCRIPTS = ["fig_blockage_table.py", "fig_leadtime.py", "fig_onset.py", "f
 
 # main.tex macro name -> catalog key. Filled in once paper/main.tex (with its
 # macro list) is in the repository; unmapped macros are reported.
-MACRO_MAP: dict[str, str] = {}
+MACRO_MAP: dict[str, str] = {}  # empty: catalog keys are the main.tex macro names
 
-MACRO_LINE = re.compile(r"^%+\s*\\([A-Za-z]+)\s*(?:[:=\-–—]|\s)\s*(.*)$")
+MACRO_NAME = re.compile(r"\\(num[A-Za-z]+)")
 
 
 def run_scripts(leadtime_recompute: bool) -> None:
@@ -53,122 +53,190 @@ def run_scripts(leadtime_recompute: bool) -> None:
         subprocess.run(cmd, cwd=ROOT, check=True)
 
 
-def _pct(x: float, digits: int = 0) -> str:
-    return f"{100.0 * x:.{digits}f}"
+def _pct(x: float) -> str:
+    return f"{100.0 * x:.0f}\\%"
 
 
-def _num(x: float, digits: int) -> str:
-    return f"{x:.{digits}f}"
+def _rng(values: list[float], fmt: str, pct: bool = False) -> str:
+    lo, hi = min(values), max(values)
+    a, b = (fmt.format(100.0 * lo), fmt.format(100.0 * hi)) if pct else (fmt.format(lo), fmt.format(hi))
+    text = a if a == b else f"{a}--{b}"
+    return text + ("\\%" if pct else "")
 
 
-def catalog() -> dict[str, dict[str, str]]:
-    """Every quotable number: key -> {value, description}."""
-    out: dict[str, dict[str, str]] = {}
+EVAL = "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each"
+CHAR_CFG = "configs/m2_scenario.yaml two-O-RU config (8x8, 1024 SC), comm traces at 0.1 s, serving cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s"
+M3_CFG = "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105"
 
-    def put(key: str, value: str, desc: str) -> None:
-        out[key] = {"value": value, "description": desc}
 
+def catalog() -> dict[str, dict[str, Any]]:
+    """One entry per main.tex macro: value (main.tex format) and its source."""
+    out: dict[str, dict[str, Any]] = {}
+
+    def put(name, value, *, script, config, aggregation, raw, seeds=EVAL, note=""):
+        out[name] = {"value": value, "script": script, "config": config, "seeds": seeds, "aggregation": aggregation, "raw": raw, "note": note}
+
+    R5 = RESULTS / "M5"
     m3 = json.loads((RESULTS / "M3" / "metrics.json").read_text())
     gen = json.loads((RESULTS / "M3" / "genie.json").read_text())
-    gen2 = json.loads((RESULTS / "M3" / "genie2.json").read_text())
     hyb = json.loads((RESULTS / "M3" / "hybrid.json").read_text())
-    char = json.loads((RESULTS / "M5" / "characterization.json").read_text())
-    lead = json.loads((RESULTS / "M5" / "leadtime.json").read_text())
-    cfg = __import__("yaml").safe_load((ROOT / "configs" / "m3.yaml").read_text())["rework"]
-
-    b = m3["budget"]
-    put("budget.tx_power_dbm", _num(float(cfg["budget"]["tx_power_dbm"]), 0), "O-RU transmit power [dBm], TR 38.802 Tab. A.2.1-1")
-    put("budget.ue_nf_db", _num(float(cfg["budget"]["ue_noise_figure_db"]), 0), "UE noise figure [dB], TR 38.802 Tab. A.2.1-1")
-    put("budget.bandwidth_mhz", _num(m3["bandwidth_hz"] / 1e6, 2), "carrier bandwidth [MHz]")
-    put("budget.service_rate_mbps", _num(float(cfg["service_rate_bps"]) / 1e6, 0), "service rate [Mbit/s]")
-    put("budget.snr_req_db", _num(b["snr_req_db"], 1), "SNR needed for the service rate [dB]")
-    put("budget.margin_ref_db", _num(b["margin_ref_db"], 1), "3GPP short-range reference margin [dB]")
-    put("sensing.overhead_pct", _num(100.0 * m3["overhead_xapp"], 2), "sensing overhead [% of resources]")
-
-    ov = char["overall"]
-    put("char.events_per_ue_min", _num(ov["events_per_ue_min"], 1), "serving-link 10 dB events per UE-minute (eval seeds, 0.1 s)")
-    for c, key in (("bus/truck", "bus"), ("pedestrian", "ped"), ("car", "car")):
-        share = ov["class_share"][c]
-        put(f"char.class_share_{key}_pct", _pct(share or 0.0), f"share of 10 dB events caused by {c} [%]")
-    for c, key in (("bus/truck", "bus"), ("pedestrian", "ped")):
-        oc = ov["other_cell_clear"][c]
-        put(f"char.other_clear_{key}_pct", _pct(oc["unblocked"] / oc["n"]), f"{c} events with the other cell clear (<3 dB) [%]")
-        sp = char["same_cell_surviving_path"]["all"][c]["p10_p50_p90_db"]
-        put(f"char.surviving_path_{key}_p50_db", _num(float(sp["0.5"]), 0), f"{c}: median best surviving same-cell path vs unblocked LoS [dB]")
-        on = char["onset_10ms"][c]["onset_10_90_s"]
-        put(f"char.onset_{key}_p50_s", _num(on["p50"], 2), f"{c}: median 10-90 % onset [s] (10 ms)")
-        put(f"char.onset_{key}_p90_s", _num(on["p90"], 2), f"{c}: 90th-percentile 10-90 % onset [s]")
-        put(f"char.actionable_{key}_pct", _pct(char["onset_10ms"][c]["actionable_share"]), f"{c}: actionable 10 dB events (10 ms) [%]")
-    sp_all = char["same_cell_surviving_path"]["all"]["all"]
-    put("char.surviving_path_p50_db", _num(float(sp_all["p10_p50_p90_db"]["0.5"]), 0), "median best surviving same-cell path vs unblocked LoS [dB]")
-    put("char.surviving_within_10db_pct", _pct(sp_all["share_above_minus10db"] or 0.0), "events whose best surviving path is within 10 dB of LoS [%]")
-    both = char["both_blocked_time"]
-    tot = sum(v["total"] for v in both.values())
-    put("char.both_blocked_time_pct", _num(100.0 * sum(v["both"] for v in both.values()) / tot, 1), "time with both cells >= 10 dB down [%]")
-
-    for tracker in ("map", "unconstrained"):
-        for c, key in (("bus/truck", "bus"), ("pedestrian", "ped")):
-            s = lead["series"][f"{tracker}|{c}"]
-            for i, L in enumerate(lead["leads_s"]):
-                put(f"lead.{tracker}_{key}_{str(L).replace('.', 'p')}s_pct", _pct(s["share"][i]), f"{c}, {tracker} tracker: events tracked {L} s before onset [%]")
-
-    labels = b["labels"]
+    char = json.loads((R5 / "characterization.json").read_text())
+    tab = json.loads((R5 / "blockage_table.json").read_text())["evaluation"]
+    trk = json.loads((R5 / "tracking.json").read_text())
+    fs = json.loads((R5 / "foresight.json").read_text())
+    labels = m3["budget"]["labels"]
+    i10, iref = labels.index("10 dB"), labels.index("3GPP short-range reference")
     tau = f"{gen['tau_ho_default_s']:.3f}"
-    for mi, lab in enumerate(labels):
-        tag = {"3GPP short-range reference": "ref", "v1 radio (high margin)": "v1"}.get(lab, lab.replace(" dB", "db"))
+    mounts = ("lamppost", "facade")
+
+    # --- characterization (fig_blockage_table.py)
+    sb = "scripts/fig_blockage_table.py -> results/M5/characterization.json, blockage_table.json"
+    ov = char["overall"]
+    put("numEventsPerMin", f"{ov['events_per_ue_min']:.1f}", script=sb, config=CHAR_CFG, aggregation="pooled over all jobs and both mounts", raw=ov["events_per_ue_min"])
+    pcm = char["per_class_per_mount"]
+    for macro, cls in (("numBusShare", "bus/truck"), ("numPedShare", "pedestrian")):
+        shares = [pcm[m][cls]["n_events"] / sum(pcm[m][c]["n_events"] for c in pcm[m]) for m in mounts]
+        put(macro, _rng(shares, "{:.0f}", pct=True), script=sb, config=CHAR_CFG, aggregation="min-max over mounts of the per-mount pooled share", raw=dict(zip(mounts, shares)))
+    sp = [-float(char["same_cell_surviving_path"][m]["all"]["p10_p50_p90_db"]["0.5"]) for m in mounts]
+    put("numSameCellLoss", _rng(sp, "{:.0f}"), script=sb, config=CHAR_CFG + "; M1.5 part-1 definition (best_alt_db) on the serving cell",
+        aggregation="min-max over mounts of the per-mount median over events (loss in dB, sign dropped)", raw=dict(zip(mounts, sp)))
+    for macro, cls in (("numOtherCellBus", "bus/truck"), ("numOtherCellPed", "pedestrian")):
+        shares = [tab["other_oru"][m]["classes"][cls]["unblocked"] / tab["other_oru"][m]["classes"][cls]["n_events"] for m in mounts]
+        put(macro, _rng(shares, "{:.0f}", pct=True), script=sb, config=CHAR_CFG + "; other cell clear = LoS loss < 3 dB on every 10 dB snapshot",
+            aggregation="min-max over mounts of the per-mount pooled share", raw=dict(zip(mounts, shares)))
+    for macro, cls in (("numOnsetBus", "bus/truck"), ("numOnsetPed", "pedestrian")):
+        v = m3["event_stats"]["evaluation"][cls]["onset_10_90_s"]["p50"]
+        put(macro, f"{v:.2f}", script="scripts/run_m3.py -> results/M3/metrics.json (event_stats)", config="10 ms analytic model B, fixed cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
+            aggregation="median over all evaluation events of the class (pooled over mounts)", raw=v)
+
+    # --- tracking (run_m5_tracking.py, fig_leadtime.py)
+    st = "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)"
+    fin = trk["variants"]["image|map"]
+    fin_cfg = "final M2 config: detector budget 4 FA/CPI, blind clutter, image-method ghost handling (budget-4 image/blind pick), map-constrained tracker (MAP_TUNED)"
+    put("numBusPd", f"{fin['track_pd']['bus/truck']:.2f}", script=st, config=fin_cfg, aggregation="pooled over all evaluation jobs (track hits / ground-truth samples)", raw=fin["track_pd"]["bus/truck"])
+    put("numPedPd", f"{fin['track_pd']['pedestrian']:.2f}", script=st, config=fin_cfg, aggregation="pooled over all evaluation jobs", raw=fin["track_pd"]["pedestrian"])
+    put("numFA", f"{fin['false_alarms_per_cpi']:.1f}", script=st, config=fin_cfg, aggregation="pooled: false alarms / CPIs over all evaluation jobs", raw=fin["false_alarms_per_cpi"])
+    for macro, cls in (("numLeadBus", "bus/truck"), ("numLeadPed", "pedestrian")):
+        shares = [fin["leads"][m][cls]["hits"]["0.5"] / fin["leads"][m][cls]["n"] for m in mounts]
+        put(macro, _rng(shares, "{:.0f}", pct=True), script=st, config=fin_cfg + "; 10 dB LoS events on oru-0 (M2 event definition), confirmed track in the class gate 0.5 s before onset",
+            aggregation="min-max over mounts of the per-mount pooled share", raw=dict(zip(mounts, shares)))
+    ung, mpg = trk["variants"]["noghost|unconstrained"], trk["variants"]["noghost|map"]
+    ng_cfg = "detector budget 4 FA/CPI, blind clutter, NO ghost handling (budget-4 none/blind pick: Pfa 1e-5, train 4, eps 3 m); same detections for both trackers; unconstrained EKF (association 6 m, coast 4, q 1.0) -> map-constrained tracker (MAP_TUNED)"
+    put("numMapBus", f"{ung['track_pd']['bus/truck']:.2f} to {mpg['track_pd']['bus/truck']:.2f}", script=st, config=ng_cfg, aggregation="pooled over all evaluation jobs",
+        raw=[ung["track_pd"]["bus/truck"], mpg["track_pd"]["bus/truck"]])
+    put("numMapPed", f"{ung['track_pd']['pedestrian']:.2f} to {mpg['track_pd']['pedestrian']:.2f}", script=st, config=ng_cfg, aggregation="pooled over all evaluation jobs",
+        raw=[ung["track_pd"]["pedestrian"], mpg["track_pd"]["pedestrian"]])
+    put("numMapCross", f"{ung['cross_lane_rmse_mps']['bus/truck']:.1f} to {mpg['cross_lane_rmse_mps']['bus/truck']:.1f}", script=st, config=ng_cfg + "; bus/truck cross-lane velocity RMSE [m/s], tracks older than 1 s",
+        aggregation="pooled RMSE over all matched track samples", raw=[ung["cross_lane_rmse_mps"]["bus/truck"], mpg["cross_lane_rmse_mps"]["bus/truck"]])
+    ui = trk["variants"]["image|unconstrained"]
+    put("numGhostGain", f"{ung['track_pd']['bus/truck']:.2f} to {ui['track_pd']['bus/truck']:.2f}", script=st,
+        config="UNCONSTRAINED EKF tracker (as in M2); detector budget 4 FA/CPI, blind clutter: no-ghost pick (Pfa 1e-5, eps 3 m) -> image-method pick (Pfa 1e-3, eps 3 m, ghost association 6 m)",
+        aggregation="pooled over all evaluation jobs and both mounts", raw=[ung["track_pd"]["bus/truck"], ui["track_pd"]["bus/truck"]],
+        note="the earlier default 0.80 to 0.86 was the lamppost-only value from the M2 report; this value pools both mounts")
+
+    # --- link budget
+    sm3 = "scripts/run_m3.py -> results/M3/metrics.json"
+    put("numRefMargin", f"{m3['budget']['margin_ref_db']:.1f}", script=sm3, config=M3_CFG, seeds="tuning seeds 101-105 (median over tuning jobs, UEs, 10 ms steps)",
+        aggregation="median best-cell unblocked SNR minus SNR_req", raw=m3["budget"]["margin_ref_db"])
+    put("numSNRreq", f"{m3['budget']['snr_req_db']:.1f}", script=sm3, config="Shannon SNR for 400 Mbit/s on 122.88 MHz, no overhead", seeds="n/a", aggregation="n/a", raw=m3["budget"]["snr_req_db"])
+    put("numOverhead", f"{100 * m3['overhead_xapp']:.1f}\\%", script=sm3, config="(1/14 sensing symbols per slot) x CPI duty cycle 0.32", seeds="n/a", aggregation="n/a", raw=m3["overhead_xapp"])
+
+    # --- outage (s/UE-min)
+    def outage(macro, value, scheme, lab, extra=""):
+        put(macro, f"{value:.2f}", script=scheme[0], config=M3_CFG + f"; margin {lab}; {scheme[1]}" + extra,
+            aggregation="mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute)", raw=value)
+
+    a3 = ("scripts/run_m3.py -> results/M3/metrics.json", "A3 tuned on tuning seeds (24-point grid)")
+    orc = ("scripts/run_m3.py -> results/M3/metrics.json", "oracle cell selection (max post-model-B power, no interruption)")
+    gn = ("scripts/run_m3_genie.py -> results/M3/genie.json", "genie + A3, first-round policy, ground-truth prediction, NO sensing overhead")
+    hy = ("scripts/run_m3_hybrid.py -> results/M3/hybrid.json", "hybrid A3 + xApp, jointly tuned (400-point grid)")
+    xa = ("scripts/run_m3.py -> results/M3/metrics.json", "sensing xApp + A3 (A3 held off during the xApp hold), budget-2/4 detector as tuned")
+    for mi, tag in ((i10, "Ten"), (iref, "Ref")):
+        lab = labels[mi]
         ev = m3["evaluation"][mi]
-        put(f"out.{tag}.a3", _num(ev["a3"]["outage_req_s_per_min"]["mean"], 3), f"A3 outage at the service rate, margin {lab} [s/UE-min]")
-        put(f"out.{tag}.oracle", _num(ev["oracle"]["outage_req_s_per_min"]["mean"], 3), f"oracle outage, margin {lab} [s/UE-min]")
-        put(f"out.{tag}.xapp", _num(ev["xapp"]["outage_req_s_per_min"]["mean"], 3), f"xApp + A3 outage, margin {lab} [s/UE-min]")
-        put(f"out.{tag}.hybrid", _num(hyb["margins"][mi]["evaluation"]["hybrid_joint"]["outage_req_s_per_min"]["mean"], 3), f"hybrid outage, margin {lab} [s/UE-min]")
-        g = gen["margins"][mi]["tau_ho"][tau]
-        put(f"out.{tag}.genie", _num(g["genie_no_overhead"]["outage_req_s_per_min"]["mean"], 3), f"genie + A3 (no overhead) outage, margin {lab} [s/UE-min]")
-        gc = gen["margins"][mi]["gap_closure"]
-        if gc["a3_gap_tau_default"] > 0:
-            put(f"tau0.{tag}.gap_closed_pct", _pct(1.0 - gc["a3_gap_tau0"] / gc["a3_gap_tau_default"]), f"A3-oracle gap closed by tau_HO = 0, margin {lab} [%]")
-        fs = gen2["margins"][mi]["foresight"]["all"]
-        put(f"fs.{tag}.share_pct", _num(100.0 * (fs["share_of_a3_outage_per_job"]["mean"] or 0.0), 1), f"foresight bound, per-job mean share of A3 outage, margin {lab} [%]")
-        d = g["a3_decomp"]
-        a3o = g["a3"]["outage_req_s_per_min"]["mean"]
-        put(f"dec.{tag}.interruption_share_pct", _pct(d["b_interruption"]["mean"] / a3o if a3o else 0.0), f"handover interruption share of A3 outage, margin {lab} [%]")
-    xp = m3["evaluation"][labels.index("3GPP short-range reference")]["xapp"]
-    put("xapp.ref.precision_pct", _pct(xp["precision"]["mean"]), "xApp handover precision at the 3GPP reference [%]")
+        outage(f"numAthree{tag}", ev["a3"]["outage_req_s_per_min"]["mean"], a3, lab)
+        outage(f"numOracle{tag}", ev["oracle"]["outage_req_s_per_min"]["mean"], orc, lab)
+        outage(f"numGenie{tag}", gen["margins"][mi]["tau_ho"][tau]["genie_no_overhead"]["outage_req_s_per_min"]["mean"], gn, lab)
+        outage(f"numHybrid{tag}", hyb["margins"][mi]["evaluation"]["hybrid_joint"]["outage_req_s_per_min"]["mean"], hy, lab)
+    outage("numXappTen", m3["evaluation"][i10]["xapp"]["outage_req_s_per_min"]["mean"], xa, labels[i10])
+
+    # --- handover matching at 10 dB
+    g10 = gen["margins"][i10]["tau_ho"][tau]
+    match_def = "; a handover matches when it leaves the fixed cell within [event start - 2 s, event end] of a 10 dB event of that UE"
+    put("numGenieMatch", _pct(g10["genie_no_overhead"]["precision"]["mean"]), script=gn[0], config=M3_CFG + "; margin 10 dB; " + gn[1] + match_def,
+        aggregation="mean over evaluation jobs of the per-job share of genie-triggered handovers that match", raw=g10["genie_no_overhead"]["precision"]["mean"])
+    put("numAthreeMatch", _pct(m3["evaluation"][i10]["a3"]["precision"]["mean"]), script=a3[0], config=M3_CFG + "; margin 10 dB; " + a3[1] + match_def,
+        aggregation="mean over evaluation jobs of the per-job share of A3 handovers that match", raw=m3["evaluation"][i10]["a3"]["precision"]["mean"])
+    pre = "; bus/truck 10 dB events with a matching handover before event start (proactive recall, all events)"
+    put("numGeniePreBus", _pct(g10["genie_no_overhead"]["events"]["bus/truck|all"]["proactive_recall"]["mean"]), script=gn[0], config=M3_CFG + "; margin 10 dB; " + gn[1] + pre,
+        aggregation="mean over evaluation jobs with bus/truck events of the per-job share", raw=g10["genie_no_overhead"]["events"]["bus/truck|all"]["proactive_recall"]["mean"])
+    put("numAthreePreBus", _pct(m3["evaluation"][i10]["a3"]["events"]["bus/truck|all"]["proactive_recall"]["mean"]), script=a3[0], config=M3_CFG + "; margin 10 dB; " + a3[1] + pre,
+        aggregation="mean over evaluation jobs with bus/truck events of the per-job share", raw=m3["evaluation"][i10]["a3"]["events"]["bus/truck|all"]["proactive_recall"]["mean"])
+
+    # --- causal foresight bound (run_m5_foresight.py)
+    sf = "scripts/run_m5_foresight.py -> results/M5/foresight.json"
+    fcfg = M3_CFG + "; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power"
+    rng_rows = [r for r in fs["margins"] if r["label"] in ("5 dB", "10 dB", "15 dB", "20 dB", "25 dB", "30 dB")]
+    shares = [r["new_blockage_caused"]["share_of_a3_outage_pooled"] for r in rng_rows]
+    put("numForesightRange", _rng(shares, "{:.0f}", pct=True), script=sf, config=fcfg + "; margins 5-30 dB",
+        aggregation="POOLED share of A3 outage over evaluation jobs (sum of steps / sum of A3 outage steps); min-max over margins 5-30 dB", raw={r["label"]: r["new_blockage_caused"]["share_of_a3_outage_pooled"] for r in rng_rows})
+    ref = next(r for r in fs["margins"] if r["label"] == "3GPP short-range reference")
+    put("numForesightRef", _pct(ref["new_blockage_caused"]["share_of_a3_outage_pooled"]), script=sf, config=fcfg + "; 3GPP reference margin",
+        aggregation="POOLED share of A3 outage over evaluation jobs", raw=ref["new_blockage_caused"]["share_of_a3_outage_pooled"])
+    absvals = {r["label"]: r["new_blockage_caused"]["s_per_ue_min"]["mean"] for r in fs["margins"]}
+    put("numForesightMaxAbs", f"{max(absvals.values()):.2f}", script=sf, config=fcfg + "; all margins",
+        aggregation="max over margins of the mean over evaluation jobs of blockage-caused wrong-cell time [s/UE-min]", raw=absvals)
+
+    # --- tau_HO = 0 gap closure (run_m3_genie.py)
+    def closed(r):
+        gc = r["gap_closure"]
+        return 1.0 - gc["a3_gap_tau0"] / gc["a3_gap_tau_default"]
+    tcfg = M3_CFG + "; A3 retuned at tau_HO = 0 on tuning seeds; gap = A3 - oracle outage (means over evaluation jobs)"
+    groups = {"numTauZeroLow": ("0 dB", "5 dB", "10 dB"), "numTauZeroHigh": ("15 dB", "20 dB", "25 dB", "30 dB")}
+    for macro, labs in groups.items():
+        vals = {r["label"]: closed(r) for r in gen["margins"] if r["label"] in labs}
+        put(macro, _rng(list(vals.values()), "{:.0f}", pct=True), script=gn[0], config=tcfg + f"; margins {labs[0]}-{labs[-1]}",
+            aggregation="share of the A3-oracle gap closed, 1 - gap(0)/gap(20 ms), from means over jobs; min-max over margins", raw=vals)
+    rref = next(r for r in gen["margins"] if r["label"] == "3GPP short-range reference")
+    put("numTauZeroRef", _pct(closed(rref)), script=gn[0], config=tcfg + "; 3GPP reference margin", aggregation="1 - gap(0)/gap(20 ms), from means over jobs", raw=closed(rref))
     return out
 
 
 def macros_in_main() -> list[tuple[str, str]]:
+    """Macro names listed in the header comment of paper/main.tex (before \\documentclass), in order."""
     main = PAPER / "main.tex"
     if not main.exists():
         return []
-    names = []
+    names: list[str] = []
     for line in main.read_text(encoding="utf-8").splitlines():
-        if not line.lstrip().startswith("%"):
-            if line.strip().startswith("\\documentclass"):
-                break
-            continue
-        m = MACRO_LINE.match(line.strip())
-        if m:
-            names.append((m.group(1), m.group(2).strip()))
-    return names
+        if line.strip().startswith("\\documentclass"):
+            break
+        if line.lstrip().startswith("%"):
+            for name in MACRO_NAME.findall(line):
+                if name not in names:
+                    names.append(name)
+    return [(name, "") for name in names]
 
 
 def write_numbers(cat: dict[str, dict[str, str]]) -> dict[str, Any]:
     wanted = macros_in_main()
     lines = ["% Generated by scripts/make_paper.py from results/. Do not edit."]
     defined, unmapped, missing = [], [], []
+    extra = sorted(set(cat) - {n for n, _ in wanted})
     for name, desc in wanted:
-        key = MACRO_MAP.get(name)
+        key = MACRO_MAP.get(name, name)
         if key is None:
             unmapped.append((name, desc))
             continue
         if key not in cat:
             missing.append((name, key))
             continue
-        lines.append(f"\\newcommand{{\\{name}}}{{{cat[key]['value']}}}  % {cat[key]['description']}")
+        lines.append(f"\\newcommand{{\\{name}}}{{{cat[key]['value']}}}")
         defined.append(name)
     PAPER.mkdir(parents=True, exist_ok=True)
     (PAPER / "numbers.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return {"main_tex_found": (PAPER / "main.tex").exists(), "macros_in_main": len(wanted), "defined": defined, "unmapped": unmapped, "mapped_key_missing": missing}
+    return {"main_tex_found": (PAPER / "main.tex").exists(), "macros_in_main": len(wanted), "defined": defined, "unmapped": unmapped,
+            "mapped_key_missing": missing, "catalog_not_in_main": extra}
 
 
 def compile_paper() -> None:
@@ -201,7 +269,9 @@ def main() -> None:
         for name, desc in status["unmapped"]:
             print(f"  NOT DEFINED (no mapping): \\{name}  -- {desc}")
         for name, key in status["mapped_key_missing"]:
-            print(f"  NOT DEFINED (catalog key '{key}' missing): \\{name}")
+            print(f"  NOT DEFINED (no catalog entry '{key}'): \\{name}")
+        for name in status["catalog_not_in_main"]:
+            print(f"  catalog entry not listed in main.tex: {name}")
     compile_paper()
 
 
