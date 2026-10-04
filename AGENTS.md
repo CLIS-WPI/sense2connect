@@ -2,9 +2,8 @@
 
 ## Project
 sense2connect: ISAC (integrated sensing and communication) for proactive
-inter-cell handover against mmWave blockage in Open RAN. Venue is decided
-by the humans (see ROADMAP.md); follow the double-blind rules below until
-told otherwise.
+inter-cell handover against mmWave blockage in Open RAN. Venue: WCNC 2027
+(not blind; see ROADMAP.md).
 
 Pipeline (current):
 1. Sionna RT street canyon at 28 GHz, two O-RUs = two cells (oru-0 north
@@ -38,9 +37,11 @@ Pipeline (current):
   first. `results/` is git-ignored and is never committed.
 - Do not edit `paper/` unless asked; numbers for the paper come from
   scripts (`paper/numbers.tex`, see ROADMAP M5), never typed by hand.
-- Double-blind: never write author names, lab, university, grant numbers
-  or the GitHub organisation name into code, comments, notebooks, configs
-  or figures.
+- Names: the venue is not blind, so author names, affiliations and
+  acknowledgements are allowed in `paper/` (written by the humans). Code,
+  comments, configs, notebooks, scripts, figures and result files still
+  carry no personal data (no names, e-mail addresses, home paths, user
+  names, credentials or grant numbers).
 - Reproducibility: every experiment takes a YAML config from `configs/`,
   uses explicit seeds and `deterministic=True` on both solvers, and writes
   outputs to `results/<experiment>/`.
