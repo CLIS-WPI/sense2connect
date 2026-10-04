@@ -371,79 +371,95 @@ True-LoS-loss planner vs A5 from 15 dB up (sensing-planner's tuned H; 95 % CI = 
 
 The true-LoS-loss planner's mean outage is below A5's at every margin from 15 dB up, but the 95 % CIs overlap at every one of these margins (unpaired comparison over jobs); 'beats A5' refers to the means.
 
+Paired comparison on the same 40 evaluation jobs (`scripts/run_m5_paired.py`; statistics only). d = scheme − A5 per job [s/UE-min] (each job = mean over its UEs); mean with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); negative = lower outage than A5. Not corrected for multiple comparisons.
+
+| Margin | H [s] | True-LoS-loss − A5: mean [95 % CI] | p | lower / higher jobs | Sensing − A5: mean [95 % CI] | p | lower / higher jobs |
+|---|---|---|---|---|---|---|---|
+| 0 dB | 0.5 | +1.383 [+1.205, +1.560] | 1.8e-12 | 0 / 40 | +1.563 [+1.377, +1.749] | 1.8e-12 | 0 / 40 |
+| 5 dB | 1.0 | +1.301 [+1.005, +1.597] | 2.3e-07 | 4 / 36 | +2.969 [+2.538, +3.400] | 1.8e-12 | 0 / 40 |
+| 10 dB | 0.5 | +0.201 [+0.003, +0.399] | 0.7 | 25 / 15 | +5.775 [+4.594, +6.957] | 1.8e-12 | 0 / 40 |
+| 15 dB | 0.5 | -0.046 [-0.088, -0.004] | 0.0053 | 28 / 12 | +2.786 [+2.096, +3.477] | 1.8e-12 | 0 / 40 |
+| 20 dB | 1.0 | -0.075 [-0.111, -0.040] | 0.00032 | 33 / 7 | +1.396 [+1.069, +1.722] | 3.9e-08 | 1 / 39 |
+| 25 dB | 3.0 | -0.037 [-0.080, +0.006] | 0.0023 | 30 / 9 | +0.794 [+0.532, +1.056] | 3.8e-08 | 1 / 39 |
+| 30 dB | 2.0 | -0.018 [-0.035, -0.001] | 0.0012 | 28 / 10 | +0.341 [+0.167, +0.515] | 1.9e-06 | 6 / 31 |
+| 3GPP short-range reference | 2.0 | -0.040 [-0.074, -0.007] | 7e-06 | 27 / 1 | +0.053 [+0.010, +0.096] | 0.021 | 13 / 21 |
+| v1 radio (high margin) | 0.5 | -0.014 [-0.021, -0.007] | 0.00026 | 23 / 5 | +0.049 [+0.011, +0.086] | 0.018 | 11 / 22 |
+
+Paired, the true-LoS-loss planner has significantly lower outage than A5 (CI below 0 and p < 0.05) at: 15 dB, 20 dB, 30 dB, 3GPP short-range reference, v1 radio (high margin). The unpaired CIs above overlap because the job-to-job spread is large, while the per-job differences are consistent. The sensing-planner is significantly worse than A5 wherever its CI excludes 0.
+
 Reading (planner): the genie-planner reaches the cost-aware bound at every margin, and the horizon hardly matters (0.5 s suffices). The sensing-planner is worse than the best reactive scheme at every margin. The true-LoS-loss diagnostic separates the causes: with perfect blockage prediction the same planner model has a lower mean outage than the best reactive scheme at margins >= 15 dB even with the sensing overhead, and loses at 0-10 dB (overhead and the 'unblocked SNR minus LoS loss' approximation). The gap between the diagnostic and the sensing-planner is the blockage-prediction error of the current tracker/predictor (false and missed blockages, no measurement feedback in the plan as specified).
 
 ## paper/numbers.tex vs the defaults in main.tex
 
-main.tex lists 39 macros; numbers.tex defines 59. Not defined: none.
+main.tex lists 45 macros; numbers.tex defines 59. Not defined: none.
 
 | Macro | main.tex default (blue) | numbers.tex | Source script | Aggregation |
 |---|---|---|---|---|
-| `\numEventsPerMin` | 8.8 | 8.5 **changed** | scripts/fig_blockage_table.py | pooled over all jobs and both mounts |
-| `\numBusShare` | 59--75\% | 44--47\% **changed** | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
-| `\numPedShare` | 25--41\% | 53--56\% **changed** | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
-| `\numSameCellLoss` | 26--33 | 26--34 **changed** | scripts/fig_blockage_table.py | min-max over mounts of the per-mount median over events (loss in dB, sign dropped) |
-| `\numOtherCellBus` | 56--59\% | 68--71\% **changed** | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
-| `\numOtherCellPed` | 25--29\% | 27--34\% **changed** | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
-| `\numOnsetBus` | 0.5 | 0.50 **changed** | scripts/run_m3.py | median over all evaluation events of the class (pooled over mounts) |
+| `\numEventsPerMin` | 8.5 | 8.5 | scripts/fig_blockage_table.py | pooled over all jobs and both mounts |
+| `\numBusShare` | 44--47\% | 44--47\% | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
+| `\numPedShare` | 53--56\% | 53--56\% | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
+| `\numSameCellLoss` | 26--34 | 26--34 | scripts/fig_blockage_table.py | min-max over mounts of the per-mount median over events (loss in dB, sign dropped) |
+| `\numOtherCellBus` | 68--71\% | 68--71\% | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
+| `\numOtherCellPed` | 27--34\% | 27--34\% | scripts/fig_blockage_table.py | min-max over mounts of the per-mount pooled share |
+| `\numOnsetBus` | 0.50 | 0.50 | scripts/run_m3.py | median over all evaluation events of the class (pooled over mounts) |
 | `\numOnsetPed` | 0.01 | 0.01 | scripts/run_m3.py | median over all evaluation events of the class (pooled over mounts) |
 | `\numBusPd` | 0.94 | 0.94 | scripts/run_m5_tracking.py | pooled over all evaluation jobs (track hits / ground-truth samples) |
-| `\numPedPd` | 0.47 | 0.46 **changed** | scripts/run_m5_tracking.py | pooled over all evaluation jobs |
+| `\numPedPd` | 0.46 | 0.46 | scripts/run_m5_tracking.py | pooled over all evaluation jobs |
 | `\numFA` | 3.9 | 3.9 | scripts/run_m5_tracking.py | pooled: false alarms / CPIs over all evaluation jobs |
 | `\numLeadBus` | 84--90\% | 84--90\% | scripts/run_m5_tracking.py | min-max over mounts of the per-mount pooled share |
 | `\numLeadPed` | 53--63\% | 53--63\% | scripts/run_m5_tracking.py | min-max over mounts of the per-mount pooled share |
 | `\numMapBus` | 0.82 to 0.90 | 0.82 to 0.90 | scripts/run_m5_tracking.py | pooled over all evaluation jobs |
 | `\numMapPed` | 0.28 to 0.45 | 0.28 to 0.45 | scripts/run_m5_tracking.py | pooled over all evaluation jobs |
 | `\numMapCross` | 2.0 to 0.5 | 2.0 to 0.5 | scripts/run_m5_tracking.py | pooled RMSE over all matched track samples |
-| `\numGhostGain` | 0.80 to 0.86 | 0.82 to 0.88 **changed** | scripts/run_m5_tracking.py | pooled over all evaluation jobs and both mounts |
+| `\numGhostGain` | 0.82 to 0.88 | 0.82 to 0.88 | scripts/run_m5_tracking.py | pooled over all evaluation jobs and both mounts |
 | `\numRefMargin` | 35.9 | 35.9 | scripts/run_m3.py | median best-cell unblocked SNR minus SNR_req |
 | `\numSNRreq` | 9.3 | 9.3 | scripts/run_m3.py | n/a |
 | `\numOverhead` | 2.3\% | 2.3\% | scripts/run_m3.py | n/a |
 | `\numAthreeTen` | 3.43 | 3.43 | scripts/run_m3.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
-| `\numOracleTen` | 2.87 | 2.87 | scripts/run_m3.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
-| `\numGenieTen` | 3.48 | 3.48 | scripts/run_m3_genie.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
-| `\numHybridTen` | 5.32 | 5.32 | scripts/run_m3_hybrid.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
-| `\numXappTen` | 6.25 | 6.25 | scripts/run_m3.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
 | `\numAthreeRef` | 0.20 | 0.20 | scripts/run_m3.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
+| `\numAthreeWideRef` | 0.14 | 0.14 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numGenieTen` | 3.48 | 3.48 | scripts/run_m3_genie.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
+| `\numOracleTen` | 2.87 | 2.87 | scripts/run_m3.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
 | `\numOracleRef` | 0.02 | 0.02 | scripts/run_m3.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
-| `\numGenieRef` | 0.23 | 0.23 | scripts/run_m3_genie.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
-| `\numHybridRef` | 0.33 | 0.33 | scripts/run_m3_hybrid.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |
-| `\numGenieMatch` | 87\% | 87\% | scripts/run_m3_genie.py | mean over evaluation jobs of the per-job share of genie-triggered handovers that match |
-| `\numAthreeMatch` | 44\% | 44\% | scripts/run_m3.py | mean over evaluation jobs of the per-job share of A3 handovers that match |
-| `\numGeniePreBus` | 70\% | 70\% | scripts/run_m3_genie.py | mean over evaluation jobs with bus/truck events of the per-job share |
-| `\numAthreePreBus` | 23\% | 23\% | scripts/run_m3.py | mean over evaluation jobs with bus/truck events of the per-job share |
-| `\numForesightRange` | 1--8\% | 2--9\% **changed** | scripts/run_m5_foresight.py | POOLED share of A3 outage over evaluation jobs (sum of steps / sum of A3 outage steps); min-max over margins 5-30 dB |
-| `\numForesightRef` | 15\% | 16\% **changed** | scripts/run_m5_foresight.py | POOLED share of A3 outage over evaluation jobs |
-| `\numForesightMaxAbs` | 0.19 | 0.32 **changed** | scripts/run_m5_foresight.py | max over margins of the mean over evaluation jobs of blockage-caused wrong-cell time [s/UE-min] |
-| `\numTauZeroLow` | 35--42\% | 35--42\% | scripts/run_m3_genie.py | share of the A3-oracle gap closed, 1 - gap(0)/gap(20 ms), from means over jobs; min-max over margins |
-| `\numTauZeroHigh` | 68--93\% | 68--93\% | scripts/run_m3_genie.py | share of the A3-oracle gap closed, 1 - gap(0)/gap(20 ms), from means over jobs; min-max over margins |
-| `\numTauZeroRef` | 97\% | 97\% | scripts/run_m3_genie.py | 1 - gap(0)/gap(20 ms), from means over jobs |
+| `\numAfiveTen` | 3.29 | 3.29 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numAfiveRef` | 0.08 | 0.08 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numCostOracleTen` | 2.97 | 2.97 | scripts/run_m5_dporacle.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numCostOracleRef` | 0.02 | 0.02 | scripts/run_m5_dporacle.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numGeniePlanTen` | 2.99 | 2.99 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numGeniePlanRef` | 0.03 | 0.03 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numSensePlanTen` | 9.07 | 9.07 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numSensePlanRef` | 0.13 | 0.13 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numTrueLossRef` | 0.04 | 0.04 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |
+| `\numTrueLossFrom` | 15 | 15 | scripts/run_m5_planner.py | lowest margin [dB] where the mean outage is below A5's |
+| `\numValueRange` | 70--89\% | 70--89\% | scripts/run_m5_planner.py | POOLED over evaluation jobs: (best reactive - cost-aware) / (best reactive - instantaneous oracle) outage steps; min-max over margins |
+| `\numValuePedRange` | 40--64\% | 40--64\% | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |
+| `\numValueBusRange` | 11--32\% | 11--32\% | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |
+| `\numValuePedTen` | 46\% | 46\% | scripts/run_m5_planner.py | net closed steps (pedestrian) / best-reactive-to-oracle gap, pooled |
+| `\numValueBusTen` | 32\% | 32\% | scripts/run_m5_planner.py | net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled |
+| `\numPlanHorizon` | 0.5 | 0.5 | scripts/run_m5_planner.py | RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute) |
+| `\numSensePlanHO` | 23.7 | 23.7 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute |
+| `\numSensePlanPP` | 0.54 | 0.54 | scripts/run_m5_planner.py | mean over evaluation jobs of the per-job ping-pong rate |
+| `\numAfiveHO` | 5.9 | 5.9 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute |
 
 
 Extra macros (added after the planner round; not in the main.tex header list, defined in numbers.tex):
 
 | Macro | numbers.tex | Source script | Aggregation | Note |
 |---|---|---|---|---|
-| `\numAfiveTen` | 3.29 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numAfiveRef` | 0.08 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numCostOracleTen` | 2.97 | scripts/run_m5_dporacle.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numCostOracleRef` | 0.02 | scripts/run_m5_dporacle.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numGeniePlanTen` | 2.99 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numGeniePlanRef` | 0.03 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numSensePlanTen` | 9.07 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numSensePlanRef` | 0.13 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numTrueLossRef` | 0.04 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numTrueLossFrom` | 15 | scripts/run_m5_planner.py | lowest margin [dB] where the mean outage is below A5's | lower mean than A5 at every margin from this one up; 95 % CIs overlap at every such margin (not significant, unpaired) |
-| `\numAthreeWideRef` | 0.14 | scripts/run_m5_planner.py | mean over 40 evaluation jobs [s/UE-min] |  |
-| `\numValueRange` | 70--89\% | scripts/run_m5_planner.py | POOLED over evaluation jobs: (best reactive - cost-aware) / (best reactive - instantaneous oracle) outage steps; min-max over margins |  |
-| `\numValuePedRange` | 40--64\% | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |  |
-| `\numValueBusRange` | 11--32\% | scripts/run_m5_planner.py | net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins |  |
-| `\numValuePedTen` | 46\% | scripts/run_m5_planner.py | net closed steps (pedestrian) / best-reactive-to-oracle gap, pooled |  |
-| `\numValueBusTen` | 32\% | scripts/run_m5_planner.py | net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled |  |
-| `\numPlanHorizon` | 0.5 | scripts/run_m5_planner.py | RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute) |  |
-| `\numSensePlanHO` | 23.7 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute | margin not specified in the request; 10 dB used |
-| `\numSensePlanPP` | 0.54 | scripts/run_m5_planner.py | mean over evaluation jobs of the per-job ping-pong rate | margin not specified in the request; 10 dB used |
-| `\numAfiveHO` | 5.9 | scripts/run_m5_planner.py | mean over evaluation jobs of handovers per UE-minute | margin not specified in the request; 10 dB used |
+| `\numHybridTen` | 5.32 | scripts/run_m3_hybrid.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |  |
+| `\numGenieRef` | 0.23 | scripts/run_m3_genie.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |  |
+| `\numHybridRef` | 0.33 | scripts/run_m3_hybrid.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |  |
+| `\numXappTen` | 6.25 | scripts/run_m3.py | mean over 40 evaluation jobs of the per-job outage at the service rate (s per UE-minute) |  |
+| `\numGenieMatch` | 87\% | scripts/run_m3_genie.py | mean over evaluation jobs of the per-job share of genie-triggered handovers that match |  |
+| `\numAthreeMatch` | 44\% | scripts/run_m3.py | mean over evaluation jobs of the per-job share of A3 handovers that match |  |
+| `\numGeniePreBus` | 70\% | scripts/run_m3_genie.py | mean over evaluation jobs with bus/truck events of the per-job share |  |
+| `\numAthreePreBus` | 23\% | scripts/run_m3.py | mean over evaluation jobs with bus/truck events of the per-job share |  |
+| `\numForesightRange` | 2--9\% | scripts/run_m5_foresight.py | POOLED share of A3 outage over evaluation jobs (sum of steps / sum of A3 outage steps); min-max over margins 5-30 dB |  |
+| `\numForesightRef` | 16\% | scripts/run_m5_foresight.py | POOLED share of A3 outage over evaluation jobs |  |
+| `\numForesightMaxAbs` | 0.32 | scripts/run_m5_foresight.py | max over margins of the mean over evaluation jobs of blockage-caused wrong-cell time [s/UE-min] |  |
+| `\numTauZeroLow` | 35--42\% | scripts/run_m3_genie.py | share of the A3-oracle gap closed, 1 - gap(0)/gap(20 ms), from means over jobs; min-max over margins |  |
+| `\numTauZeroHigh` | 68--93\% | scripts/run_m3_genie.py | share of the A3-oracle gap closed, 1 - gap(0)/gap(20 ms), from means over jobs; min-max over margins |  |
+| `\numTauZeroRef` | 97\% | scripts/run_m3_genie.py | 1 - gap(0)/gap(20 ms), from means over jobs |  |
 
 Every macro's full source (script, config incl. detector budget, ghost method and tracker, seeds, aggregation, raw values, notes) is in `results/M5/numbers_catalog.json`.
 

@@ -1745,6 +1745,384 @@
   "raw": 5.921382073109664,
   "note": "margin not specified in the request; 10 dB used"
  },
+ "x.paired.0db.trueloss_vs_a5": {
+  "value": "+1.383 [+1.205, +1.560], p = 1.8e-12",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; true-LoS-loss planner (H = 0.5 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": 1.3825738607911862,
+   "ci95_half_t": 0.17720821557840105,
+   "ci95": [
+    1.205365645212785,
+    1.5597820763695873
+   ],
+   "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+   "n_scheme_lower": 0,
+   "n_scheme_higher": 40
+  },
+  "note": ""
+ },
+ "x.paired.0db.sensing_vs_a5": {
+  "value": "+1.563 [+1.377, +1.749], p = 1.8e-12",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; sensing-planner (H = 0.5 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": 1.562844266399599,
+   "ci95_half_t": 0.1862061391855491,
+   "ci95": [
+    1.3766381272140498,
+    1.7490504055851481
+   ],
+   "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+   "n_scheme_lower": 0,
+   "n_scheme_higher": 40
+  },
+  "note": ""
+ },
+ "x.paired.5db.trueloss_vs_a5": {
+  "value": "+1.301 [+1.005, +1.597], p = 2.3e-07",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; true-LoS-loss planner (H = 1.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": 1.301201802704056,
+   "ci95_half_t": 0.29621494692464445,
+   "ci95": [
+    1.0049868557794115,
+    1.5974167496287004
+   ],
+   "wilcoxon_p_two_sided": 2.279623785615941e-07,
+   "n_scheme_lower": 4,
+   "n_scheme_higher": 36
+  },
+  "note": ""
+ },
+ "x.paired.5db.sensing_vs_a5": {
+  "value": "+2.969 [+2.538, +3.400], p = 1.8e-12",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; sensing-planner (H = 1.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": 2.9688282423635455,
+   "ci95_half_t": 0.4312505481017974,
+   "ci95": [
+    2.5375776942617483,
+    3.4000787904653427
+   ],
+   "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+   "n_scheme_lower": 0,
+   "n_scheme_higher": 40
+  },
+  "note": ""
+ },
+ "x.paired.10db.trueloss_vs_a5": {
+  "value": "+0.201 [+0.003, +0.399], p = 0.7",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; true-LoS-loss planner (H = 0.5 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": 0.2009263895843766,
+   "ci95_half_t": 0.1976993841198447,
+   "ci95": [
+    0.003227005464531918,
+    0.3986257737042213
+   ],
+   "wilcoxon_p_two_sided": 0.6966829473297715,
+   "n_scheme_lower": 25,
+   "n_scheme_higher": 15
+  },
+  "note": ""
+ },
+ "x.paired.10db.sensing_vs_a5": {
+  "value": "+5.775 [+4.594, +6.957], p = 1.8e-12",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; sensing-planner (H = 0.5 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": 5.775413119679519,
+   "ci95_half_t": 1.1813078497963425,
+   "ci95": [
+    4.594105269883176,
+    6.956720969475862
+   ],
+   "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+   "n_scheme_lower": 0,
+   "n_scheme_higher": 40
+  },
+  "note": ""
+ },
+ "x.paired.15db.trueloss_vs_a5": {
+  "value": "-0.046 [-0.088, -0.004], p = 0.0053",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; true-LoS-loss planner (H = 0.5 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": -0.045943915873810685,
+   "ci95_half_t": 0.04233217874009763,
+   "ci95": [
+    -0.08827609461390831,
+    -0.0036117371337130583
+   ],
+   "wilcoxon_p_two_sided": 0.005282893334941251,
+   "n_scheme_lower": 28,
+   "n_scheme_higher": 12
+  },
+  "note": ""
+ },
+ "x.paired.15db.sensing_vs_a5": {
+  "value": "+2.786 [+2.096, +3.477], p = 1.8e-12",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; sensing-planner (H = 0.5 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": 2.7863044566850275,
+   "ci95_half_t": 0.6904059696257353,
+   "ci95": [
+    2.095898487059292,
+    3.476710426310763
+   ],
+   "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+   "n_scheme_lower": 0,
+   "n_scheme_higher": 40
+  },
+  "note": ""
+ },
+ "x.paired.20db.trueloss_vs_a5": {
+  "value": "-0.075 [-0.111, -0.040], p = 0.00032",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; true-LoS-loss planner (H = 1.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": -0.07523785678517778,
+   "ci95_half_t": 0.03573018036202346,
+   "ci95": [
+    -0.11096803714720124,
+    -0.039507676423154316
+   ],
+   "wilcoxon_p_two_sided": 0.0003154039138246524,
+   "n_scheme_lower": 33,
+   "n_scheme_higher": 7
+  },
+  "note": ""
+ },
+ "x.paired.20db.sensing_vs_a5": {
+  "value": "+1.396 [+1.069, +1.722], p = 3.9e-08",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; sensing-planner (H = 1.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": 1.3955933900851276,
+   "ci95_half_t": 0.32627691619983124,
+   "ci95": [
+    1.0693164738852965,
+    1.7218703062849587
+   ],
+   "wilcoxon_p_two_sided": 3.850982975394219e-08,
+   "n_scheme_lower": 1,
+   "n_scheme_higher": 39
+  },
+  "note": ""
+ },
+ "x.paired.25db.trueloss_vs_a5": {
+  "value": "-0.037 [-0.080, +0.006], p = 0.0023",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; true-LoS-loss planner (H = 3.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 39,
+   "mean_diff": -0.036930395593390085,
+   "ci95_half_t": 0.04278769598259591,
+   "ci95": [
+    -0.079718091575986,
+    0.005857300389205823
+   ],
+   "wilcoxon_p_two_sided": 0.0023460400534557396,
+   "n_scheme_lower": 30,
+   "n_scheme_higher": 9
+  },
+  "note": ""
+ },
+ "x.paired.25db.sensing_vs_a5": {
+  "value": "+0.794 [+0.532, +1.056], p = 3.8e-08",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; sensing-planner (H = 3.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 40,
+   "mean_diff": 0.7941912869303955,
+   "ci95_half_t": 0.26174622104728,
+   "ci95": [
+    0.5324450658831155,
+    1.0559375079776756
+   ],
+   "wilcoxon_p_two_sided": 3.849627925475797e-08,
+   "n_scheme_lower": 1,
+   "n_scheme_higher": 39
+  },
+  "note": ""
+ },
+ "x.paired.30db.trueloss_vs_a5": {
+  "value": "-0.018 [-0.035, -0.001], p = 0.0012",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; true-LoS-loss planner (H = 2.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 38,
+   "mean_diff": -0.01815222834251376,
+   "ci95_half_t": 0.01683825415350859,
+   "ci95": [
+    -0.03499048249602235,
+    -0.0013139741890051682
+   ],
+   "wilcoxon_p_two_sided": 0.0012488680422510796,
+   "n_scheme_lower": 28,
+   "n_scheme_higher": 10
+  },
+  "note": ""
+ },
+ "x.paired.30db.sensing_vs_a5": {
+  "value": "+0.341 [+0.167, +0.515], p = 1.9e-06",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; sensing-planner (H = 2.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 37,
+   "mean_diff": 0.3407611417125689,
+   "ci95_half_t": 0.17381999540717827,
+   "ci95": [
+    0.16694114630539061,
+    0.5145811371197472
+   ],
+   "wilcoxon_p_two_sided": 1.935987203406688e-06,
+   "n_scheme_lower": 6,
+   "n_scheme_higher": 31
+  },
+  "note": ""
+ },
+ "x.paired.ref.trueloss_vs_a5": {
+  "value": "-0.040 [-0.074, -0.007], p = 7e-06",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; true-LoS-loss planner (H = 2.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 28,
+   "mean_diff": -0.04043565348022033,
+   "ci95_half_t": 0.03371678452912115,
+   "ci95": [
+    -0.07415243800934149,
+    -0.006718868951099181
+   ],
+   "wilcoxon_p_two_sided": 6.975768057541793e-06,
+   "n_scheme_lower": 27,
+   "n_scheme_higher": 1
+  },
+  "note": ""
+ },
+ "x.paired.ref.sensing_vs_a5": {
+  "value": "+0.053 [+0.010, +0.096], p = 0.021",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; sensing-planner (H = 2.0 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 34,
+   "mean_diff": 0.0529544316474712,
+   "ci95_half_t": 0.042623233773097007,
+   "ci95": [
+    0.010331197874374191,
+    0.0955776654205682
+   ],
+   "wilcoxon_p_two_sided": 0.021182934820684302,
+   "n_scheme_lower": 13,
+   "n_scheme_higher": 21
+  },
+  "note": ""
+ },
+ "x.paired.v1.trueloss_vs_a5": {
+  "value": "-0.014 [-0.021, -0.007], p = 0.00026",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); true-LoS-loss planner (H = 0.5 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 28,
+   "mean_diff": -0.014021031547320978,
+   "ci95_half_t": 0.007309271909572474,
+   "ci95": [
+    -0.021330303456893452,
+    -0.0067117596377485045
+   ],
+   "wilcoxon_p_two_sided": 0.00025511867140326966,
+   "n_scheme_lower": 23,
+   "n_scheme_higher": 5
+  },
+  "note": ""
+ },
+ "x.paired.v1.sensing_vs_a5": {
+  "value": "+0.049 [+0.011, +0.086], p = 0.018",
+  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); sensing-planner (H = 0.5 s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+  "raw": {
+   "n_jobs": 40,
+   "n_nonzero": 33,
+   "mean_diff": 0.048572859288933394,
+   "ci95_half_t": 0.03711274884542887,
+   "ci95": [
+    0.011460110443504527,
+    0.08568560813436227
+   ],
+   "wilcoxon_p_two_sided": 0.01773591330745706,
+   "n_scheme_lower": 11,
+   "n_scheme_higher": 22
+  },
+  "note": ""
+ },
  "numTauZeroRef": {
   "value": "97\\%",
   "script": "scripts/run_m3_genie.py -> results/M3/genie.json",
