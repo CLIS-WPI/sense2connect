@@ -400,6 +400,897 @@
   },
   "note": ""
  },
+ "x.gap.0db.foresight_recoverable_share": {
+  "value": "0\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 0 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.0,
+  "note": ""
+ },
+ "x.gap.0db.interruption_share": {
+  "value": "38\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 0 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.3842887473460722,
+  "note": ""
+ },
+ "x.gap.0db.distance_caused_share": {
+  "value": "62\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 0 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.6157112526539278,
+  "note": ""
+ },
+ "x.gap.5db.foresight_recoverable_share": {
+  "value": "37\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 5 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.36645605973578405,
+  "note": ""
+ },
+ "x.gap.5db.interruption_share": {
+  "value": "35\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 5 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.348937392303274,
+  "note": ""
+ },
+ "x.gap.5db.distance_caused_share": {
+  "value": "28\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 5 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.284606547960942,
+  "note": ""
+ },
+ "x.gap.10db.foresight_recoverable_share": {
+  "value": "58\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 10 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.579445571331981,
+  "note": ""
+ },
+ "x.gap.10db.interruption_share": {
+  "value": "42\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 10 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.42055442866801895,
+  "note": ""
+ },
+ "x.gap.10db.distance_caused_share": {
+  "value": "0\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 10 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.0,
+  "note": ""
+ },
+ "x.gap.15db.foresight_recoverable_share": {
+  "value": "32\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 15 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.32267833109017496,
+  "note": ""
+ },
+ "x.gap.15db.interruption_share": {
+  "value": "68\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 15 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.677321668909825,
+  "note": ""
+ },
+ "x.gap.15db.distance_caused_share": {
+  "value": "0\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 15 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.0,
+  "note": ""
+ },
+ "x.gap.20db.foresight_recoverable_share": {
+  "value": "25\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 20 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.2542372881355932,
+  "note": ""
+ },
+ "x.gap.20db.interruption_share": {
+  "value": "75\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 20 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.7457627118644068,
+  "note": ""
+ },
+ "x.gap.20db.distance_caused_share": {
+  "value": "0\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 20 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.0,
+  "note": ""
+ },
+ "x.gap.25db.foresight_recoverable_share": {
+  "value": "18\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 25 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.18386243386243387,
+  "note": ""
+ },
+ "x.gap.25db.interruption_share": {
+  "value": "82\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 25 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.8161375661375662,
+  "note": ""
+ },
+ "x.gap.25db.distance_caused_share": {
+  "value": "0\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 25 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.0,
+  "note": ""
+ },
+ "x.gap.30db.foresight_recoverable_share": {
+  "value": "14\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 30 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.13805522208883553,
+  "note": ""
+ },
+ "x.gap.30db.interruption_share": {
+  "value": "86\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 30 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.8619447779111644,
+  "note": ""
+ },
+ "x.gap.30db.distance_caused_share": {
+  "value": "0\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 30 dB",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.0,
+  "note": ""
+ },
+ "x.gap.ref.foresight_recoverable_share": {
+  "value": "18\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 3GPP short-range reference",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.17639168343393696,
+  "note": ""
+ },
+ "x.gap.ref.interruption_share": {
+  "value": "82\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 3GPP short-range reference",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.823608316566063,
+  "note": ""
+ },
+ "x.gap.ref.distance_caused_share": {
+  "value": "0\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin 3GPP short-range reference",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.0,
+  "note": ""
+ },
+ "x.gap.v1.foresight_recoverable_share": {
+  "value": "10\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin v1 radio (high margin)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.1023391812865497,
+  "note": ""
+ },
+ "x.gap.v1.interruption_share": {
+  "value": "90\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin v1 radio (high margin)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.8976608187134503,
+  "note": ""
+ },
+ "x.gap.v1.distance_caused_share": {
+  "value": "0\\%",
+  "script": "scripts/run_m5_foresight.py -> results/M5/foresight.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; tuned A3 (24-point grid), tau_HO 20 ms; causal foresight = A3's cell unusable, other cell usable, A3's cell usable with its unblocked power; margin v1 radio (high margin)",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED over evaluation jobs: steps / (A3 outage steps - oracle outage steps)",
+  "raw": 0.0,
+  "note": ""
+ },
+ "x.costaware_any.0db.tau20.outage": {
+  "value": "34.56",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 34.559213820731095,
+  "note": ""
+ },
+ "x.costaware_any.0db.tau20.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.0db.tau20.outage": {
+  "value": "34.56",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 34.559213820731095,
+  "note": ""
+ },
+ "x.costaware_epoch.0db.tau20.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_any.0db.tau0.outage": {
+  "value": "34.56",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 34.559213820731095,
+  "note": ""
+ },
+ "x.costaware_any.0db.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.0db.tau0.outage": {
+  "value": "34.56",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 34.559213820731095,
+  "note": ""
+ },
+ "x.costaware_epoch.0db.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 0 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_any.5db.tau20.outage": {
+  "value": "9.02",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 9.02040560841262,
+  "note": ""
+ },
+ "x.costaware_any.5db.tau20.gap_closed": {
+  "value": "88\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.8816771970132108,
+  "note": ""
+ },
+ "x.costaware_epoch.5db.tau20.outage": {
+  "value": "9.04",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 9.035803705558337,
+  "note": ""
+ },
+ "x.costaware_epoch.5db.tau20.gap_closed": {
+  "value": "85\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.8463526708788053,
+  "note": ""
+ },
+ "x.costaware_any.5db.tau0.outage": {
+  "value": "8.97",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 8.968828242363546,
+  "note": ""
+ },
+ "x.costaware_any.5db.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.5db.tau0.outage": {
+  "value": "8.99",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 8.992613920881322,
+  "note": ""
+ },
+ "x.costaware_epoch.5db.tau0.gap_closed": {
+  "value": "92\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 5 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9162257495590829,
+  "note": ""
+ },
+ "x.costaware_any.10db.tau20.outage": {
+  "value": "2.95",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 2.9526790185277916,
+  "note": ""
+ },
+ "x.costaware_any.10db.tau20.gap_closed": {
+  "value": "85\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.8521523551949516,
+  "note": ""
+ },
+ "x.costaware_epoch.10db.tau20.outage": {
+  "value": "2.97",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 2.9709564346519777,
+  "note": ""
+ },
+ "x.costaware_epoch.10db.tau20.gap_closed": {
+  "value": "82\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.8192472391255353,
+  "note": ""
+ },
+ "x.costaware_any.10db.tau0.outage": {
+  "value": "2.87",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 2.8705558337506263,
+  "note": ""
+ },
+ "x.costaware_any.10db.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.10db.tau0.outage": {
+  "value": "2.90",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 2.902103154732098,
+  "note": ""
+ },
+ "x.costaware_epoch.10db.tau0.gap_closed": {
+  "value": "90\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 10 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9020217729393468,
+  "note": ""
+ },
+ "x.costaware_any.15db.tau20.outage": {
+  "value": "1.75",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 1.7468703054581873,
+  "note": ""
+ },
+ "x.costaware_any.15db.tau20.gap_closed": {
+  "value": "80\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.7991251682368775,
+  "note": ""
+ },
+ "x.costaware_epoch.15db.tau20.outage": {
+  "value": "1.77",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 1.7656484727090636,
+  "note": ""
+ },
+ "x.costaware_epoch.15db.tau20.gap_closed": {
+  "value": "75\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.7486541049798116,
+  "note": ""
+ },
+ "x.costaware_any.15db.tau0.outage": {
+  "value": "1.67",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 1.6721331997996995,
+  "note": ""
+ },
+ "x.costaware_any.15db.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.15db.tau0.outage": {
+  "value": "1.70",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 1.7031797696544817,
+  "note": ""
+ },
+ "x.costaware_epoch.15db.tau0.gap_closed": {
+  "value": "74\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 15 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.7416666666666667,
+  "note": ""
+ },
+ "x.costaware_any.20db.tau20.outage": {
+  "value": "0.97",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.9693289934902353,
+  "note": ""
+ },
+ "x.costaware_any.20db.tau20.gap_closed": {
+  "value": "81\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.8096751412429378,
+  "note": ""
+ },
+ "x.costaware_epoch.20db.tau20.outage": {
+  "value": "0.99",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.9854782173259888,
+  "note": ""
+ },
+ "x.costaware_epoch.20db.tau20.gap_closed": {
+  "value": "76\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.7641242937853108,
+  "note": ""
+ },
+ "x.costaware_any.20db.tau0.outage": {
+  "value": "0.90",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.9018527791687532,
+  "note": ""
+ },
+ "x.costaware_any.20db.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.20db.tau0.outage": {
+  "value": "0.93",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.9271407110665999,
+  "note": ""
+ },
+ "x.costaware_epoch.20db.tau0.gap_closed": {
+  "value": "72\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 20 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.7198335644937587,
+  "note": ""
+ },
+ "x.costaware_any.25db.tau20.outage": {
+  "value": "0.34",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.34138708062093137,
+  "note": ""
+ },
+ "x.costaware_any.25db.tau20.gap_closed": {
+  "value": "85\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.8544973544973545,
+  "note": ""
+ },
+ "x.costaware_epoch.25db.tau20.outage": {
+  "value": "0.35",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.34539308963445164,
+  "note": ""
+ },
+ "x.costaware_epoch.25db.tau20.gap_closed": {
+  "value": "84\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.8403880070546738,
+  "note": ""
+ },
+ "x.costaware_any.25db.tau0.outage": {
+  "value": "0.30",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.3000751126690035,
+  "note": ""
+ },
+ "x.costaware_any.25db.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.25db.tau0.outage": {
+  "value": "0.30",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.30232849273910867,
+  "note": ""
+ },
+ "x.costaware_epoch.25db.tau0.gap_closed": {
+  "value": "94\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 25 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9387755102040817,
+  "note": ""
+ },
+ "x.costaware_any.30db.tau20.outage": {
+  "value": "0.12",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.1171757636454682,
+  "note": ""
+ },
+ "x.costaware_any.30db.tau20.gap_closed": {
+  "value": "91\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9135654261704682,
+  "note": ""
+ },
+ "x.costaware_epoch.30db.tau20.outage": {
+  "value": "0.12",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.11792689033550326,
+  "note": ""
+ },
+ "x.costaware_epoch.30db.tau20.gap_closed": {
+  "value": "91\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9099639855942377,
+  "note": ""
+ },
+ "x.costaware_any.30db.tau0.outage": {
+  "value": "0.10",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.09914872308462694,
+  "note": ""
+ },
+ "x.costaware_any.30db.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.30db.tau0.outage": {
+  "value": "0.10",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.099899849774662,
+  "note": ""
+ },
+ "x.costaware_epoch.30db.tau0.gap_closed": {
+  "value": "95\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 30 dB; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9482758620689655,
+  "note": ""
+ },
+ "x.costaware_any.ref.tau20.outage": {
+  "value": "0.02",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.02303455182774161,
+  "note": ""
+ },
+ "x.costaware_any.ref.tau20.gap_closed": {
+  "value": "96\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9624413145539906,
+  "note": ""
+ },
+ "x.costaware_epoch.ref.tau20.outage": {
+  "value": "0.02",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.023159739609414122,
+  "note": ""
+ },
+ "x.costaware_epoch.ref.tau20.gap_closed": {
+  "value": "96\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9617706237424547,
+  "note": ""
+ },
+ "x.costaware_any.ref.tau0.outage": {
+  "value": "0.02",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.01602403605408112,
+  "note": ""
+ },
+ "x.costaware_any.ref.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.ref.tau0.outage": {
+  "value": "0.02",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.016399599399098647,
+  "note": ""
+ },
+ "x.costaware_epoch.ref.tau0.gap_closed": {
+  "value": "94\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin 3GPP short-range reference; tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9423076923076923,
+  "note": ""
+ },
+ "x.costaware_any.v1.tau20.outage": {
+  "value": "0.01",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.014271407110665999,
+  "note": ""
+ },
+ "x.costaware_any.v1.tau20.gap_closed": {
+  "value": "98\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.97953216374269,
+  "note": ""
+ },
+ "x.costaware_epoch.v1.tau20.outage": {
+  "value": "0.01",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); tau_HO 20 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.014396594892338507,
+  "note": ""
+ },
+ "x.costaware_epoch.v1.tau20.gap_closed": {
+  "value": "98\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); tau_HO 20 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9788011695906432,
+  "note": ""
+ },
+ "x.costaware_any.v1.tau0.outage": {
+  "value": "0.01",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches at any 10 ms step",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.010766149223835753,
+  "note": ""
+ },
+ "x.costaware_any.v1.tau0.gap_closed": {
+  "value": "100\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 1.0,
+  "note": ""
+ },
+ "x.costaware_epoch.v1.tau0.outage": {
+  "value": "0.01",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); tau_HO 0 ms; Viterbi over the cell with perfect knowledge of both cells' blocked SNR, switch = tau_HO outage, switches only at 0.1 s epochs",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "mean over 40 evaluation jobs [s/UE-min]",
+  "raw": 0.011141712568853279,
+  "note": ""
+ },
+ "x.costaware_epoch.v1.tau0.gap_closed": {
+  "value": "93\\%",
+  "script": "scripts/run_m5_dporacle.py -> results/M5/dporacle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; margin v1 radio (high margin); tau_HO 0 ms",
+  "seeds": "evaluation seeds 1001-1010 (configs/seeds.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps",
+  "raw": 0.9347826086956522,
+  "note": ""
+ },
  "numTauZeroRef": {
   "value": "97\\%",
   "script": "scripts/run_m3_genie.py -> results/M3/genie.json",

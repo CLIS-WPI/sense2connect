@@ -1,5 +1,5 @@
 {
- "definition": "Causal foresight bound: A3 outage decomposition with an unblocked counterfactual.\n\nTuned A3 (main run, tau_HO = 20 ms) on the evaluation seeds, every margin.\nEvery 10 ms step in outage at the service rate is assigned to one class\n(precedence top to bottom):\n- both cells unusable (blocked SNR of both cells below the service rate);\n- handover interruption;\n- wrong cell, blockage-caused: A3's serving cell is unusable, the other\n  cell is usable, and A3's serving cell WOULD be usable with its unblocked\n  power (no blockers);\n- wrong cell, distance-caused: A3's serving cell is unusable even\n  unblocked, the other cell is usable.\nNew foresight bound = blockage-caused wrong-cell time (any loss level,\nwhichever cell A3 is on). Blockage-caused steps are split by the class of\nthe dominant LoS blocker of A3's cell at that step (\"no LoS blocker\" when\nthe loss is on other paths only).\n\nThe old definition (wrong-cell time inside 10 dB events of the fixed,\nstrongest-unblocked cell, by event class) is recomputed on the same lanes\nfor comparison; both splits of the wrong-cell time must sum to the same\ntotal.\n\nWrites results/M5/foresight.json.\n",
+ "definition": "Causal foresight bound: A3 outage decomposition with an unblocked counterfactual.\n\nTuned A3 (main run, tau_HO = 20 ms) on the evaluation seeds, every margin.\nEvery 10 ms step in outage at the service rate is assigned to one class\n(precedence top to bottom):\n- both cells unusable (blocked SNR of both cells below the service rate);\n- handover interruption;\n- wrong cell, blockage-caused: A3's serving cell is unusable, the other\n  cell is usable, and A3's serving cell WOULD be usable with its unblocked\n  power (no blockers);\n- wrong cell, distance-caused: A3's serving cell is unusable even\n  unblocked, the other cell is usable.\nNew foresight bound = blockage-caused wrong-cell time (any loss level,\nwhichever cell A3 is on). Blockage-caused steps are split by the class of\nthe dominant LoS blocker of A3's cell at that step (\"no LoS blocker\" when\nthe loss is on other paths only).\n\nThe old definition (wrong-cell time inside 10 dB events of the fixed,\nstrongest-unblocked cell, by event class) is recomputed on the same lanes\nfor comparison; both splits of the wrong-cell time must sum to the same\ntotal. The A3-oracle gap (A3 outage minus instantaneous-oracle outage =\nwrong cell + interruption, pooled) is split into foresight-recoverable\n(blockage-caused), distance-caused and interruption shares.\n\nWrites results/M5/foresight.json.\n",
  "tau_ho_s": 0.02,
  "margins": [
   {
@@ -199,6 +199,12 @@
      "n": 40
     },
     "share_of_a3_outage_pooled": 0.0
+   },
+   "a3_oracle_gap_pooled": {
+    "gap_s_per_ue_min_pooled": 0.11792689033550324,
+    "foresight_recoverable_share": 0.0,
+    "distance_caused_share": 0.6157112526539278,
+    "interruption_share": 0.3842887473460722
    },
    "checks": {
     "new_split_sums": true,
@@ -404,6 +410,12 @@
     },
     "share_of_a3_outage_pooled": 0.0
    },
+   "a3_oracle_gap_pooled": {
+    "gap_s_per_ue_min_pooled": 0.43590385578367546,
+    "foresight_recoverable_share": 0.36645605973578405,
+    "distance_caused_share": 0.284606547960942,
+    "interruption_share": 0.348937392303274
+   },
    "checks": {
     "new_split_sums": true,
     "old_split_sums": true,
@@ -607,6 +619,12 @@
      "n": 40
     },
     "share_of_a3_outage_pooled": 0.0
+   },
+   "a3_oracle_gap_pooled": {
+    "gap_s_per_ue_min_pooled": 0.5554581872809213,
+    "foresight_recoverable_share": 0.579445571331981,
+    "distance_caused_share": 0.0,
+    "interruption_share": 0.42055442866801895
    },
    "checks": {
     "new_split_sums": true,
@@ -812,6 +830,12 @@
     },
     "share_of_a3_outage_pooled": 0.0
    },
+   "a3_oracle_gap_pooled": {
+    "gap_s_per_ue_min_pooled": 0.372058087130696,
+    "foresight_recoverable_share": 0.32267833109017496,
+    "distance_caused_share": 0.0,
+    "interruption_share": 0.677321668909825
+   },
    "checks": {
     "new_split_sums": true,
     "old_split_sums": true,
@@ -1015,6 +1039,12 @@
      "n": 40
     },
     "share_of_a3_outage_pooled": 0.0
+   },
+   "a3_oracle_gap_pooled": {
+    "gap_s_per_ue_min_pooled": 0.3545317976965448,
+    "foresight_recoverable_share": 0.2542372881355932,
+    "distance_caused_share": 0.0,
+    "interruption_share": 0.7457627118644068
    },
    "checks": {
     "new_split_sums": true,
@@ -1220,6 +1250,12 @@
     },
     "share_of_a3_outage_pooled": 0.0
    },
+   "a3_oracle_gap_pooled": {
+    "gap_s_per_ue_min_pooled": 0.2839258888332498,
+    "foresight_recoverable_share": 0.18386243386243387,
+    "distance_caused_share": 0.0,
+    "interruption_share": 0.8161375661375662
+   },
    "checks": {
     "new_split_sums": true,
     "old_split_sums": true,
@@ -1423,6 +1459,12 @@
      "n": 40
     },
     "share_of_a3_outage_pooled": 0.0
+   },
+   "a3_oracle_gap_pooled": {
+    "gap_s_per_ue_min_pooled": 0.20856284426639957,
+    "foresight_recoverable_share": 0.13805522208883553,
+    "distance_caused_share": 0.0,
+    "interruption_share": 0.8619447779111644
    },
    "checks": {
     "new_split_sums": true,
@@ -1628,6 +1670,12 @@
     },
     "share_of_a3_outage_pooled": 0.0
    },
+   "a3_oracle_gap_pooled": {
+    "gap_s_per_ue_min_pooled": 0.18665498247371054,
+    "foresight_recoverable_share": 0.17639168343393696,
+    "distance_caused_share": 0.0,
+    "interruption_share": 0.823608316566063
+   },
    "checks": {
     "new_split_sums": true,
     "old_split_sums": true,
@@ -1831,6 +1879,12 @@
      "n": 40
     },
     "share_of_a3_outage_pooled": 0.0
+   },
+   "a3_oracle_gap_pooled": {
+    "gap_s_per_ue_min_pooled": 0.17125688532799196,
+    "foresight_recoverable_share": 0.1023391812865497,
+    "distance_caused_share": 0.0,
+    "interruption_share": 0.8976608187134503
    },
    "checks": {
     "new_split_sums": true,

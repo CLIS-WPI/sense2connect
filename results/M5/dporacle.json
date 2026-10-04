@@ -1,0 +1,1202 @@
+{
+ "definition": "Cost-aware oracle (upper bound for any foresight policy) and genie diagnosis.\n\nPer lane (job, UE), a Viterbi over the serving cell in 10 ms steps with\nperfect knowledge of both cells' blocked SNR minimises the outage time at\nthe service rate. A switch at step k makes steps k .. k + tau_HO - 1\noutage (interruption, the simulator's rule); no switch during an\ninterruption; the initial cell is free. Variants: tau_HO = 20 ms and 0;\nswitches allowed at every 10 ms step (\"any step\") or only at 0.1 s E2\nepochs (k mod 10 == 0). With tau_HO = 0 and any step the result must equal\nthe instantaneous oracle (checked). No sensing overhead (bound).\n\nAlso: per margin, A3 (main tuned; A3 retuned at tau_HO = 0 from\ngenie.json), genie (first-round policy) and onset-advance genie\n(genie2.json), the instantaneous oracle, the share of the A3-oracle gap the\ncost-aware oracle closes, and the closed gap split by blocker class\n(steps where A3 is in outage and the cost-aware oracle is not, minus the\nreverse, by the dominant LoS blocker of A3's cell at that step).\n\nGenie diagnosis (every margin, reported at 10 dB): blockage-caused\nwrong-cell steps of A3 (A3's cell unusable, other usable, A3's cell usable\nunblocked) split by the genie trigger conditions: LoS loss on A3's cell\n< 10 dB, and other cell's LoS loss >= 3 dB.\n\nWrites results/M5/dporacle.json.\n",
+ "margins": [
+  {
+   "label": "0 dB",
+   "margin_db": 0.0,
+   "0.020": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 34.6771407110666,
+     "ci": 2.7598514614384735,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 34.559213820731095,
+     "ci": 2.7679509396964215,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 34.559213820731095,
+     "ci": 2.7679509396964215,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 34.559213820731095,
+     "ci": 2.7679509396964215,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.35881104033970274,
+     "pedestrian": 0.4596602972399151,
+     "car": 0.18152866242038215,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 1.0,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.35881104033970274,
+     "pedestrian": 0.4596602972399151,
+     "car": 0.18152866242038215,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 36.585628442663996,
+     "ci": 2.697840967204334,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 35.16111667501251,
+     "ci": 2.69393741001851,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 36.54606910365548,
+     "ci": 2.6958552003650786,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 35.121432148222326,
+     "ci": 2.691825607862555,
+     "n": 40
+    },
+    "genie_trigger_diagnosis": {
+     "n": 0,
+     "los_lt10": 0,
+     "other_ge3_usable": 0,
+     "either": 0,
+     "both_conditions_met": 0
+    }
+   },
+   "0.000": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 34.631947921882826,
+     "ci": 2.7626978708699954,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 34.559213820731095,
+     "ci": 2.7679509396964215,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 34.559213820731095,
+     "ci": 2.7679509396964215,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 34.559213820731095,
+     "ci": 2.7679509396964215,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.2943201376936317,
+     "pedestrian": 0.5215146299483648,
+     "car": 0.18416523235800344,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 1.0,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.2943201376936317,
+     "pedestrian": 0.5215146299483648,
+     "car": 0.18416523235800344,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 36.54682023034552,
+     "ci": 2.700222579249159,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 35.11830245368052,
+     "ci": 2.6967584875452233,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 36.5100150225338,
+     "ci": 2.6982415390613954,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 35.081372058087126,
+     "ci": 2.694671380863863,
+     "n": 40
+    }
+   }
+  },
+  {
+   "label": "5 dB",
+   "margin_db": 5.0,
+   "0.020": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 9.404732098147221,
+     "ci": 1.3755995862434023,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 8.968828242363546,
+     "ci": 1.3542187863829238,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 9.02040560841262,
+     "ci": 1.3541917603786435,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 9.035803705558337,
+     "ci": 1.3546134934748346,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 0.8816771970132108,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.3104537622056289,
+     "pedestrian": 0.539919586444572,
+     "car": 0.03130384836300976,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.8463526708788053,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.30011487650775415,
+     "pedestrian": 0.5011487650775417,
+     "car": 0.045089029293509476,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 11.298072108162243,
+     "ci": 1.5064311144014926,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 10.30946419629444,
+     "ci": 1.4643941483121297,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 11.262143214822233,
+     "ci": 1.5061344566376316,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 10.27891837756635,
+     "ci": 1.4657233258236475,
+     "n": 40
+    },
+    "genie_trigger_diagnosis": {
+     "n": 1276,
+     "los_lt10": 462,
+     "other_ge3_usable": 191,
+     "either": 471,
+     "both_conditions_met": 805
+    }
+   },
+   "0.000": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 9.252754131196795,
+     "ci": 1.3696326337589007,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 8.968828242363546,
+     "ci": 1.3542187863829238,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 8.968828242363546,
+     "ci": 1.3542187863829238,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 8.992613920881322,
+     "ci": 1.3547323694632045,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.20414462081128748,
+     "pedestrian": 0.7663139329805997,
+     "car": 0.029541446208112873,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.9162257495590829,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.1966490299823633,
+     "pedestrian": 0.6953262786596119,
+     "car": 0.024250440917107582,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 11.155983975963945,
+     "ci": 1.5015604700759362,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 10.162493740610916,
+     "ci": 1.4586491590629445,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 11.123560340510764,
+     "ci": 1.5014366481891535,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 10.135703555332999,
+     "ci": 1.4602814945583886,
+     "n": 40
+    }
+   }
+  },
+  {
+   "label": "10 dB",
+   "margin_db": 10.0,
+   "0.020": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 3.426014021031547,
+     "ci": 0.7112054669572291,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 2.8705558337506263,
+     "ci": 0.6756604731078449,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 2.9526790185277916,
+     "ci": 0.681401277668845,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 2.9709564346519777,
+     "ci": 0.6826475937617859,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 0.8521523551949516,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.44805048456164076,
+     "pedestrian": 0.4061302681992337,
+     "car": -0.002028397565922921,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.8192472391255353,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.44647284201036735,
+     "pedestrian": 0.36961911201262115,
+     "car": 0.0031552851025467656,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 3.6526039058587876,
+     "ci": 0.7789530577713393,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 3.4765898848272405,
+     "ci": 0.7417353089098281,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 3.650475713570356,
+     "ci": 0.7789939699965042,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 3.4739609414121184,
+     "ci": 0.7418306871145838,
+     "n": 40
+    },
+    "genie_trigger_diagnosis": {
+     "n": 2571,
+     "los_lt10": 925,
+     "other_ge3_usable": 426,
+     "either": 1051,
+     "both_conditions_met": 1520
+    }
+   },
+   "0.000": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 3.1925388082123187,
+     "ci": 0.7008057106061897,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 2.8705558337506263,
+     "ci": 0.6756604731078449,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 2.8705558337506263,
+     "ci": 0.6756604731078449,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 2.902103154732098,
+     "ci": 0.6777430959569224,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.5093312597200622,
+     "pedestrian": 0.4906687402799378,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.9020217729393468,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.5031104199066874,
+     "pedestrian": 0.40668740279937793,
+     "car": -0.007776049766718507,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 3.421006509764647,
+     "ci": 0.7708466093759134,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 3.243114672008012,
+     "ci": 0.7338524320523316,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 3.4246369554331495,
+     "ci": 0.7711931418616823,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 3.2463695543314968,
+     "ci": 0.734149538740596,
+     "n": 40
+    }
+   }
+  },
+  {
+   "label": "15 dB",
+   "margin_db": 15.0,
+   "0.020": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 2.0441912869303955,
+     "ci": 0.4396907422051251,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 1.6721331997996995,
+     "ci": 0.4091109616906195,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 1.7468703054581873,
+     "ci": 0.4163526068002484,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 1.7656484727090636,
+     "ci": 0.41892204483721746,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 0.7991251682368775,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.32099596231493943,
+     "pedestrian": 0.46635262449528936,
+     "car": 0.011776581426648721,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.7486541049798116,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.3213324360699865,
+     "pedestrian": 0.414535666218035,
+     "car": 0.01278600269179004,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 2.1450926389584373,
+     "ci": 0.4582061076929389,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 2.0928893340010015,
+     "ci": 0.4437501020756791,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 2.1409614421632446,
+     "ci": 0.4586043293324115,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 2.0885077616424637,
+     "ci": 0.4441077814754494,
+     "n": 40
+    },
+    "genie_trigger_diagnosis": {
+     "n": 959,
+     "los_lt10": 15,
+     "other_ge3_usable": 304,
+     "either": 308,
+     "both_conditions_met": 651
+    }
+   },
+   "0.000": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 1.7923134702053076,
+     "ci": 0.4281833596682346,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 1.6721331997996995,
+     "ci": 0.4091109616906195,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 1.6721331997996995,
+     "ci": 0.4091109616906195,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 1.7031797696544817,
+     "ci": 0.4129195597027988,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.21875,
+     "pedestrian": 0.78125,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.7416666666666667,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.203125,
+     "pedestrian": 0.5489583333333333,
+     "car": -0.010416666666666666,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 1.889834752128192,
+     "ci": 0.4479727686703501,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 1.8367551326990488,
+     "ci": 0.4333189325747913,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 1.891587381071607,
+     "ci": 0.4480695160216435,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 1.8382573860791187,
+     "ci": 0.43337145596624044,
+     "n": 40
+    }
+   }
+  },
+  {
+   "label": "20 dB",
+   "margin_db": 20.0,
+   "0.020": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 1.256384576865298,
+     "ci": 0.2816085507198061,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.9018527791687532,
+     "ci": 0.2509763150670267,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.9693289934902353,
+     "ci": 0.2578315098627202,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.9854782173259888,
+     "ci": 0.25967651487164295,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 0.8096751412429378,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.3382768361581921,
+     "pedestrian": 0.4346751412429379,
+     "car": 0.03672316384180791,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.7641242937853108,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.3379237288135593,
+     "pedestrian": 0.3919491525423729,
+     "car": 0.03425141242937853,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 1.3462694041061591,
+     "ci": 0.292859411504419,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 1.302704056084126,
+     "ci": 0.28235085375514885,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 1.3412618928392586,
+     "ci": 0.29297198341196834,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 1.2976965448172257,
+     "ci": 0.2824348208180266,
+     "n": 40
+    },
+    "genie_trigger_diagnosis": {
+     "n": 720,
+     "los_lt10": 0,
+     "other_ge3_usable": 344,
+     "either": 344,
+     "both_conditions_met": 376
+    }
+   },
+   "0.000": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 0.9921131697546318,
+     "ci": 0.26597604034066136,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.9018527791687532,
+     "ci": 0.2509763150670267,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.9018527791687532,
+     "ci": 0.2509763150670267,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.9271407110665999,
+     "ci": 0.25381617272876883,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.2565880721220527,
+     "pedestrian": 0.7434119278779473,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.7198335644937587,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.24271844660194175,
+     "pedestrian": 0.4868238557558946,
+     "car": -0.009708737864077669,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 1.0773660490736103,
+     "ci": 0.27851310671148843,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 1.0329243865798696,
+     "ci": 0.2673184424819697,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 1.078242363545318,
+     "ci": 0.2785079713004158,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 1.0338007010515775,
+     "ci": 0.2673138138805116,
+     "n": 40
+    }
+   }
+  },
+  {
+   "label": "25 dB",
+   "margin_db": 25.0,
+   "0.020": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 3.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 0.5840010015022533,
+     "ci": 0.17130610049089368,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.3000751126690035,
+     "ci": 0.15173167198776044,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.34138708062093137,
+     "ci": 0.15339456819960254,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.34539308963445164,
+     "ci": 0.15426106847809504,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 0.8544973544973545,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.34347442680776014,
+     "pedestrian": 0.43430335097001765,
+     "car": 0.07671957671957672,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.8403880070546738,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.3377425044091711,
+     "pedestrian": 0.427689594356261,
+     "car": 0.07495590828924162,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 0.6213069604406609,
+     "ci": 0.17401755099830837,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 0.5971457185778668,
+     "ci": 0.16994029756782453,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 0.6147971957936905,
+     "ci": 0.1735567427421852,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 0.5906359539308963,
+     "ci": 0.16948592834625645,
+     "n": 40
+    },
+    "genie_trigger_diagnosis": {
+     "n": 417,
+     "los_lt10": 0,
+     "other_ge3_usable": 237,
+     "either": 237,
+     "both_conditions_met": 180
+    }
+   },
+   "0.000": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 0.3368803204807211,
+     "ci": 0.1565696804367983,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.3000751126690035,
+     "ci": 0.15173167198776044,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.3000751126690035,
+     "ci": 0.15173167198776044,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.30232849273910867,
+     "ci": 0.15228709622722092,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.14285714285714285,
+     "pedestrian": 0.8571428571428571,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.9387755102040817,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.14285714285714285,
+     "pedestrian": 0.7959183673469388,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 0.3666750125187782,
+     "ci": 0.1594991982893873,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 0.3412618928392589,
+     "ci": 0.15543269711367494,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 0.36742613920881323,
+     "ci": 0.1594837892004727,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 0.34176264396594896,
+     "ci": 0.15542244713274297,
+     "n": 40
+    }
+   }
+  },
+  {
+   "label": "30 dB",
+   "margin_db": 30.0,
+   "0.020": {
+    "a3_params": {
+     "offset_db": 3.0,
+     "hysteresis_db": 3.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 0.30771156735102656,
+     "ci": 0.10381213882895284,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.09914872308462694,
+     "ci": 0.08596897287527841,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.1171757636454682,
+     "ci": 0.08795756919874483,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.11792689033550326,
+     "ci": 0.08793661098450198,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 0.9135654261704682,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.2995198079231693,
+     "pedestrian": 0.5228091236494598,
+     "car": 0.09123649459783914,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.9099639855942377,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.29711884753901563,
+     "pedestrian": 0.5240096038415366,
+     "car": 0.08883553421368548,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 0.3331246870305458,
+     "ci": 0.10665743598199372,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 0.32436154231347014,
+     "ci": 0.10246659013946545,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 0.32185778668001996,
+     "ci": 0.10673151572209684,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 0.3130946419629444,
+     "ci": 0.10253857886815508,
+     "n": 40
+    },
+    "genie_trigger_diagnosis": {
+     "n": 230,
+     "los_lt10": 0,
+     "other_ge3_usable": 202,
+     "either": 202,
+     "both_conditions_met": 28
+    }
+   },
+   "0.000": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 0.11367050575863795,
+     "ci": 0.0891647864804857,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.09914872308462694,
+     "ci": 0.08596897287527841,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.09914872308462694,
+     "ci": 0.08596897287527841,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.099899849774662,
+     "ci": 0.08588974674632036,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.16379310344827586,
+     "pedestrian": 0.8362068965517241,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.9482758620689655,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.16379310344827586,
+     "pedestrian": 0.7844827586206896,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 0.12043064596895343,
+     "ci": 0.09256985939696775,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 0.11204306459689532,
+     "ci": 0.08852779958937633,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 0.12068102153229845,
+     "ci": 0.09257042639219897,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 0.11229344016024037,
+     "ci": 0.08852584653395702,
+     "n": 40
+    }
+   }
+  },
+  {
+   "label": "3GPP short-range reference",
+   "margin_db": 35.90939224628288,
+   "0.020": {
+    "a3_params": {
+     "offset_db": 3.0,
+     "hysteresis_db": 3.0,
+     "ttt_s": 0.16
+    },
+    "a3": {
+     "mean": 0.20267901852779166,
+     "ci": 0.041582446657608144,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.01602403605408112,
+     "ci": 0.013164079401391355,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.02303455182774161,
+     "ci": 0.015612853242713757,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.023159739609414122,
+     "ci": 0.015612408296159293,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 0.9624413145539906,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.2883970489604292,
+     "pedestrian": 0.5700871898054997,
+     "car": 0.10395707578806171,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.9617706237424547,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.28772635814889336,
+     "pedestrian": 0.5714285714285714,
+     "car": 0.10261569416498995,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 0.23385077616424638,
+     "ci": 0.04162728751820544,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 0.23259889834752126,
+     "ci": 0.040975051913293585,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 0.21945418127190788,
+     "ci": 0.04073160829895231,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 0.21807711567351024,
+     "ci": 0.04005756893444058,
+     "n": 40
+    },
+    "genie_trigger_diagnosis": {
+     "n": 263,
+     "los_lt10": 0,
+     "other_ge3_usable": 229,
+     "either": 229,
+     "both_conditions_met": 34
+    }
+   },
+   "0.000": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 3.0,
+     "ttt_s": 0.04
+    },
+    "a3": {
+     "mean": 0.022533800701051578,
+     "ci": 0.016886617707778898,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.01602403605408112,
+     "ci": 0.013164079401391355,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.01602403605408112,
+     "ci": 0.013164079401391355,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.016399599399098647,
+     "ci": 0.013139606194963687,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.07692307692307693,
+     "pedestrian": 0.9230769230769231,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.9423076923076923,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.07692307692307693,
+     "pedestrian": 0.8653846153846154,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 0.025788683024536803,
+     "ci": 0.018248826572083342,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 0.025037556334501748,
+     "ci": 0.01754303476969204,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 0.022784176264396595,
+     "ci": 0.017672615416029904,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 0.02203304957436154,
+     "ci": 0.016929711722130977,
+     "n": 40
+    }
+   }
+  },
+  {
+   "label": "v1 radio (high margin)",
+   "margin_db": 38.90939224628288,
+   "0.020": {
+    "a3_params": {
+     "offset_db": 3.0,
+     "hysteresis_db": 3.0,
+     "ttt_s": 0.16
+    },
+    "a3": {
+     "mean": 0.18202303455182775,
+     "ci": 0.03205773382441929,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.010766149223835753,
+     "ci": 0.009569757323094194,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.014271407110665999,
+     "ci": 0.010604314623280767,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.014396594892338507,
+     "ci": 0.010613845547039485,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 0.97953216374269,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.29751461988304095,
+     "pedestrian": 0.5687134502923976,
+     "car": 0.11330409356725146,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.9788011695906432,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.29678362573099415,
+     "pedestrian": 0.5687134502923976,
+     "car": 0.11330409356725146,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 0.21394591887831743,
+     "ci": 0.0331345655247053,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 0.2131947921882824,
+     "ci": 0.032915615856814684,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 0.19904857285928892,
+     "ci": 0.03177954097840808,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 0.19829744616925388,
+     "ci": 0.031543653729300306,
+     "n": 40
+    },
+    "genie_trigger_diagnosis": {
+     "n": 140,
+     "los_lt10": 0,
+     "other_ge3_usable": 115,
+     "either": 115,
+     "both_conditions_met": 25
+    }
+   },
+   "0.000": {
+    "a3_params": {
+     "offset_db": 1.0,
+     "hysteresis_db": 2.0,
+     "ttt_s": 0.08
+    },
+    "a3": {
+     "mean": 0.016524787180771154,
+     "ci": 0.011345045436438498,
+     "n": 40
+    },
+    "oracle_inst": {
+     "mean": 0.010766149223835753,
+     "ci": 0.009569757323094194,
+     "n": 40
+    },
+    "costaware_any": {
+     "mean": 0.010766149223835753,
+     "ci": 0.009569757323094194,
+     "n": 40
+    },
+    "costaware_epoch": {
+     "mean": 0.011141712568853279,
+     "ci": 0.009556439699305308,
+     "n": 40
+    },
+    "costaware_any_gap_closed_pooled": 1.0,
+    "costaware_any_gap_closed_by_class_pooled": {
+     "bus/truck": 0.17391304347826086,
+     "pedestrian": 0.8260869565217391,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "costaware_epoch_gap_closed_pooled": 0.9347826086956522,
+    "costaware_epoch_gap_closed_by_class_pooled": {
+     "bus/truck": 0.17391304347826086,
+     "pedestrian": 0.7608695652173914,
+     "car": 0.0,
+     "no LoS blocker": 0.0
+    },
+    "genie": {
+     "mean": 0.01602403605408112,
+     "ci": 0.011469547492072803,
+     "n": 40
+    },
+    "genie_no_overhead": {
+     "mean": 0.015523284927391084,
+     "ci": 0.011061746563590382,
+     "n": 40
+    },
+    "onset_genie": {
+     "mean": 0.016649974962443664,
+     "ci": 0.011768159893904364,
+     "n": 40
+    },
+    "onset_genie_no_overhead": {
+     "mean": 0.01614922383575363,
+     "ci": 0.011373788017364812,
+     "n": 40
+    }
+   }
+  }
+ ]
+}

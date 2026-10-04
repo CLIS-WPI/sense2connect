@@ -58,6 +58,72 @@ Per class (pooled share of A3 outage). Old: by class of the 10 dB event; new: by
 | 3GPP short-range reference | 4.8 % | 10.7 % | 3.1 % | 13.2 % | 0.0 % | 0.0 % |
 | v1 radio (high margin) | 2.7 % | 6.5 % | 1.7 % | 7.9 % | 0.0 % | 0.0 % |
 
+## Critical check: cost-aware oracle (upper bound for any foresight policy)
+
+`scripts/run_m5_dporacle.py`. Per lane, a Viterbi over the serving cell in 10 ms steps with perfect knowledge of both cells' blocked SNR minimises outage at the service rate; every switch costs tau_HO of outage (switches may start from any state, as in the simulator); initial cell free; no sensing overhead. Variants: switches at any 10 ms step, or only at 0.1 s E2 epochs. Checks: the Viterbi equals an exhaustive search on 2400 random small lanes, and at tau_HO = 0 with any-step switching it equals the instantaneous oracle at every margin. Outage at the service rate, s/UE-min, mean ± 95 % CI over 40 evaluation jobs; gap closed = (A3 − cost-aware) / (A3 − instantaneous oracle), pooled.
+
+### tau_HO = 20 ms
+
+| Margin | A3 | Genie (1st policy, no ovh.) | Onset genie (no ovh.) | Cost-aware, any step | Cost-aware, 0.1 s epochs | Instantaneous oracle | Gap closed (any / epochs) |
+|---|---|---|---|---|---|---|---|
+| 0 dB | 34.677 ± 2.760 | 35.161 ± 2.694 | 35.121 ± 2.692 | 34.559 ± 2.768 | 34.559 ± 2.768 | 34.559 ± 2.768 | 100 % / 100 % |
+| 5 dB | 9.405 ± 1.376 | 10.309 ± 1.464 | 10.279 ± 1.466 | 9.020 ± 1.354 | 9.036 ± 1.355 | 8.969 ± 1.354 | 88 % / 85 % |
+| 10 dB | 3.426 ± 0.711 | 3.477 ± 0.742 | 3.474 ± 0.742 | 2.953 ± 0.681 | 2.971 ± 0.683 | 2.871 ± 0.676 | 85 % / 82 % |
+| 15 dB | 2.044 ± 0.440 | 2.093 ± 0.444 | 2.089 ± 0.444 | 1.747 ± 0.416 | 1.766 ± 0.419 | 1.672 ± 0.409 | 80 % / 75 % |
+| 20 dB | 1.256 ± 0.282 | 1.303 ± 0.282 | 1.298 ± 0.282 | 0.969 ± 0.258 | 0.985 ± 0.260 | 0.902 ± 0.251 | 81 % / 76 % |
+| 25 dB | 0.584 ± 0.171 | 0.597 ± 0.170 | 0.591 ± 0.169 | 0.341 ± 0.153 | 0.345 ± 0.154 | 0.300 ± 0.152 | 85 % / 84 % |
+| 30 dB | 0.308 ± 0.104 | 0.324 ± 0.102 | 0.313 ± 0.103 | 0.117 ± 0.088 | 0.118 ± 0.088 | 0.099 ± 0.086 | 91 % / 91 % |
+| 3GPP short-range reference | 0.203 ± 0.042 | 0.233 ± 0.041 | 0.218 ± 0.040 | 0.023 ± 0.016 | 0.023 ± 0.016 | 0.016 ± 0.013 | 96 % / 96 % |
+| v1 radio (high margin) | 0.182 ± 0.032 | 0.213 ± 0.033 | 0.198 ± 0.032 | 0.014 ± 0.011 | 0.014 ± 0.011 | 0.011 ± 0.010 | 98 % / 98 % |
+
+### tau_HO = 0 (A3 and genies retuned at 0)
+
+| Margin | A3 | Genie (1st policy, no ovh.) | Onset genie (no ovh.) | Cost-aware, any step | Cost-aware, 0.1 s epochs | Instantaneous oracle | Gap closed (any / epochs) |
+|---|---|---|---|---|---|---|---|
+| 0 dB | 34.632 ± 2.763 | 35.118 ± 2.697 | 35.081 ± 2.695 | 34.559 ± 2.768 | 34.559 ± 2.768 | 34.559 ± 2.768 | 100 % / 100 % |
+| 5 dB | 9.253 ± 1.370 | 10.162 ± 1.459 | 10.136 ± 1.460 | 8.969 ± 1.354 | 8.993 ± 1.355 | 8.969 ± 1.354 | 100 % / 92 % |
+| 10 dB | 3.193 ± 0.701 | 3.243 ± 0.734 | 3.246 ± 0.734 | 2.871 ± 0.676 | 2.902 ± 0.678 | 2.871 ± 0.676 | 100 % / 90 % |
+| 15 dB | 1.792 ± 0.428 | 1.837 ± 0.433 | 1.838 ± 0.433 | 1.672 ± 0.409 | 1.703 ± 0.413 | 1.672 ± 0.409 | 100 % / 74 % |
+| 20 dB | 0.992 ± 0.266 | 1.033 ± 0.267 | 1.034 ± 0.267 | 0.902 ± 0.251 | 0.927 ± 0.254 | 0.902 ± 0.251 | 100 % / 72 % |
+| 25 dB | 0.337 ± 0.157 | 0.341 ± 0.155 | 0.342 ± 0.155 | 0.300 ± 0.152 | 0.302 ± 0.152 | 0.300 ± 0.152 | 100 % / 94 % |
+| 30 dB | 0.114 ± 0.089 | 0.112 ± 0.089 | 0.112 ± 0.089 | 0.099 ± 0.086 | 0.100 ± 0.086 | 0.099 ± 0.086 | 100 % / 95 % |
+| 3GPP short-range reference | 0.023 ± 0.017 | 0.025 ± 0.018 | 0.022 ± 0.017 | 0.016 ± 0.013 | 0.016 ± 0.013 | 0.016 ± 0.013 | 100 % / 94 % |
+| v1 radio (high margin) | 0.017 ± 0.011 | 0.016 ± 0.011 | 0.016 ± 0.011 | 0.011 ± 0.010 | 0.011 ± 0.010 | 0.011 ± 0.010 | 100 % / 93 % |
+
+Gap closed by the cost-aware oracle (any step, tau_HO = 20 ms) split by blocker class: net steps (A3 in outage and the oracle not, minus the reverse) by the dominant LoS blocker of A3's cell at that step, as a share of the A3-oracle gap (pooled).
+
+| Margin | bus/truck | pedestrian | car | no LoS blocker | total |
+|---|---|---|---|---|---|
+| 0 dB | 35.9 % | 46.0 % | 18.2 % | 0.0 % | 100.0 % |
+| 5 dB | 31.0 % | 54.0 % | 3.1 % | 0.0 % | 88.2 % |
+| 10 dB | 44.8 % | 40.6 % | -0.2 % | 0.0 % | 85.2 % |
+| 15 dB | 32.1 % | 46.6 % | 1.2 % | 0.0 % | 79.9 % |
+| 20 dB | 33.8 % | 43.5 % | 3.7 % | 0.0 % | 81.0 % |
+| 25 dB | 34.3 % | 43.4 % | 7.7 % | 0.0 % | 85.4 % |
+| 30 dB | 30.0 % | 52.3 % | 9.1 % | 0.0 % | 91.4 % |
+| 3GPP short-range reference | 28.8 % | 57.0 % | 10.4 % | 0.0 % | 96.2 % |
+| v1 radio (high margin) | 29.8 % | 56.9 % | 11.3 % | 0.0 % | 98.0 % |
+
+A3-oracle gap shares (pooled; `foresight.json` `a3_oracle_gap_pooled`): foresight-recoverable (blockage-caused wrong cell), distance-caused wrong cell, interruption.
+
+| Margin | Gap [s/UE-min] | Foresight-recoverable | Distance-caused | Interruption | Cost-aware closes |
+|---|---|---|---|---|---|
+| 0 dB | 0.118 | 0 % | 62 % | 38 % | 100 % |
+| 5 dB | 0.436 | 37 % | 28 % | 35 % | 88 % |
+| 10 dB | 0.555 | 58 % | 0 % | 42 % | 85 % |
+| 15 dB | 0.372 | 32 % | 0 % | 68 % | 80 % |
+| 20 dB | 0.355 | 25 % | 0 % | 75 % | 81 % |
+| 25 dB | 0.284 | 18 % | 0 % | 82 % | 85 % |
+| 30 dB | 0.209 | 14 % | 0 % | 86 % | 91 % |
+| 3GPP short-range reference | 0.187 | 18 % | 0 % | 82 % | 96 % |
+| v1 radio (high margin) | 0.171 | 10 % | 0 % | 90 % | 98 % |
+
+Reading: the cost-aware oracle closes far more of the gap than the foresight-recoverable share alone, most visibly at high margins where interruption dominates. A3's interruption time is not unavoidable: a policy that knows the future SNR of both cells avoids most of A3's handovers (and the switching they cost) and still serves the blockages. The genie with the first-round and onset-advance policies realises none of this (it does not beat A3 within the CIs).
+
+### Genie diagnosis at 10 dB
+
+Of 2571 blockage-caused wrong-cell steps of A3 (A3's cell unusable, other usable, A3's cell usable unblocked): 925 (36 %) have LoS loss < 10 dB on A3's cell; 426 (17 %) have the other cell at >= 3 dB LoS loss but still usable; 1051 (41 %) meet at least one of the two and are outside the genie's trigger (serving LoS >= 10 dB, other < 3 dB); 1520 (59 %) satisfy both trigger conditions. All margins are in `dporacle.json` (`genie_trigger_diagnosis`).
+
 ## paper/numbers.tex vs the defaults in main.tex
 
 main.tex lists 39 macros; numbers.tex defines 39. Not defined: none.
