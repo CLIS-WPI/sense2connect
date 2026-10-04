@@ -62,6 +62,29 @@
 \providecommand{\numSensePlanRef}{\prelim{0.13}}
 \providecommand{\numTrueLossRef}{\prelim{0.04}}
 \providecommand{\numTrueLossFrom}{\prelim{15}}
+\providecommand{\numPairedMaxP}{\prelim{0.005}}
+\providecommand{\numRelRedTen}{\prelim{10\%}}
+\providecommand{\numGridCost}{\prelim{2.0\%}}
+\providecommand{\numOnsetPedFast}{\prelim{62\%}}
+\providecommand{\numErrMissTen}{\prelim{+0.68}}
+\providecommand{\numErrFalseTen}{\prelim{+1.15}}
+\providecommand{\numErrNoiseTen}{\prelim{+1.61}}
+\providecommand{\numErrAllTen}{\prelim{+5.46}}
+\providecommand{\numErrMissRef}{\prelim{+0.018}}
+\providecommand{\numErrFalseRef}{\prelim{+0.053}}
+\providecommand{\numErrNoiseRef}{\prelim{+0.046}}
+\providecommand{\numErrAllRef}{\prelim{+0.071}}
+\providecommand{\numFragMiss}{\prelim{20\%}}
+\providecommand{\numFragNoise}{\prelim{0.5}}
+\providecommand{\numRobustTen}{\prelim{+2.56}}
+\providecommand{\numRobustRef}{\prelim{+0.033}}
+\providecommand{\numDensLowTen}{\prelim{2.15}}
+\providecommand{\numDensHighTen}{\prelim{4.44}}
+\providecommand{\numRelRedRefLow}{\prelim{86\%}}
+\providecommand{\numRelRedRefHigh}{\prelim{69\%}}
+\providecommand{\numAbsRedTen}{\prelim{0.32}}
+\providecommand{\numRelRedRef}{\prelim{71\%}}
+\providecommand{\numAbsRedRef}{\prelim{0.06}}
 \providecommand{\numValueRange}{\prelim{70--89\%}}
 \providecommand{\numValuePedRange}{\prelim{40--64\%}}
 \providecommand{\numValueBusRange}{\prelim{11--32\%}}
@@ -93,27 +116,29 @@ Blockage-Resilient mmWave Open RAN}
 \begin{abstract}
 Integrated sensing and communication (ISAC) promises to let a
 millimeter-wave (mmWave) network see blockers coming and move users to
-another cell before the link breaks. We revisit this idea by asking two
-questions: how much is such foresight worth relative to the best
-reactive handover, and how much of it can network-side ISAC deliver?
+another cell before the link breaks. We ask how much such foresight is
+worth relative to the best reactive handover, and how much of it
+network-side ISAC can deliver.
 Using a spatially consistent ray-traced model of a \SI{28}{GHz} street
 canyon, in which the same 3GPP sensing targets scatter radar echoes and
 obstruct communication paths, we build an end-to-end pipeline from
-monostatic OFDM radar and digital-twin-aware tracking to an Open RAN
-handover xApp. We find that foresight is valuable but hard to harvest.
+monostatic OFDM radar and digital-twin-aware tracking to a simulated
+Open RAN handover xApp. We find that foresight is valuable but hard to harvest.
 With perfect knowledge of the future signal-to-noise ratio, a cost-aware
 planner closes \numValueRange{} of the gap between service-aware reactive
 handover (3GPP A5) and an ideal oracle, and a horizon of \numPlanHorizon~s
-suffices; trigger-based proactive policies fail to realize this value
-even with perfect prediction. Most of the value, however, lies in
+suffices, whereas trigger-based policies fail to realize this value.
+Most of the value, however, lies in
 pedestrian blockage, which is abrupt and poorly observed from the
 network, whereas heavy vehicles, tracked before onset in
 \numLeadBus{} of cases, cause slow outages that reactive handover
 already follows. With tracker-based predictions the planner therefore
-falls behind A5, while with exact blockage knowledge it reaches the
-level of A5 at margins of \numTrueLossFrom~dB and above. Predicting
-near-user pedestrian blockage, not the decision policy, is the
-bottleneck.
+falls behind A5, although with exact blockage knowledge it
+significantly outperforms A5 at margins of \numTrueLossFrom~dB and
+above. An error-injection analysis shows that position and velocity
+errors of about \numFragNoise~m already erase the benefit of foresight,
+whereas missed detections matter least. Decimeter-level localization of
+blockers near the user, not the decision policy, is the bottleneck.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -161,9 +186,10 @@ bounds any proactive policy, against service-aware reactive handover
 (A5), showing that foresight closes most of the remaining gap, needs
 only a short horizon, and requires cost-aware planning rather than
 blockage triggers.
-\item An end-to-end ISAC handover xApp with twin-aware ghost handling,
-map-constrained tracking, and a receding-horizon planner, which shows
-that the bottleneck is the prediction of pedestrian blockage.
+\item A simulated end-to-end pipeline from the radar to a handover
+xApp, with twin-aware ghost handling, map-constrained tracking, and a
+receding-horizon planner, and an error-injection analysis that
+quantifies the localization accuracy that foresight requires.
 \end{itemize}
 
 % ---------------------------------------------------------------------
@@ -178,13 +204,25 @@ network could observe.
 
 \textit{Sensing-aided mobility.} Vision-aided methods predict blockage
 and trigger proactive handoff from camera images
-\cite{charan2021vision}, radar-aided methods predict beams from a
-co-located automotive radar \cite{demirhan2022radar}, and real-world
-multi-modal datasets support such studies \cite{alkhateeb2023deepsense}.
-These works rely on auxiliary sensors and report gains over simple
-baselines; we sense with the communication waveform and measure the gain
-against a tuned service-aware reactive policy and a policy-independent
-bound.
+\cite{charan2021vision}, and radar-aided methods predict beams and
+blockages from a co-located automotive radar
+\cite{demirhan2022radar,demirhan2022radarblockage}, supported by
+multi-modal datasets \cite{alkhateeb2023deepsense}. RaDaR
+\cite{alquraan2023radar} equips each small cell with a separate FMCW
+radar, uses object, base-station and user heights to decide whether an
+object obstructs the LoS, and predicts the time to blockage, reporting
+gains over a handover that starts only after link failure. Look Before
+Switch \cite{li2025lookbefore} uses the ISAC capability of the gNB to
+track the vehicular user itself and triggers handover from its estimated
+position and maneuver, halving the handover interruption relative to A3.
+We differ in three respects: we sense third-party blockers with the
+communication waveform rather than the user or an auxiliary radar; we
+compare against a tuned service-aware reactive policy (A5) and a
+cost-aware oracle rather than against link-failure recovery or fixed A3
+settings; and we separate the value of foresight from the part that
+sensing realizes. Our finding that switching cost shapes what foresight
+can achieve is complementary to interruption-reducing protocols such as
+\cite{li2025lookbefore}.
 
 \textit{ISAC and O-RAN.} OFDM radar processing with communication
 waveforms is well established \cite{sturm2011ofdm} and ISAC is a key 6G
@@ -210,7 +248,8 @@ body is a TR~38.901 sensing target \cite{3gpp38901} (five scattering
 points for vehicles, one for pedestrians). Positions and speeds come
 from random seeds; all parameters are tuned on five tuning seeds, and
 results are reported on ten disjoint evaluation seeds with 95\%
-confidence intervals.
+confidence intervals. Schemes are compared pairwise on the same
+evaluation runs with the Wilcoxon signed-rank test.
 
 \subsection{Radar Channel and Processing}
 O-RU~0 operates as a monostatic radar under an ideal full-duplex
@@ -281,27 +320,35 @@ time-to-trigger, which makes it aware of the service requirement.
 \textit{Bounds.} The \emph{instantaneous oracle} selects the better cell
 every \SI{10}{ms} without delay or interruption. The \emph{cost-aware
 oracle} knows the future SNR $\gamma_c(t)$ of both cells and chooses the
-cell sequence $\{c_t\}$, changeable only at the \SI{0.1}{s} E2 epochs,
-that minimizes
+cell sequence $\{c_t\}$, changeable at every step $\Delta t=\SI{10}{ms}$,
+that minimizes the outage time
 \begin{equation}
-\sum_t \mathbb{1}\{\gamma_{c_t}(t)<\gamma_{\mathrm{req}}\}
-+\frac{\tau_{\mathrm{HO}}}{\Delta t}\,\mathbb{1}\{c_t\neq c_{t-1}\},
+\sum_t \mathbb{1}\bigl\{\gamma_{c_t}(t)<\gamma_{\mathrm{req}}
+\;\lor\; t\in\mathcal{I}(\{c_t\})\bigr\},
 \label{eq:viterbi}
 \end{equation}
-with $\Delta t=\SI{10}{ms}$, solved exactly by the Viterbi algorithm over
-the two cells. No policy, with any predictor, can do better. We call the
+where $\mathcal{I}$ contains the $\tau_{\mathrm{HO}}/\Delta t$ steps
+after each switch, so that an interrupted step counts once, exactly as
+in the evaluation. It is solved exactly by the Viterbi algorithm over
+the cell and the remaining interruption; on every evaluation run, no
+scheme does better. A \emph{grid-aligned} variant may switch only on the
+planner's decision grid and exceeds this bound by at most
+\numGridCost. We call the
 outage gap between the best reactive policy and the instantaneous oracle
 the \emph{improvable gap}, and the share of it closed by the cost-aware
 oracle the \emph{value of foresight}.
 
-\textit{Proactive.} The ISAC xApp receives tracks over E2 every
-\SI{0.1}{s} and predicts each cell's SNR as
+\textit{Proactive.} The ISAC xApp is modelled in simulation: the E2
+interface is represented by a \SI{0.1}{s} report period and a
+\SI{20}{ms} loop delay, without an implemented E2 service model. Every
+\SI{0.1}{s}, the xApp receives tracks and predicts each cell's SNR as
 $\hat\gamma_c(t)=\bar\gamma_c(t)-\hat L_c(t)$, where $\bar\gamma_c$ is
 the unblocked SNR from the digital twin and the UE position (known with
 \SI{1}{m} error) and $\hat L_c$ is the model-B loss of the tracked
 blockers on their predicted trajectories. The \emph{planner} solves
-\eqref{eq:viterbi} on $\hat\gamma_c$ over a horizon $H$ and applies the
-first decision after an E2 loop delay of \SI{20}{ms}. The
+\eqref{eq:viterbi} on $\hat\gamma_c$ over a horizon $H$ and its
+decision grid and applies the
+first decision after the loop delay. The
 \emph{genie-planner} uses the true future SNR instead. For comparison we
 also evaluated \emph{trigger} policies that hand over when a LoS
 blockage of the serving cell is predicted and the other cell is
@@ -373,7 +420,9 @@ is clear in most heavy-vehicle outages but in few pedestrian outages,
 because a pedestrian close to the UE often shadows both cells. The
 outages also differ sharply in dynamics (Fig.~\ref{fig:onset}): the loss
 caused by a bus or truck rises over \numOnsetBus\,s, whereas a
-pedestrian next to the UE cuts the link within \numOnsetPed\,s.
+pedestrian next to the UE cuts the link almost at once: \numOnsetPedFast{}
+of pedestrian onsets are shorter than \SI{10}{ms}, and their median is at
+the \SI{1}{ms} resolution of our evaluation.
 
 \begin{figure}[t]
 \centering
@@ -433,9 +482,18 @@ planner, the genie-planner, and the two oracles (95\% CI).}
 (Fig.~\ref{fig:value}); at \SI{10}{dB} it reaches \numCostOracleTen{}
 vs.\ \numAfiveTen{} for A5 and \numOracleTen{} for the instantaneous
 oracle. It does so largely by making fewer, better-timed switches, so it
-avoids interruption as well as blockage. The genie-planner reaches this
-bound already with the shortest horizon tested (\numPlanHorizon~s):
-\numGeniePlanTen{} at \SI{10}{dB}. Trigger-based policies do not: even
+avoids interruption as well as blockage. In absolute terms, perfect
+foresight lowers the outage of A5 by \numRelRedTen{}
+(\numAbsRedTen~s/UE-min) at \SI{10}{dB} and by \numRelRedRef{}
+(\numAbsRedRef~s/UE-min) at the reference: most of the remaining outage
+occurs when no cell is usable, which no mobility decision can avoid.
+High traffic density roughly doubles the outage (A5: \numDensLowTen{}
+vs.\ \numDensHighTen~s/UE-min at \SI{10}{dB}), while the relative value
+of foresight is similar at \SI{10}{dB} and larger at low density at the
+reference (\numRelRedRefLow{} vs.\ \numRelRedRefHigh). The genie-planner approaches this
+bound (\numGeniePlanTen{} at \SI{10}{dB}); against the grid-aligned oracle,
+which shares its decision grid, a horizon of \numPlanHorizon~s already
+suffices. Trigger-based policies do not: even
 with perfect prediction, the trigger genie stays at the level of the
 A3 it builds on (\numGenieTen{} vs.\ \numAthreeTen{} at \SI{10}{dB}),
 because blockage
@@ -455,7 +513,9 @@ cell, with the genie-planner (triangles) and the sensing-driven planner
 
 \textit{Where the value lies.} Pedestrian blockage accounts for
 \numValuePedRange{} of the improvable gap and heavy vehicles for
-\numValueBusRange{} (Table~\ref{tab:classes}). This is the crux: the
+\numValueBusRange{} (Table~\ref{tab:classes}). Cars, which never cause
+\SI{10}{dB} LoS outages, contribute only at margins of 0--\SI{5}{dB},
+where their smaller LoS losses already cause outage (Fig.~\ref{fig:value}). This is the crux: the
 blockers that sensing observes well, heavy vehicles, cause slow outages
 that A5 follows reactively, while most of the value lies in abrupt
 pedestrian blockage near the UE, which the network-side radar tracks in
@@ -468,14 +528,47 @@ the reference), with \numSensePlanHO{} handovers per UE-minute against
 \numAfiveHO{} for A5 and a ping-pong rate of \numSensePlanPP: missed and
 false blockage predictions translate directly into wrong switches. Fed
 with the true LoS loss instead, while still paying the sensing overhead,
-the same planner reaches a lower mean outage than A5 from
-\numTrueLossFrom\,dB margin upward (\numTrueLossRef{} vs.\ \numAfiveRef{}
-at the reference), although the 95\% confidence intervals overlap; at
-lower margins, the sensing overhead and the approximation of the SNR by
-the LoS loss outweigh the benefit. Since the same planner reaches the
-bound when it knows the true SNR, the policy is not the obstacle: the
-prediction of the SNR is, above all the missed and false predictions of
-pedestrian blockage.
+the same planner outperforms A5 at every margin from
+\numTrueLossFrom\,dB upward (\numTrueLossRef{} vs.\ \numAfiveRef{} at the
+reference; paired $p\le\numPairedMaxP$ at each of these margins, which
+also holds under a Bonferroni correction over the margins). At lower
+margins, the sensing overhead and the approximation of the SNR by the
+LoS loss outweigh the benefit.
+
+\begin{table}[t]
+\centering
+\caption{Error budget: paired outage difference to A5 [s/UE-min] when
+one tracker error type is injected into perfect tracks at its measured
+rate.}
+\label{tab:errors}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Margin & Misses & False tracks & Pos./vel.\ error & All \\
+\midrule
+\SI{10}{dB} & \numErrMissTen & \numErrFalseTen & \numErrNoiseTen & \numErrAllTen\\
+Reference   & \numErrMissRef & \numErrFalseRef & \numErrNoiseRef & \numErrAllRef\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textit{Error budget.} To attribute the shortfall, we start from perfect
+tracks, which reproduce the true-loss result, and inject one error type
+at a time at the rates measured for our tracker (Table~\ref{tab:errors});
+all injections were added after an external review. Position and
+velocity errors are the largest single cause from 5 to \SI{30}{dB},
+false tracks dominate at the highest margins, and missed detections
+matter least; combined, the errors interact and reproduce the observed
+collapse. The advantage of perfect tracks already vanishes at a
+\numFragMiss{} miss rate, at the measured false-track rate, or at
+\numFragNoise~m and \numFragNoise~m/s of error: a pedestrian is about
+\SI{0.5}{m} wide, so such an error moves it in or out of the LoS. A
+guarded variant in which A5 runs by default and the planner may only
+advance or veto switches based on long-confirmed tracks is also
+significantly worse than A5 at every margin (\numRobustTen~s/UE-min at
+\SI{10}{dB}). The policy is therefore not the obstacle; network-side
+sensing must localize near-user blockers to a few decimeters before
+foresight pays off.
 
 % ---------------------------------------------------------------------
 \section{Discussion and Limitations}
@@ -483,14 +576,16 @@ pedestrian blockage.
 Our results point to where ISAC-based mobility should improve. The
 value concentrates in pedestrian blockage close to the user, which a
 radar on a lamppost sees at short range, small radar cross-section and
-often in the shadow of the user's own environment; UE-side or bistatic
-sensing between radio units, denser deployments, and measurement-anchored
-predictors are natural next steps. The study has limitations: a single
+often in the shadow of the user's own environment, while the error
+budget asks for decimeter-level accuracy; UE-side or bistatic sensing
+between radio units, a second radar at the other cell, and denser
+deployments are natural next steps. The study has limitations: a single
 street canyon, monostatic sensing with ideal full duplex, the knife-edge
 model~B instead of full-wave diffraction, Shannon-based rates, UE
 positions known to the network, and policies added after earlier
-results (map-constrained tracking, A5, and the planner), which we report
-as such.
+results or after an external review (map-constrained tracking, A5, the
+planner, the grid-aligned oracle, the error injection, and the guarded
+planner), which we report as such.
 
 % ---------------------------------------------------------------------
 \section{Conclusion}
@@ -502,9 +597,9 @@ fraction of a second of look-ahead, provided the policy plans switches
 with their cost in mind. The value, however, lies mostly in pedestrian
 blockage near the user, which network-side sensing predicts poorly,
 whereas the heavy vehicles it tracks well cause outages that reactive
-handover already follows. Improving the prediction of near-user
-blockage is therefore the key to making ISAC pay off for mmWave
-mobility.
+handover already follows. Errors of a few decimeters in the position of
+near-user blockers suffice to erase the benefit, so accurate near-user
+sensing is the key to making ISAC pay off for mmWave mobility.
 
 \section*{Acknowledgment}
 This material is based upon work supported in part by NSF under Awards

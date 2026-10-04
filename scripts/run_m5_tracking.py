@@ -111,6 +111,7 @@ def main() -> None:
             "false_alarms_per_cpi": summ["false_alarms_per_cpi"],
             "cross_lane_rmse_mps": {c: (float(np.sqrt(vel[c]["cross_lane"] / vel[c]["n"])) if vel[c]["n"] else None) for c in CLASSES},
             "leads": leads,
+            "summary": summ,  # full sim.sensing.metrics.summarize output (per-class Pd, position/velocity RMSE; false tracks per CPI)
         }
         print(key, {c: round(v or 0, 3) for c, v in res["variants"][key]["track_pd"].items()}, "FA", round(summ["false_alarms_per_cpi"], 2),
               "xlane", {c: v and round(v, 2) for c, v in res["variants"][key]["cross_lane_rmse_mps"].items()}, flush=True)

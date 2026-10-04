@@ -48,14 +48,15 @@ from xapp.schemes import simulate  # noqa: E402
 CLASSES = ("bus/truck", "pedestrian", "car", "no LoS blocker")
 
 
-def viterbi(bad: np.ndarray, tau: int, epoch: int) -> tuple[np.ndarray, np.ndarray]:
+def viterbi(bad: np.ndarray, tau: int, epoch: int, offset: int = 0) -> tuple[np.ndarray, np.ndarray]:
     """Min-outage cell path. ``bad`` [L, T, 2] bool (cell below the service rate).
 
     State (c, p): serving cell c; p > 0 = this step is interrupted and p-1
     interrupted steps follow; p = 0 = normal step (outage iff ``bad``). A
     switch at step k enters (other cell, tau) -- exactly tau interrupted
     steps -- or, for tau = 0, (other cell, 0). Switches may start from any
-    state, only at steps with k % epoch == 0 (epoch 1 = any step); the
+    state, only at steps with (k - offset) % epoch == 0 (epoch 1 = any step;
+    offset = grid alignment, e.g. the planner's E2-delay-offset grid); the
     initial cell is free. Returns (outage mask [L, T], cell path [L, T]).
     """
     n_l, n_t, _ = bad.shape
@@ -78,7 +79,7 @@ def viterbi(bad: np.ndarray, tau: int, epoch: int) -> tuple[np.ndarray, np.ndarr
                 new[:, c, q] = np.where(better, val, new[:, c, q])
                 bc[:, c, q] = np.where(better, c, bc[:, c, q])
                 bp[:, c, q] = np.where(better, p, bp[:, c, q])
-        if k % epoch == 0:
+        if (k - offset) % epoch == 0:
             for c in range(2):
                 o = 1 - c
                 best_p = cost[:, o, :].argmin(1)
@@ -110,7 +111,7 @@ def viterbi(bad: np.ndarray, tau: int, epoch: int) -> tuple[np.ndarray, np.ndarr
     return out, cells
 
 
-def viterbi_bruteforce(bad: np.ndarray, tau: int, epoch: int) -> int:
+def viterbi_bruteforce(bad: np.ndarray, tau: int, epoch: int, offset: int = 0) -> int:
     """Exhaustive minimum over all switch sequences for one tiny lane (test helper)."""
     n_t = bad.shape[0]
     best = None
@@ -123,7 +124,7 @@ def viterbi_bruteforce(bad: np.ndarray, tau: int, epoch: int) -> int:
                 continue
             q = max(p - 1, 0)
             stack.append((k + 1, c, q, acc + (1 if q > 0 else int(bad[k, c]))))
-            if k % epoch == 0:
+            if (k - offset) % epoch == 0:
                 o = 1 - c
                 stack.append((k + 1, o, tau, acc + (1 if tau > 0 else int(bad[k, o]))))
     return int(best)

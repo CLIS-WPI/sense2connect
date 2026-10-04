@@ -64,6 +64,11 @@ class Lanes:
     # neighbour filtered SNR > a5_thr2 for TTT steps [dB, SNR scale]; used on a5 lanes only
     a5_thr1: np.ndarray | None = None
     a5_thr2: np.ndarray | None = None
+    # Robust planner (added after external review, B6): lanes in planner_mask read the
+    # trigger table at decision epochs even if they are not xapp lanes (advance), and
+    # veto[l, r, serving] blocks A3/A5 handovers from decision epoch r until the next one.
+    planner_mask: np.ndarray | None = None
+    veto: np.ndarray | None = None
 
 
 def simulate(lanes: Lanes, *, bandwidth_hz: float, rate_req_bps: float, max_se: float) -> dict[str, Any]:
@@ -89,6 +94,8 @@ def simulate(lanes: Lanes, *, bandwidth_hz: float, rate_req_bps: float, max_se: 
     thr2 = lanes.a5_thr2 if lanes.a5_thr2 is not None else np.full(n_l, np.inf)
     is_trend = lanes.scheme == REASON["trend"]
     is_xapp = lanes.scheme == REASON["xapp"]
+    uses_trig = is_xapp | (lanes.planner_mask if lanes.planner_mask is not None else np.zeros(n_l, dtype=bool))
+    n_veto = 0 if lanes.veto is None else lanes.veto.shape[1]
     n_reports = 0 if lanes.trigger is None else lanes.trigger.shape[1]
 
     serving_trace = np.zeros((n_l, n_t), dtype=np.int8)
@@ -143,9 +150,9 @@ def simulate(lanes: Lanes, *, bandwidth_hz: float, rate_req_bps: float, max_se: 
         free = (pending < 0) & (k >= hold_until)
         f_s = filt[idx, serving]
         f_o = filt[idx, other]
-        if n_reports and is_xapp.any():
+        if n_reports and uses_trig.any():
             rel = k - lanes.e2_delay_steps
-            on_report = is_xapp & (rel >= 0) & (rel % lanes.report_steps == 0) & (rel // lanes.report_steps < n_reports)
+            on_report = uses_trig & (rel >= 0) & (rel % lanes.report_steps == 0) & (rel // lanes.report_steps < n_reports)
             if on_report.any():
                 lanes_r = np.flatnonzero(on_report & free)
                 if lanes_r.size:
@@ -167,6 +174,11 @@ def simulate(lanes: Lanes, *, bandwidth_hz: float, rate_req_bps: float, max_se: 
                 pending[fire] = other[fire]
                 pending_reason[fire] = REASON["trend"]
         free = free & (pending < 0)
+        if n_veto:
+            relv = k - lanes.e2_delay_steps
+            rv = np.where(relv >= 0, np.minimum(relv // lanes.report_steps, n_veto - 1), 0)
+            vetoed = (relv >= 0) & lanes.veto[idx, rv, serving]
+            free = free & ~vetoed
         cond = free & np.where(is_a5, (f_s < thr1) & (f_o > thr2), f_o - f_s > thresh)
         clock = np.where(cond, clock + 1, 0)
         fire = cond & (clock >= lanes.ttt_steps)
@@ -254,7 +266,8 @@ def simulate_scalar(lanes: Lanes, lane: int, *, bandwidth_hz: float, rate_req_bp
         out0[k] = interrupted or s_srv < 0.0
         outr[k] = interrupted or rate < rate_req_bps
         free = k >= hold_until
-        if free and scheme == REASON["xapp"] and lanes.trigger is not None:
+        planner_lane = scheme == REASON["xapp"] or (lanes.planner_mask is not None and bool(lanes.planner_mask[lane]))
+        if free and planner_lane and lanes.trigger is not None:
             rel = k - d
             if rel >= 0 and rel % lanes.report_steps == 0 and rel // lanes.report_steps < lanes.trigger.shape[1]:
                 r = rel // lanes.report_steps
@@ -272,6 +285,10 @@ def simulate_scalar(lanes: Lanes, lane: int, *, bandwidth_hz: float, rate_req_bp
                 slope = 0.0 if den <= 0.0 else sum((t - mt) * (v - mv) for t, v in zip(times, values)) / den
                 if -slope * float(lanes.trend_horizon_s[lane]) >= float(lanes.drop_db[lane]) and float(snr[k, other]) > s_srv:
                     pending = (other, REASON["trend"])
+        if lanes.veto is not None and k - d >= 0:
+            rv = min((k - d) // lanes.report_steps, lanes.veto.shape[1] - 1)
+            if bool(lanes.veto[lane, rv, serving]):
+                free = False
         if free and pending is None:
             if scheme == REASON["a5"]:
                 fires = filt[serving] < float(lanes.a5_thr1[lane]) and filt[other] > float(lanes.a5_thr2[lane])

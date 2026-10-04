@@ -42,7 +42,10 @@ FIGURE_SCRIPTS = ["fig_blockage_table.py", "fig_leadtime.py", "fig_onset.py", "f
 # numbers.tex defines them as well, and missing ones are reported.
 EXTRA_MACROS = [
     "numAfiveTen", "numAfiveRef", "numCostOracleTen", "numCostOracleRef", "numGeniePlanTen", "numGeniePlanRef",
-    "numSensePlanTen", "numSensePlanRef", "numTrueLossRef", "numTrueLossFrom", "numAthreeWideRef", "numValueRange", "numValuePedRange",
+    "numSensePlanTen", "numSensePlanRef", "numTrueLossRef", "numTrueLossFrom", "numAthreeWideRef",
+    "numGridCost", "numOnsetPedFast", "numRelRedTen", "numAbsRedTen", "numRelRedRef", "numAbsRedRef",
+    "numErrMissTen", "numErrFalseTen", "numErrNoiseTen", "numErrAllTen", "numErrMissRef", "numErrFalseRef", "numErrNoiseRef", "numErrAllRef",
+    "numFragMiss", "numFragNoise", "numRobustTen", "numRobustRef", "numDensLowTen", "numDensHighTen", "numRelRedRefLow", "numRelRedRefHigh", "numValueRange", "numValuePedRange",
     "numValueBusRange", "numValuePedTen", "numValueBusTen", "numPlanHorizon", "numSensePlanHO", "numSensePlanPP", "numAfiveHO",
 ]
 
@@ -113,10 +116,15 @@ def catalog() -> dict[str, dict[str, Any]]:
         shares = [tab["other_oru"][m]["classes"][cls]["unblocked"] / tab["other_oru"][m]["classes"][cls]["n_events"] for m in mounts]
         put(macro, _rng(shares, "{:.0f}", pct=True), script=sb, config=CHAR_CFG + "; other cell clear = LoS loss < 3 dB on every 10 dB snapshot",
             aggregation="min-max over mounts of the per-mount pooled share", raw=dict(zip(mounts, shares)))
-    for macro, cls in (("numOnsetBus", "bus/truck"), ("numOnsetPed", "pedestrian")):
-        v = m3["event_stats"]["evaluation"][cls]["onset_10_90_s"]["p50"]
-        put(macro, f"{v:.2f}", script="scripts/run_m3.py -> results/M3/metrics.json (event_stats)", config="10 ms analytic model B, fixed cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
-            aggregation="median over all evaluation events of the class (pooled over mounts)", raw=v)
+    a34 = json.loads((R5 / "review_a34.json").read_text())["a4_onset"]["summary"]
+    s34 = "scripts/review_a34.py -> results/M5/review_a34.json (after review A4)"
+    c34 = "model B evaluated analytically every 1 ms on the LoS segment of the event cell from exact analytic poses (no re-trace); events = 10 dB LoS events at 10 ms, fixed cell = strongest unblocked, min gap 0.5 s"
+    put("numOnsetBus", f"{a34['bus/truck']['median_1ms_s']:.2f}", script=s34, config=c34, aggregation="median 10-90 % onset over all evaluation bus/truck events [s]",
+        raw={"median_1ms": a34["bus/truck"]["median_1ms_s"], "median_10ms": a34["bus/truck"]["median_10ms_s"]})
+    put("numOnsetPed", "$\\le$0.001", script=s34, config=c34, aggregation="median 10-90 % onset over all evaluation pedestrian events; equals the 1 ms resolution, so stated as an upper bound [s]",
+        raw={"median_1ms": a34["pedestrian"]["median_1ms_s"], "median_10ms": a34["pedestrian"]["median_10ms_s"]})
+    put("numOnsetPedFast", _pct(a34["pedestrian"]["share_below_10ms_at_1ms"]), script=s34, config=c34,
+        aggregation="share of evaluation pedestrian events whose 10-90 % onset at 1 ms is below 10 ms", raw=a34["pedestrian"]["share_below_10ms_at_1ms"])
 
     # --- tracking (run_m5_tracking.py, fig_leadtime.py)
     st = "scripts/run_m5_tracking.py -> results/M5/tracking.json (detections via stage-validated cache, replay helpers of run_m2_followup.py)"
@@ -233,6 +241,7 @@ def catalog() -> dict[str, dict[str, Any]]:
                             aggregation="POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps", raw=blk[f"{v}_gap_closed_pooled"])
     _planner_macros(put, R5, M3_CFG, EVAL)
     _paired_extras(put, R5, M3_CFG)
+    _review_bc_macros(put, R5, M3_CFG)
     rref = next(r for r in gen["margins"] if r["label"] == "3GPP short-range reference")
     put("numTauZeroRef", _pct(closed(rref)), script=gn[0], config=tcfg + "; 3GPP reference margin", aggregation="1 - gap(0)/gap(20 ms), from means over jobs", raw=closed(rref))
     return out
@@ -310,14 +319,27 @@ def _planner_macros(put, R5: Path, M3_CFG: str, EVAL: str) -> None:
         aggregation="net closed steps (pedestrian) / best-reactive-to-oracle gap, pooled", raw=r10["value_of_foresight"]["by_class_share_of_gap_pooled"]["pedestrian"])
     put("numValueBusTen", _pct(r10["value_of_foresight"]["by_class_share_of_gap_pooled"]["bus/truck"]), script=sp, config=vcfg + "; bus/truck; margin 10 dB",
         aggregation="net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled", raw=r10["value_of_foresight"]["by_class_share_of_gap_pooled"]["bus/truck"])
-    rel = {}
-    for hs in ("0.5", "1.0", "2.0", "3.0"):
-        rel[hs] = {lab: (r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - dpr[lab]["0.020"]["costaware_any"]["mean"]) / dpr[lab]["0.020"]["costaware_any"]["mean"]
-                   for lab, r in rows.items()}
-    absx = {hs: {lab: r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - dpr[lab]["0.020"]["costaware_any"]["mean"] for lab, r in rows.items()}
+    go = json.loads((R5 / "grid_oracle.json").read_text())
+    gmap = {r["label"]: r for r in go["margins"]}
+    rel = {hs: {lab: (r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - gmap[lab]["grid"]["mean"]) / gmap[lab]["grid"]["mean"] for lab, r in rows.items()}
+           for hs in ("0.5", "1.0", "2.0", "3.0")}
+    absx = {hs: {lab: r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - gmap[lab]["grid"]["mean"] for lab, r in rows.items()}
             for hs in ("0.5", "1.0", "2.0", "3.0")}
+    sg = "scripts/review_grid_oracle.py -> results/M5/grid_oracle.json (after review)"
+    gc = {lab: r["grid_cost_rel"] for lab, r in gmap.items()}
+    put("numGridCost", f"{100 * max(gc.values()):.1f}\\%", script=sg,
+        config=cfg + "; grid-aligned cost-aware oracle (switches only at 0.1 s epochs offset by tau_E2 + 10 ms) vs any-step cost-aware oracle, tau_HO 20 ms",
+        aggregation="max over margins of (grid-aligned - any-step) / any-step mean outage over evaluation jobs", raw=gc)
+    for tag, lab in (("Ten", "10 dB"), ("Ref", "3GPP short-range reference")):
+        a5m = rows[lab]["a5"]["eval"]["outage_req_s_per_min"]["mean"]
+        orm = dpr[lab]["0.020"]["costaware_any"]["mean"]
+        ccfg = cfg + f"; margin {lab}; A5 (tuned) -> any-step cost-aware oracle (tau_HO 20 ms); after review C7"
+        put(f"numRelRed{tag}", _pct((a5m - orm) / a5m), script=sp + " and " + sd, config=ccfg,
+            aggregation="(A5 - oracle) / A5 of the mean outages over evaluation jobs", raw={"a5": a5m, "oracle_any": orm})
+        put(f"numAbsRed{tag}", f"{a5m - orm:.2f}" if a5m - orm >= 0.1 else f"{a5m - orm:.3f}", script=sp + " and " + sd, config=ccfg,
+            aggregation="A5 - oracle of the mean outages over evaluation jobs [s/UE-min]", raw={"a5": a5m, "oracle_any": orm})
     ok = [hs for hs in ("0.5", "1.0", "2.0", "3.0") if all(rel[hs][lab] <= 0.02 or absx[hs][lab] <= 0.01 for lab in rows)]
-    put("numPlanHorizon", ok[0] if ok else "--", script=sp, config=cfg + "; genie-planner vs cost-aware oracle (any-step, tau_HO 20 ms; review A1), all margins incl. the v1-radio point",
+    put("numPlanHorizon", ok[0] if ok else "--", script=sp + " and " + sg, config=cfg + "; genie-planner vs the GRID-ALIGNED cost-aware oracle (0.1 s epochs offset by tau_E2, tau_HO 20 ms; after review), all margins incl. the v1-radio point",
         aggregation="RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute)",
         raw={"relative_excess": rel, "absolute_excess_s_per_ue_min": absx},
         note=("" if ok else "no H meets the rule at every margin"))
@@ -359,6 +381,63 @@ def _paired_extras(put, R5: Path, M3_CFG: str) -> None:
                 config=M3_CFG + f"; margin {r['label']}; {name} (H = {r['H_s']:.1f} s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
                 aggregation="paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
                 raw=v)
+
+
+def _review_bc_macros(put, R5: Path, M3_CFG: str) -> None:
+    """Macros from the external-review blocks B and C (added after review)."""
+    b5f, b6f, c8f = R5 / "review_b5.json", R5 / "review_b6.json", R5 / "review_c8.json"
+    cfg = M3_CFG + "; ADDED AFTER EXTERNAL REVIEW"
+    tags = (("Ten", "10 dB", 2), ("Ref", "3GPP short-range reference", 3))
+    if b5f.exists():
+        b5 = json.loads(b5f.read_text())
+        sb = "scripts/review_b5_ablation.py -> results/M5/review_b5.json"
+        conds = {"Miss": "miss measured", "False": "spurious 1x", "Noise": "noise measured", "All": "combined measured"}
+        for key, cname in conds.items():
+            c = {m["label"]: m for m in b5["conditions"][cname]["margins"]}
+            for tag, lab, nd in tags:
+                v = c[lab]["vs_a5"]
+                put(f"numErr{key}{tag}", f"{v['mean_diff']:+.{nd}f}", script=sb,
+                    config=cfg + f"; margin {lab}; planner on ground-truth tracks with injected error '{cname}' at the measured final-tracker rate "
+                    "(image ghosts, budget 4, map tracker); H tuned on tuning seeds; sensing overhead charged",
+                    aggregation="paired: mean over the 40 evaluation jobs of (planner - A5) per-job outage [s/UE-min]; t-based 95 % CI and Wilcoxon p in raw",
+                    raw=v)
+        base = {m["label"]: m["vs_a5"]["mean_diff"] for m in b5["conditions"]["baseline"]["margins"]}
+        win = [lab for lab, v in base.items() if v < 0 and lab.endswith(" dB") and lab != "0 dB" and lab != "5 dB" and lab != "10 dB"]
+
+        def vanish(prefix: str, values: list[str]) -> tuple[str | None, dict]:
+            raw = {}
+            for val in values:
+                c = {m["label"]: m["vs_a5"]["mean_diff"] for m in b5["conditions"][f"{prefix} {val}"]["margins"]}
+                raw[val] = {lab: c[lab] for lab in win}
+                if all(c[lab] >= 0 for lab in win):
+                    return val, raw
+            return None, raw
+
+        vm, rawm = vanish("miss", ["0.1", "0.2", "0.3", "0.4", "0.5"])
+        rule = ("smallest injected value at which the planner's mean outage is no longer below A5's (paired mean difference >= 0) at every margin where "
+                f"the perfect-track baseline beats A5 among 15-30 dB ({', '.join(win)}); the 3GPP reference and v1 points are not part of the rule")
+        put("numFragMiss", "--" if vm is None else f"{100 * float(vm):.0f}\\%", script=sb, config=cfg + "; miss probability per blocker and report", aggregation=rule, raw=rawm)
+        vn, rawn = vanish("noise", ["0.5", "1.0", "2.0", "4.0"])
+        put("numFragNoise", "--" if vn is None else f"{float(vn):.1f}", script=sb, config=cfg + "; Gaussian position sigma [m] and velocity sigma [m/s] per horizontal axis",
+            aggregation=rule, raw=rawn)
+    if b6f.exists():
+        b6 = {r["label"]: r for r in json.loads(b6f.read_text())["margins"]}
+        for tag, lab, nd in tags:
+            v = b6[lab]["vs_a5"]
+            put(f"numRobust{tag}", f"{v['mean_diff']:+.{nd}f}", script="scripts/review_b6_robust.py -> results/M5/review_b6.json",
+                config=cfg + f"; margin {lab}; guarded planner (A5 + advance/veto from confirmed tracks older than T_c), tuned {b6[lab]['tuned']}",
+                aggregation="paired: mean over the 40 evaluation jobs of (guarded planner - A5) per-job outage [s/UE-min]", raw=v)
+    if c8f.exists():
+        c8 = {r["label"]: r for r in json.loads(c8f.read_text())["margins"]}
+        sc = "scripts/review_c8_density.py -> results/M5/review_c8.json"
+        for dens, tag in (("low", "Low"), ("high", "High")):
+            a5v = c8["10 dB"]["density"][dens]["A5"]
+            put(f"numDens{tag}Ten", f"{a5v['mean']:.2f}", script=sc, config=cfg + f"; margin 10 dB; A5 (tuned); {dens} traffic density",
+                aggregation="mean over the 20 evaluation jobs of that density [s/UE-min]", raw=a5v)
+            red = c8["3GPP short-range reference"]["density"][dens]["A5 -> any-step oracle"]
+            put(f"numRelRedRef{tag}", f"{100 * red['share_of_a5']:.0f}\\%", script=sc,
+                config=cfg + f"; 3GPP reference; A5 -> any-step cost-aware oracle; {dens} traffic density",
+                aggregation="mean per-job reduction / mean A5 outage over the 20 evaluation jobs of that density", raw=red)
 
 
 def macros_in_main() -> list[tuple[str, str]]:

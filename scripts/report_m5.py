@@ -334,6 +334,128 @@ def main() -> None:
             "resolutions (1 ms and 10 ms): with the model-B screen of a 0.5 m pedestrian the LoS loss is effectively a step; the onset is "
             "below the 1 ms resolution, i.e. 'abrupt' is a property of the model, not a measured rise time.")
         add("")
+    gof = R5 / "grid_oracle.json"
+    if gof.exists():
+        go = json.loads(gof.read_text())
+        add("## After block A review: grid-aligned cost-aware oracle -- ADDED AFTER REVIEW")
+        add("")
+        add(f"`scripts/review_grid_oracle.py`. Same Viterbi (union objective, tau_HO 20 ms), switches only on the planner's decision grid "
+            f"(k mod {go['grid']['epoch_steps']} = {go['grid']['offset_steps']}, i.e. 0.1 s epochs offset by the E2 delay + 10 ms). The any-step "
+            "oracle stays THE bound; the grid-aligned oracle is the bound for policies that act only at E2 decision epochs and is used for "
+            "\\numPlanHorizon. Checks: instantaneous <= any-step <= grid-aligned on every job; no planner (any H) beats the grid-aligned "
+            "oracle on any job.")
+        add("")
+        add("| Margin | Any-step | Grid-aligned | Grid cost | Instantaneous | Planner jobs below grid oracle |")
+        add("|---|---|---|---|---|---|")
+        for r in go["margins"]:
+            nv = sum(len(v) for v in r["planner_jobs_below_grid_oracle"].values())
+            add(f"| {r['label']} | {r['any']['mean']:.3f} | {r['grid']['mean']:.3f} | +{100 * r['grid_cost_rel']:.1f} % | {r['inst']['mean']:.3f} | {nv} |")
+        add("")
+    b5f, b6f, b6d, c8f = R5 / "review_b5.json", R5 / "review_b6.json", R5 / "review_b6_diag.json", R5 / "review_c8.json"
+    if b5f.exists():
+        b5 = json.loads(b5f.read_text())
+        add("## External review, block B -- ADDED AFTER REVIEW")
+        add("")
+        add("### B5 Error-injection ablation of the planner's blockage prediction (`scripts/review_b5_ablation.py`; diagnostic)")
+        add("")
+        m = b5["measured"]
+        add("Planner = the sensing-planner model (unblocked SNR minus predicted LoS loss, overhead charged, H tuned per margin and condition "
+            "on tuning seeds); tracks = ground truth at each report (true positions, velocities, sizes; constant-velocity extrapolation), "
+            "then one error type injected. Measured final-tracker rates (image ghosts, budget 4, map tracker): miss = 1 - track Pd "
+            + ", ".join(f"{c} {100 * v:.0f} %" for c, v in m["miss"].items())
+            + f"; false confirmed tracks {m['false_tracks_per_cpi']:.1f} per CPI; position sigma per axis "
+            + ", ".join(f"{c} {v:.2f} m" for c, v in m["pos_axis"].items()) + "; velocity sigma per axis "
+            + ", ".join(f"{c} {v:.2f} m/s" for c, v in m["vel_axis"].items())
+            + ". Spurious tracks are bus boxes on a random lane or pedestrian boxes on a random sidewalk (1/2 each) at a uniform position, "
+            "independent per report (assumption). Cells: mean outage [s/UE-min] and the paired difference to A5 "
+            "(mean per-job difference, * = 95 % CI excludes 0 and Wilcoxon p < 0.05).")
+        add("")
+        labs = [mm["label"] for mm in next(iter(b5["conditions"].values()))["margins"]]
+        short = lambda lab_: {"3GPP short-range reference": "ref", "v1 radio (high margin)": "v1"}.get(lab_, lab_)  # noqa: E731
+        add("| Condition | " + " | ".join(short(x) for x in labs) + " |")
+        add("|---|" + "---|" * len(labs))
+        for cname, c in b5["conditions"].items():
+            cells = []
+            for mm in c["margins"]:
+                v = mm["vs_a5"]
+                star = "*" if (v["ci95"][0] > 0 or v["ci95"][1] < 0) and v["wilcoxon_p_two_sided"] < 0.05 else ""
+                cells.append(f"{mm['eval']['outage_req_s_per_min']['mean']:.3f} ({v['mean_diff']:+.3f}{star})")
+            add(f"| {cname} | " + " | ".join(cells) + " |")
+        add("")
+        single = ("miss measured", "spurious 1x", "noise measured")
+        if all(n in b5["conditions"] for n in single + ("combined measured",)):
+            add("Which error type drives the collapse? Each error alone at its measured rate (paired mean difference to A5, s/UE-min):")
+            add("")
+            add("| Margin | miss (measured) | spurious (1x measured) | position/velocity noise (measured) | sum of the three | combined (measured) | largest single |")
+            add("|---|---|---|---|---|---|---|")
+            for i, lab_ in enumerate(labs):
+                v = {n: b5["conditions"][n]["margins"][i]["vs_a5"]["mean_diff"] for n in single + ("combined measured",)}
+                top = max(single, key=lambda n: v[n])
+                add(f"| {lab_} | {v['miss measured']:+.3f} | {v['spurious 1x']:+.3f} | {v['noise measured']:+.3f} | {sum(v[n] for n in single):+.3f} | "
+                    f"{v['combined measured']:+.3f} | {top} |")
+            add("")
+            add("At 0-5 dB every condition pays about the same sensing-overhead penalty (cf. B6 diagnostic: A5 + overhead). From 10 dB up the "
+                "single measured errors rank as in the last column; the combined case exceeds the sum of the singles at mid margins. "
+                "With perfect tracks (baseline) the planner beats A5 from 15 dB up; this is lost already at miss 0.1-0.2, spurious 1x or "
+                "0.5 m / 0.5 m/s noise.")
+            add("")
+    if b6f.exists():
+        b6 = json.loads(b6f.read_text())
+        add("### B6 Robust planner (post-review baseline, `scripts/review_b6_robust.py`)")
+        add("")
+        add("A5 runs by default; at each E2 decision epoch the planner may only ADVANCE a handover (plan switches and the serving cell is "
+            "predicted >= 10 dB blocked within H) or VETO A5 until the next epoch (plan stays and the other cell is predicted >= 10 dB "
+            "blocked within H), using only confirmed map-tracker tracks older than T_c; sensing overhead charged. Tuned per margin on "
+            "tuning seeds over T_c {0.3, 0.5, 1, 2} s x H {0.5, 1, 2} s x budget {2, 4}. Simulator support (planner mask, veto) has a "
+            f"vectorised-vs-reference equality test; existing schemes unchanged. T_c = 0 predictions match the cached M3 predictions within "
+            f"{max(b6['tc0_check_max_abs_db'].values()):.1e} dB (BLAS thread count differs in the replay).")
+        add("")
+        add("| Margin | Tuned T_c / H / budget | Robust planner | A5 | Paired diff [95 % CI] | Wilcoxon p | HO / UE-min |")
+        add("|---|---|---|---|---|---|---|")
+        a5m = {r["label"]: r["a5"]["eval"]["outage_req_s_per_min"]["mean"] for r in P["margins"]} if pl.exists() else {}
+        for r in b6["margins"]:
+            v = r["vs_a5"]
+            t_ = r["tuned"]
+            add(f"| {r['label']} | {t_['T_c_s']:.1f} s / {t_['H_s']:.1f} s / {t_['budget']} | {r['eval']['outage_req_s_per_min']['mean']:.3f} | "
+                f"{a5m.get(r['label'], float('nan')):.3f} | {v['mean_diff']:+.4f} [{v['ci95'][0]:+.4f}, {v['ci95'][1]:+.4f}] | {v['wilcoxon_p_two_sided']:.2g} | "
+                f"{r['eval']['ho_per_min']['mean']:.1f} |")
+        add("")
+        if b6d.exists():
+            dg = json.loads(b6d.read_text())
+            add("Diagnostic (tuned parameters, evaluation seeds; paired difference to A5 in brackets): which part of the robust planner loses?")
+            add("")
+            names = ["A5 + overhead", "advance only", "veto only", "advance + veto (check)"]
+            add("| Margin | " + " | ".join(names) + " |")
+            add("|---|" + "---|" * len(names))
+            for r in dg["margins"]:
+                add(f"| {r['label']} | " + " | ".join(f"{r[n]['outage_mean']:.3f} ({r[n]['vs_a5']['mean_diff']:+.3f})" for n in names) + " |")
+            add("")
+    if c8f.exists():
+        c8 = json.loads(c8f.read_text())
+        add("## External review, block C -- ADDED AFTER REVIEW")
+        add("")
+        add("C7: \\numRelRedTen / \\numAbsRedTen / \\numRelRedRef / \\numAbsRedRef = A5 -> any-step cost-aware oracle reduction "
+            "(see the macro table below).")
+        add("")
+        add("### C8 Main results by traffic density (`scripts/review_c8_density.py`; 20 evaluation jobs per density; mean ± 95 % CI)")
+        add("")
+        for r in c8["margins"]:
+            if r["label"] not in ("10 dB", "20 dB", "3GPP short-range reference"):
+                continue
+            add(f"#### {r['label']}")
+            add("")
+            names = [n for n in r["density"]["low"] if n != "A5 -> any-step oracle"]
+            add("| Scheme | low | high |")
+            add("|---|---|---|")
+            for n in names:
+                lo, hi = r["density"]["low"][n], r["density"]["high"][n]
+                add(f"| {n} | {lo['mean']:.3f} ± {lo['ci']:.3f} | {hi['mean']:.3f} ± {hi['ci']:.3f} |")
+            lo, hi = r["density"]["low"]["A5 -> any-step oracle"], r["density"]["high"]["A5 -> any-step oracle"]
+            add(f"| A5 -> any-step oracle reduction | {lo['mean_reduction']:.3f} ± {lo['ci95_half_t']:.3f} ({100 * lo['share_of_a5']:.0f} % of A5) | "
+                f"{hi['mean_reduction']:.3f} ± {hi['ci95_half_t']:.3f} ({100 * hi['share_of_a5']:.0f} % of A5) |")
+            add("")
+        add("All margins are in `results/M5/review_c8.json`.")
+        add("")
     add("## paper/numbers.tex vs the defaults in main.tex")
     add("")
     missing = [m for m in defaults if m not in defined]

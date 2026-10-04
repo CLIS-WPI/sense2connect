@@ -239,6 +239,32 @@ class SchemeEqualityTest(unittest.TestCase):
                 total += len(ref["handovers"])
         self.assertGreater(total, 3)
 
+    def test_a5_with_planner_advance_and_veto(self) -> None:
+        from xapp.schemes import REASON, simulate, simulate_scalar
+
+        lanes = self._lanes()
+        n = lanes.snr_db.shape[0]
+        rng = np.random.default_rng(11)
+        lanes.scheme = np.full(n, REASON["a5"])
+        lanes.a5_thr1 = np.full(n, 10.0)
+        lanes.a5_thr2 = np.full(n, 8.0)
+        lanes.planner_mask = np.array([True, True, True, True, False, False, True, False, True])
+        lanes.veto = rng.random(lanes.trigger.shape) < 0.3
+        lanes.hold_steps = np.zeros(n, dtype=np.int64)
+        lanes.trigger_end_steps = np.zeros_like(lanes.trigger_end_steps)
+        lanes.block_db = float("inf")
+        kw = {"bandwidth_hz": 122.88e6, "rate_req_bps": 4e8, "max_se": 7.4063}
+        vec = simulate(lanes, **kw)
+        reasons = set()
+        for lane in range(n):
+            ref = simulate_scalar(lanes, lane, **kw)
+            sel = vec["handovers"]["lane"] == lane
+            got = list(zip(vec["handovers"]["step"][sel], vec["handovers"]["from"][sel], vec["handovers"]["to"][sel], vec["handovers"]["reason"][sel]))
+            self.assertEqual([tuple(int(x) for x in g) for g in got], [tuple(int(x) for x in r) for r in ref["handovers"]], f"lane {lane}")
+            self.assertTrue(np.array_equal(vec["outage_req"][lane], ref["outage_req"]))
+            reasons |= {int(r[3]) for r in ref["handovers"]}
+        self.assertTrue({REASON["a5"], REASON["xapp"]} <= reasons)
+
     def test_vectorised_matches_scalar(self) -> None:
         from xapp.schemes import simulate, simulate_scalar
 
