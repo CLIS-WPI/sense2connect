@@ -1,0 +1,11 @@
+timelines cached 60, to build 0
+0 dB: any 34.448 grid 34.448 (+0.0 %) inst 34.448 | planners below grid oracle: none | ordering ok True
+5 dB: any 8.584 grid 8.613 (+0.3 %) inst 8.528 | planners below grid oracle: none | ordering ok True
+10 dB: any 3.133 grid 3.161 (+0.9 %) inst 3.044 | planners below grid oracle: none | ordering ok True
+15 dB: any 1.687 grid 1.711 (+1.4 %) inst 1.598 | planners below grid oracle: none | ordering ok True
+20 dB: any 1.015 grid 1.034 (+1.9 %) inst 0.939 | planners below grid oracle: none | ordering ok True
+25 dB: any 0.297 grid 0.302 (+1.6 %) inst 0.258 | planners below grid oracle: none | ordering ok True
+30 dB: any 0.098 grid 0.099 (+1.4 %) inst 0.078 | planners below grid oracle: none | ordering ok True
+3GPP short-range reference: any 0.035 grid 0.035 (+1.4 %) inst 0.027 | planners below grid oracle: none | ordering ok True
+v1 radio (high margin): any 0.024 grid 0.025 (+1.5 %) inst 0.019 | planners below grid oracle: none | ordering ok True
+wrote /workspace/results/M5/grid_oracle.json

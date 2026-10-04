@@ -1,0 +1,13 @@
+timelines cached 60, to build 0
+replayed tracks for 60 jobs
+T_c = 0 predictions match the cached M3 predictions within 6.35e-05 dB
+0 dB: robust 35.948 (T_c 2.0, H 2.0, b 4) vs A5 34.552 | diff +1.3958 [+1.1889, +1.6028] p=3.57e-08 | 51 s
+5 dB: robust 11.017 (T_c 2.0, H 0.5, b 2) vs A5 8.793 | diff +2.2246 [+1.8749, +2.5743] p=1.82e-12 | 48 s
+10 dB: robust 6.518 (T_c 2.0, H 0.5, b 2) vs A5 3.511 | diff +3.0065 [+2.1847, +3.8283] p=1.82e-12 | 48 s
+15 dB: robust 3.108 (T_c 2.0, H 0.5, b 2) vs A5 1.971 | diff +1.1371 [+0.7703, +1.5038] p=1.82e-12 | 48 s
+20 dB: robust 1.777 (T_c 2.0, H 0.5, b 2) vs A5 1.230 | diff +0.5466 [+0.3107, +0.7824] p=5.68e-08 | 48 s
+25 dB: robust 0.692 (T_c 2.0, H 0.5, b 2) vs A5 0.430 | diff +0.2624 [+0.1611, +0.3637] p=7.73e-08 | 48 s
+30 dB: robust 0.251 (T_c 2.0, H 1.0, b 2) vs A5 0.151 | diff +0.1002 [+0.0465, +0.1538] p=7.18e-06 | 49 s
+3GPP short-range reference: robust 0.116 (T_c 2.0, H 0.5, b 2) vs A5 0.092 | diff +0.0245 [+0.0101, +0.0389] p=0.000662 | 48 s
+v1 radio (high margin): robust 0.070 (T_c 2.0, H 0.5, b 2) vs A5 0.051 | diff +0.0189 [+0.0048, +0.0330] p=0.00116 | 48 s
+wrote /workspace/results/M5/review_b6.json in 8.9 min

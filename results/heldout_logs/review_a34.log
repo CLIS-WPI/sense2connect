@@ -1,0 +1,13 @@
+timelines cached 60, to build 0
+A3 0 dB: car 0.2309552599758162, car from <10 dB 1.0
+A3 5 dB: car 0.06341694273544723, car from <10 dB 1.0
+A3 10 dB: car -0.0058965424819083356, car from <10 dB 1.0
+A3 15 dB: car -0.011760752688172043, car from <10 dB 1.0
+A3 20 dB: car 0.019338203695745595, car from <10 dB 1.0
+A3 25 dB: car 0.033576642335766425, car from <10 dB 1.0
+A3 30 dB: car 0.02054794520547945, car from <10 dB 1.0
+A3 3GPP short-range reference: car 0.015625, car from <10 dB 1.0
+A3 v1 radio (high margin): car 0.015503875968992248, car from <10 dB 1.0
+A4 bus/truck: n 286 median onset 1 ms 0.4705 s (10 ms: 0.485 s)
+A4 pedestrian: n 416 median onset 1 ms 0.0010 s (10 ms: 0.010 s)
+wrote /workspace/results/M5/review_a34.json

@@ -1,0 +1,11 @@
+timelines cached 60, to build 0
+0 dB: A3 34.579 | old bound 0.004 (0.0 %) | new bound 0.000 (0.0 %) | distance 0.083
+5 dB: A3 8.949 | old bound 0.089 (1.0 %) | new bound 0.163 (1.8 %) | distance 0.110
+10 dB: A3 3.575 | old bound 0.192 (5.4 %) | new bound 0.313 (8.8 %) | distance 0.000
+15 dB: A3 2.001 | old bound 0.113 (5.6 %) | new bound 0.159 (8.0 %) | distance 0.000
+20 dB: A3 1.283 | old bound 0.051 (4.0 %) | new bound 0.090 (7.0 %) | distance 0.000
+25 dB: A3 0.544 | old bound 0.034 (6.2 %) | new bound 0.059 (10.8 %) | distance 0.000
+30 dB: A3 0.289 | old bound 0.019 (6.6 %) | new bound 0.024 (8.3 %) | distance 0.000
+3GPP short-range reference: A3 0.205 | old bound 0.018 (8.7 %) | new bound 0.020 (9.6 %) | distance 0.000
+v1 radio (high margin): A3 0.193 | old bound 0.014 (7.3 %) | new bound 0.016 (8.3 %) | distance 0.000
+wrote /workspace/results/M5/foresight.json

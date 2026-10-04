@@ -1,0 +1,11 @@
+timelines cached 60, to build 0
+0 dB: A3w 34.561 A5 34.552 best a5 | genie-planner(H=0.5) 34.448 | sensing-planner(H=0.5) 36.084 | cost-aware 34.448 inst 34.448 | foresight share 1.0 | 26 s
+5 dB: A3w 8.903 A5 8.793 best a5 | genie-planner(H=3.0) 8.620 | sensing-planner(H=1.0) 12.143 | cost-aware 8.584 inst 8.528 | foresight share 0.7893989588263133 | 26 s
+10 dB: A3w 3.488 A5 3.511 best a5 | genie-planner(H=3.0) 3.169 | sensing-planner(H=0.5) 10.341 | cost-aware 3.133 inst 3.044 | foresight share 0.810238541945859 | 26 s
+15 dB: A3w 1.990 A5 1.971 best a5 | genie-planner(H=2.0) 1.719 | sensing-planner(H=0.5) 5.493 | cost-aware 1.687 inst 1.598 | foresight share 0.7600806451612904 | 26 s
+20 dB: A3w 1.283 A5 1.230 best a5 | genie-planner(H=2.0) 1.040 | sensing-planner(H=1.0) 2.830 | cost-aware 1.015 inst 0.939 | foresight share 0.73700042973786 | 26 s
+25 dB: A3w 0.544 A5 0.430 best a5 | genie-planner(H=3.0) 0.309 | sensing-planner(H=3.0) 1.350 | cost-aware 0.297 inst 0.258 | foresight share 0.7737226277372263 | 26 s
+30 dB: A3w 0.240 A5 0.151 best a5 | genie-planner(H=3.0) 0.106 | sensing-planner(H=2.0) 0.531 | cost-aware 0.098 inst 0.078 | foresight share 0.7277397260273972 | 26 s
+3GPP short-range reference: A3w 0.161 A5 0.092 best a5 | genie-planner(H=0.5) 0.041 | sensing-planner(H=2.0) 0.190 | cost-aware 0.035 inst 0.027 | foresight share 0.884765625 | 26 s
+v1 radio (high margin): A3w 0.149 A5 0.051 best a5 | genie-planner(H=0.5) 0.031 | sensing-planner(H=0.5) 0.120 | cost-aware 0.024 inst 0.019 | foresight share 0.8217054263565892 | 26 s
+wrote /workspace/results/M5/planner.json in 3.9 min

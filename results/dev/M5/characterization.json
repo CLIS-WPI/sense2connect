@@ -2,21 +2,21 @@
  "config": "configs/m2_scenario.yaml (two O-RUs, 8x8, 1024 SC), evaluation seeds, serving cell = strongest unblocked, 10 dB LoS events, min gap 0.5 s",
  "dt_s": 0.1,
  "overall": {
-  "events_per_ue_min": 8.5125,
+  "events_per_ue_min": 8.5,
   "class_share": {
-   "bus/truck": 0.4170337738619677,
-   "pedestrian": 0.5829662261380323,
+   "bus/truck": 0.45588235294117646,
+   "pedestrian": 0.5441176470588235,
    "car": 0.0
   },
-  "n_events": 681,
+  "n_events": 680,
   "other_cell_clear": {
    "bus/truck": {
-    "unblocked": 169,
-    "n": 284
+    "unblocked": 215,
+    "n": 310
    },
    "pedestrian": {
-    "unblocked": 118,
-    "n": 397
+    "unblocked": 114,
+    "n": 370
    },
    "car": {
     "unblocked": 0,
@@ -27,21 +27,21 @@
  "per_class_per_mount": {
   "lamppost": {
    "bus/truck": {
-    "n_events": 140,
-    "events_per_ue_min": 3.5,
+    "n_events": 155,
+    "events_per_ue_min": 3.875,
     "duration_p10_p50_p90_s": {
-     "0.1": 0.1,
-     "0.5": 1.5,
-     "0.9": 2.9000000000000004
+     "0.1": 0.6200000000000001,
+     "0.5": 1.6,
+     "0.9": 2.6599999999999997
     }
    },
    "pedestrian": {
-    "n_events": 193,
-    "events_per_ue_min": 4.825,
+    "n_events": 176,
+    "events_per_ue_min": 4.4,
     "duration_p10_p50_p90_s": {
      "0.1": 0.1,
      "0.5": 0.2,
-     "0.9": 1.5800000000000012
+     "0.9": 1.5
     }
    },
    "car": {
@@ -52,21 +52,21 @@
   },
   "facade": {
    "bus/truck": {
-    "n_events": 144,
-    "events_per_ue_min": 3.6,
+    "n_events": 155,
+    "events_per_ue_min": 3.875,
     "duration_p10_p50_p90_s": {
      "0.1": 0.7000000000000001,
      "0.5": 0.9,
-     "0.9": 1.8
+     "0.9": 1.5599999999999994
     }
    },
    "pedestrian": {
-    "n_events": 204,
-    "events_per_ue_min": 5.1,
+    "n_events": 194,
+    "events_per_ue_min": 4.85,
     "duration_p10_p50_p90_s": {
      "0.1": 0.1,
-     "0.5": 0.2,
-     "0.9": 1.1
+     "0.5": 0.25,
+     "0.9": 1.5
     }
    },
    "car": {
@@ -79,105 +79,105 @@
  "same_cell_surviving_path": {
   "lamppost": {
    "all": {
-    "n": 333,
+    "n": 331,
     "no_alternative": 0,
     "alternative_removed": 0,
     "p10_p50_p90_db": {
-     "0.1": -52.098300581992916,
-     "0.5": -33.244390677543095,
-     "0.9": -25.05949142604038
+     "0.1": -52.34111369701416,
+     "0.5": -33.609112807829646,
+     "0.9": -24.68689452872284
     },
-    "share_above_minus10db": 0.003003003003003003
+    "share_above_minus10db": 0.0
    },
    "bus/truck": {
-    "n": 140,
+    "n": 155,
     "no_alternative": 0,
     "alternative_removed": 0,
     "p10_p50_p90_db": {
-     "0.1": -52.006767285702836,
-     "0.5": -34.06464806637714,
-     "0.9": -24.06157436394107
+     "0.1": -55.11324334525063,
+     "0.5": -34.040962526250304,
+     "0.9": -25.112212129043066
     },
-    "share_above_minus10db": 0.007142857142857143
+    "share_above_minus10db": 0.0
    },
    "pedestrian": {
-    "n": 193,
+    "n": 176,
     "no_alternative": 0,
     "alternative_removed": 0,
     "p10_p50_p90_db": {
-     "0.1": -52.082489555513924,
-     "0.5": -31.5326338483862,
-     "0.9": -25.39073633130956
+     "0.1": -47.935256696751956,
+     "0.5": -31.361864082269243,
+     "0.9": -24.484282196882305
     },
     "share_above_minus10db": 0.0
    }
   },
   "facade": {
    "all": {
-    "n": 348,
+    "n": 349,
     "no_alternative": 0,
     "alternative_removed": 0,
     "p10_p50_p90_db": {
-     "0.1": -30.76695554655643,
-     "0.5": -25.654370640181845,
-     "0.9": -17.902734344093165
+     "0.1": -38.003686375758996,
+     "0.5": -25.82389215786617,
+     "0.9": -18.148455717157436
     },
-    "share_above_minus10db": 0.0028735632183908046
+    "share_above_minus10db": 0.0
    },
    "bus/truck": {
-    "n": 144,
+    "n": 155,
     "no_alternative": 0,
     "alternative_removed": 0,
     "p10_p50_p90_db": {
-     "0.1": -29.66459366971347,
-     "0.5": -24.45208456343571,
-     "0.9": -17.356560539218062
+     "0.1": -28.147614444966568,
+     "0.5": -24.07986779236697,
+     "0.9": -17.46611540013677
     },
-    "share_above_minus10db": 0.006944444444444444
+    "share_above_minus10db": 0.0
    },
    "pedestrian": {
-    "n": 204,
+    "n": 194,
     "no_alternative": 0,
     "alternative_removed": 0,
     "p10_p50_p90_db": {
-     "0.1": -31.03541121035135,
-     "0.5": -26.407995888726713,
-     "0.9": -22.859504662770902
+     "0.1": -39.0797441656587,
+     "0.5": -26.6773213290653,
+     "0.9": -23.52322166999471
     },
     "share_above_minus10db": 0.0
    }
   },
   "all": {
    "all": {
-    "n": 681,
+    "n": 680,
     "no_alternative": 0,
     "alternative_removed": 0,
     "p10_p50_p90_db": {
-     "0.1": -45.33540553083767,
-     "0.5": -28.19070827608963,
-     "0.9": -21.765047649967585
+     "0.1": -46.77545376179417,
+     "0.5": -28.17372025853375,
+     "0.9": -21.50455519081673
     },
-    "share_above_minus10db": 0.002936857562408223
+    "share_above_minus10db": 0.0
    },
    "bus/truck": {
-    "n": 284,
+    "n": 310,
     "no_alternative": 0,
     "alternative_removed": 0,
     "p10_p50_p90_db": {
-     "0.1": -45.55343128742378,
-     "0.5": -27.14689880323334,
-     "0.9": -17.48011672207646
+     "0.1": -49.65312314550467,
+     "0.5": -27.865178904441006,
+     "0.9": -17.744056511107143
     },
-    "share_above_minus10db": 0.007042253521126761
+    "share_above_minus10db": 0.0
    },
    "pedestrian": {
-    "n": 397,
+    "n": 370,
     "no_alternative": 0,
     "alternative_removed": 0,
     "p10_p50_p90_db": {
-     "0.1": -44.38843251206405,
-     "0.5": -28.53726328964872,
-     "0.9": -23.544662767344924
+     "0.1": -43.65617760053436,
+     "0.5": -28.557584713132403,
+     "0.9": -23.764346047701867
     },
     "share_above_minus10db": 0.0
    }
@@ -186,96 +186,96 @@
  "both_blocked_time": {
   "lamppost": {
    "total": 24000,
-   "both": 828,
-   "serving_outage": 3089,
-   "serving_no_remedy": 828
+   "both": 965,
+   "serving_outage": 3432,
+   "serving_no_remedy": 965
   },
   "facade": {
    "total": 24000,
-   "both": 816,
-   "serving_outage": 2439,
-   "serving_no_remedy": 816
+   "both": 828,
+   "serving_outage": 2570,
+   "serving_no_remedy": 828
   }
  },
  "fixed_vs_oracle_rates": [
   {
    "mount": "lamppost",
    "density": "low",
-   "fixed_rate": 6.65,
-   "oracle_rate": 2.4,
-   "fixed_p50": 0.30000000000000004,
+   "fixed_rate": 5.85,
+   "oracle_rate": 2.35,
+   "fixed_p50": 1.2000000000000002,
    "oracle_p50": 0.2
   },
   {
    "mount": "lamppost",
    "density": "high",
-   "fixed_rate": 10.1,
-   "oracle_rate": 5.45,
+   "fixed_rate": 10.8,
+   "oracle_rate": 5.5,
    "fixed_p50": 0.4,
    "oracle_p50": 0.30000000000000004
   },
   {
    "mount": "facade",
    "density": "low",
-   "fixed_rate": 6.65,
-   "oracle_rate": 2.5,
-   "fixed_p50": 0.4,
-   "oracle_p50": 0.2
+   "fixed_rate": 6.55,
+   "oracle_rate": 2.25,
+   "fixed_p50": 0.7000000000000001,
+   "oracle_p50": 0.30000000000000004
   },
   {
    "mount": "facade",
    "density": "high",
-   "fixed_rate": 10.95,
-   "oracle_rate": 5.5,
-   "fixed_p50": 0.6000000000000001,
+   "fixed_rate": 11.3,
+   "oracle_rate": 5.55,
+   "fixed_p50": 0.6500000000000001,
    "oracle_p50": 0.30000000000000004
   }
  ],
  "onset_10ms": {
   "source": "results/M3/metrics.json event_stats (10 ms model B, fixed cell = strongest unblocked)",
   "all": {
-   "n": 702,
-   "per_ue_min": 8.789649415692821,
-   "actionable_share": 0.4230769230769231,
+   "n": 704,
+   "per_ue_min": 8.814691151919867,
+   "actionable_share": 0.48011363636363635,
    "onset_10_90_s": {
     "p10": 0.01,
-    "p50": 0.11,
-    "p90": 0.81
+    "p50": 0.13,
+    "p90": 0.934
    },
    "duration_s": {
     "p10": 0.12,
-    "p50": 0.42,
-    "p90": 2.01
+    "p50": 0.68,
+    "p90": 2.0
    }
   },
   "bus/truck": {
-   "n": 286,
-   "per_ue_min": 3.580968280467446,
-   "actionable_share": 0.6153846153846154,
+   "n": 317,
+   "per_ue_min": 3.9691151919866448,
+   "actionable_share": 0.7160883280757098,
    "onset_10_90_s": {
     "p10": 0.1,
-    "p50": 0.485,
-    "p90": 0.977
+    "p50": 0.5,
+    "p90": 1.089
    },
    "duration_s": {
-    "p10": 0.435,
-    "p50": 1.115,
-    "p90": 2.335
+    "p10": 0.53,
+    "p50": 1.18,
+    "p90": 2.164
    }
   },
   "pedestrian": {
-   "n": 416,
-   "per_ue_min": 5.208681135225376,
-   "actionable_share": 0.29086538461538464,
+   "n": 387,
+   "per_ue_min": 4.845575959933223,
+   "actionable_share": 0.2868217054263566,
    "onset_10_90_s": {
     "p10": 0.01,
     "p50": 0.01,
-    "p90": 0.322
+    "p90": 0.372
    },
    "duration_s": {
     "p10": 0.11,
-    "p50": 0.22,
-    "p90": 1.44
+    "p50": 0.23,
+    "p90": 1.58
    }
   },
   "car": {

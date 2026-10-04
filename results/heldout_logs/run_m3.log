@@ -1,0 +1,95 @@
+timelines cached 20, to build 40
+  built (2001, 'lamppost', 'low')
+  built (2001, 'lamppost', 'high')
+  built (2001, 'facade', 'low')
+  built (2001, 'facade', 'high')
+  built (2002, 'lamppost', 'low')
+  built (2002, 'lamppost', 'high')
+  built (2002, 'facade', 'low')
+  built (2002, 'facade', 'high')
+  built (2003, 'lamppost', 'low')
+  built (2003, 'lamppost', 'high')
+  built (2003, 'facade', 'low')
+  built (2003, 'facade', 'high')
+  built (2004, 'lamppost', 'low')
+  built (2004, 'lamppost', 'high')
+  built (2004, 'facade', 'low')
+  built (2004, 'facade', 'high')
+  built (2005, 'lamppost', 'low')
+  built (2005, 'lamppost', 'high')
+  built (2005, 'facade', 'low')
+  built (2005, 'facade', 'high')
+  built (2006, 'lamppost', 'low')
+  built (2006, 'lamppost', 'high')
+  built (2006, 'facade', 'low')
+  built (2006, 'facade', 'high')
+  built (2007, 'lamppost', 'low')
+  built (2007, 'lamppost', 'high')
+  built (2007, 'facade', 'low')
+  built (2007, 'facade', 'high')
+  built (2008, 'lamppost', 'low')
+  built (2008, 'lamppost', 'high')
+  built (2008, 'facade', 'low')
+  built (2008, 'facade', 'high')
+  built (2009, 'lamppost', 'low')
+  built (2009, 'lamppost', 'high')
+  built (2009, 'facade', 'low')
+  built (2009, 'facade', 'high')
+  built (2010, 'lamppost', 'low')
+  built (2010, 'lamppost', 'high')
+  built (2010, 'facade', 'low')
+  built (2010, 'facade', 'high')
+[stage] build: 57.0 s, peak GPU 4.39 GB
+[stage] budget: 0.0 s, peak GPU 0.00 GB
+{
+  "snr_req_db": 9.31867797580479,
+  "margin_ref_db": 35.90939224628288,
+  "v1_offset_db": 3.0,
+  "points_db": [
+    0.0,
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    25.0,
+    30.0,
+    35.90939224628288,
+    38.90939224628288
+  ],
+  "labels": [
+    "0 dB",
+    "5 dB",
+    "10 dB",
+    "15 dB",
+    "20 dB",
+    "25 dB",
+    "30 dB",
+    "3GPP short-range reference",
+    "v1 radio (high margin)"
+  ],
+  "extra_loss_db": [
+    35.90939224628288,
+    30.909392246282877,
+    25.909392246282877,
+    20.909392246282877,
+    15.909392246282877,
+    10.909392246282877,
+    5.909392246282877,
+    0.0,
+    -3.0
+  ]
+}
+[stage] snr_all_margins: 0.1 s, peak GPU 0.12 GB
+tuned margin 0.0: a3 {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04} -> 35.417, trend {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'window_s': 0.2, 'drop_db': 3.0, 'horizon_s': 2.0} -> 35.391, xapp {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'budget': 2, 'horizon_s': 0.5, 'hold_s': 0.2} -> 38.816
+tuned margin 5.0: a3 {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04} -> 11.001, trend {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'window_s': 0.1, 'drop_db': 3.0, 'horizon_s': 2.0} -> 10.872, xapp {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'budget': 2, 'horizon_s': 0.5, 'hold_s': 0.2} -> 19.047
+tuned margin 10.0: a3 {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04} -> 4.621, trend {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'window_s': 0.1, 'drop_db': 3.0, 'horizon_s': 2.0} -> 4.366, xapp {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'budget': 2, 'horizon_s': 0.5, 'hold_s': 0.2} -> 7.381
+tuned margin 15.0: a3 {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04} -> 2.807, trend {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'window_s': 0.1, 'drop_db': 3.0, 'horizon_s': 2.0} -> 2.703, xapp {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'budget': 2, 'horizon_s': 0.5, 'hold_s': 0.2} -> 4.193
+tuned margin 20.0: a3 {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04} -> 1.775, trend {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'window_s': 0.1, 'drop_db': 5.0, 'horizon_s': 2.0} -> 1.719, xapp {'offset_db': 1.0, 'hysteresis_db': 1.0, 'ttt_s': 0.04, 'budget': 2, 'horizon_s': 0.5, 'hold_s': 1.0} -> 2.775
+tuned margin 25.0: a3 {'offset_db': 1.0, 'hysteresis_db': 3.0, 'ttt_s': 0.04} -> 0.786, trend {'offset_db': 1.0, 'hysteresis_db': 3.0, 'ttt_s': 0.04, 'window_s': 0.1, 'drop_db': 3.0, 'horizon_s': 0.5} -> 0.757, xapp {'offset_db': 1.0, 'hysteresis_db': 3.0, 'ttt_s': 0.04, 'budget': 2, 'horizon_s': 0.5, 'hold_s': 1.0} -> 1.714
+tuned margin 30.0: a3 {'offset_db': 3.0, 'hysteresis_db': 3.0, 'ttt_s': 0.04} -> 0.313, trend {'offset_db': 3.0, 'hysteresis_db': 3.0, 'ttt_s': 0.04, 'window_s': 0.5, 'drop_db': 5.0, 'horizon_s': 0.25} -> 0.328, xapp {'offset_db': 3.0, 'hysteresis_db': 3.0, 'ttt_s': 0.04, 'budget': 2, 'horizon_s': 0.5, 'hold_s': 1.0} -> 0.647
+tuned margin 35.9: a3 {'offset_db': 3.0, 'hysteresis_db': 3.0, 'ttt_s': 0.16} -> 0.197, trend {'offset_db': 3.0, 'hysteresis_db': 3.0, 'ttt_s': 0.16, 'window_s': 0.5, 'drop_db': 5.0, 'horizon_s': 0.25} -> 0.243, xapp {'offset_db': 3.0, 'hysteresis_db': 3.0, 'ttt_s': 0.16, 'budget': 2, 'horizon_s': 3.0, 'hold_s': 1.0} -> 0.432
+tuned margin 38.9: a3 {'offset_db': 3.0, 'hysteresis_db': 3.0, 'ttt_s': 0.16} -> 0.179, trend {'offset_db': 3.0, 'hysteresis_db': 3.0, 'ttt_s': 0.16, 'window_s': 0.5, 'drop_db': 5.0, 'horizon_s': 0.25} -> 0.241, xapp {'offset_db': 3.0, 'hysteresis_db': 3.0, 'ttt_s': 0.16, 'budget': 2, 'horizon_s': 3.0, 'hold_s': 1.0} -> 0.407
+[stage] tune: 48.1 s, peak GPU 0.00 GB
+[stage] evaluate: 10.7 s, peak GPU 0.00 GB
+[stage] sweeps: 9.2 s, peak GPU 0.00 GB
+wrote /workspace/results/M3/metrics.json

@@ -1,0 +1,16 @@
+timelines cached 60, to build 0
+replayed 120 track sets
+zero-noise check: max |diff| 6.35e-05 dB
+alpha 1.0: sampled and planned in 147 s
+alpha 4.0: sampled and planned in 147 s
+alpha 16.0: sampled and planned in 147 s
+0 dB: UA planner 35.892 (K 8, alpha 1.0, theta 0.01) | diff +1.3404 [+1.1375, +1.5433] p=3.57e-08 | 7 s
+5 dB: UA planner 10.338 (K 8, alpha 1.0, theta 0.3) | diff +1.5456 [+1.1722, +1.9189] p=3.57e-08 | 7 s
+10 dB: UA planner 3.884 (K 8, alpha 1.0, theta 0.3) | diff +0.3731 [+0.2277, +0.5184] p=7.74e-08 | 7 s
+15 dB: UA planner 2.011 (K 8, alpha 1.0, theta 0.3) | diff +0.0408 [+0.0189, +0.0628] p=1.62e-07 | 7 s
+20 dB: UA planner 1.267 (K 8, alpha 1.0, theta 0.3) | diff +0.0372 [+0.0226, +0.0517] p=1.64e-07 | 7 s
+25 dB: UA planner 0.461 (K 8, alpha 4.0, theta 0.1) | diff +0.0309 [+0.0132, +0.0486] p=3.13e-06 | 7 s
+30 dB: UA planner 0.156 (K 8, alpha 1.0, theta 0.3) | diff +0.0046 [+0.0031, +0.0061] p=1.19e-05 | 7 s
+3GPP short-range reference: UA planner 0.099 (K 8, alpha 1.0, theta 0.1) | diff +0.0075 [+0.0007, +0.0143] p=0.00331 | 7 s
+v1 radio (high margin): UA planner 0.058 (K 32, alpha 16.0, theta 0.03) | diff +0.0073 [+0.0004, +0.0142] p=0.0498 | 7 s
+wrote /workspace/results/M5/review2/uaplanner.json in 10.0 min

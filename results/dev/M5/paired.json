@@ -1,0 +1,284 @@
+{
+ "definition": "Paired statistics on the evaluation jobs (statistics only, no method change).\n\nFor every margin, two comparisons against A5 (the best reactive scheme):\n- true-LoS-loss planner (diagnostic) at the sensing-planner's tuned H;\n- sensing-planner at its tuned H (and budget).\nPer evaluation job j, d_j = outage(scheme) - outage(A5) [s/UE-min], each job's\noutage being the mean over its two UEs (results/M5/planner.json, per_job).\nReported: mean of d_j with a t-based 95 % CI (n = 40 jobs, n-1 dof), and the\ntwo-sided Wilcoxon signed-rank p-value (scipy.stats.wilcoxon, zero\ndifferences dropped; the number of non-zero pairs is recorded).\nNegative d = lower outage than A5.\n\nWrites results/M5/paired.json.\n",
+ "margins": [
+  {
+   "label": "0 dB",
+   "margin_db": 0.0,
+   "H_s": 0.5,
+   "trueloss_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 1.3825738607911862,
+    "ci95_half_t": 0.17720821557840105,
+    "ci95": [
+     1.205365645212785,
+     1.5597820763695873
+    ],
+    "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   },
+   "sensing_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 1.562844266399599,
+    "ci95_half_t": 0.1862061391855491,
+    "ci95": [
+     1.3766381272140498,
+     1.7490504055851481
+    ],
+    "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   }
+  },
+  {
+   "label": "5 dB",
+   "margin_db": 5.0,
+   "H_s": 1.0,
+   "trueloss_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 1.301201802704056,
+    "ci95_half_t": 0.29621494692464445,
+    "ci95": [
+     1.0049868557794115,
+     1.5974167496287004
+    ],
+    "wilcoxon_p_two_sided": 2.279623785615941e-07,
+    "n_scheme_lower": 4,
+    "n_scheme_higher": 36
+   },
+   "sensing_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 2.9688282423635455,
+    "ci95_half_t": 0.4312505481017974,
+    "ci95": [
+     2.5375776942617483,
+     3.4000787904653427
+    ],
+    "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   }
+  },
+  {
+   "label": "10 dB",
+   "margin_db": 10.0,
+   "H_s": 0.5,
+   "trueloss_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 0.2009263895843766,
+    "ci95_half_t": 0.1976993841198447,
+    "ci95": [
+     0.003227005464531918,
+     0.3986257737042213
+    ],
+    "wilcoxon_p_two_sided": 0.6966829473297715,
+    "n_scheme_lower": 25,
+    "n_scheme_higher": 15
+   },
+   "sensing_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 5.775413119679519,
+    "ci95_half_t": 1.1813078497963425,
+    "ci95": [
+     4.594105269883176,
+     6.956720969475862
+    ],
+    "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   }
+  },
+  {
+   "label": "15 dB",
+   "margin_db": 15.0,
+   "H_s": 0.5,
+   "trueloss_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": -0.045943915873810685,
+    "ci95_half_t": 0.04233217874009763,
+    "ci95": [
+     -0.08827609461390831,
+     -0.0036117371337130583
+    ],
+    "wilcoxon_p_two_sided": 0.005282893334941251,
+    "n_scheme_lower": 28,
+    "n_scheme_higher": 12
+   },
+   "sensing_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 2.7863044566850275,
+    "ci95_half_t": 0.6904059696257353,
+    "ci95": [
+     2.095898487059292,
+     3.476710426310763
+    ],
+    "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   }
+  },
+  {
+   "label": "20 dB",
+   "margin_db": 20.0,
+   "H_s": 1.0,
+   "trueloss_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": -0.07523785678517778,
+    "ci95_half_t": 0.03573018036202346,
+    "ci95": [
+     -0.11096803714720124,
+     -0.039507676423154316
+    ],
+    "wilcoxon_p_two_sided": 0.0003154039138246524,
+    "n_scheme_lower": 33,
+    "n_scheme_higher": 7
+   },
+   "sensing_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 1.3955933900851276,
+    "ci95_half_t": 0.32627691619983124,
+    "ci95": [
+     1.0693164738852965,
+     1.7218703062849587
+    ],
+    "wilcoxon_p_two_sided": 3.850982975394219e-08,
+    "n_scheme_lower": 1,
+    "n_scheme_higher": 39
+   }
+  },
+  {
+   "label": "25 dB",
+   "margin_db": 25.0,
+   "H_s": 3.0,
+   "trueloss_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 39,
+    "mean_diff": -0.036930395593390085,
+    "ci95_half_t": 0.04278769598259591,
+    "ci95": [
+     -0.079718091575986,
+     0.005857300389205823
+    ],
+    "wilcoxon_p_two_sided": 0.0023460400534557396,
+    "n_scheme_lower": 30,
+    "n_scheme_higher": 9
+   },
+   "sensing_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 0.7941912869303955,
+    "ci95_half_t": 0.26174622104728,
+    "ci95": [
+     0.5324450658831155,
+     1.0559375079776756
+    ],
+    "wilcoxon_p_two_sided": 3.849627925475797e-08,
+    "n_scheme_lower": 1,
+    "n_scheme_higher": 39
+   }
+  },
+  {
+   "label": "30 dB",
+   "margin_db": 30.0,
+   "H_s": 2.0,
+   "trueloss_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 38,
+    "mean_diff": -0.01815222834251376,
+    "ci95_half_t": 0.01683825415350859,
+    "ci95": [
+     -0.03499048249602235,
+     -0.0013139741890051682
+    ],
+    "wilcoxon_p_two_sided": 0.0012488680422510796,
+    "n_scheme_lower": 28,
+    "n_scheme_higher": 10
+   },
+   "sensing_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 37,
+    "mean_diff": 0.3407611417125689,
+    "ci95_half_t": 0.17381999540717827,
+    "ci95": [
+     0.16694114630539061,
+     0.5145811371197472
+    ],
+    "wilcoxon_p_two_sided": 1.935987203406688e-06,
+    "n_scheme_lower": 6,
+    "n_scheme_higher": 31
+   }
+  },
+  {
+   "label": "3GPP short-range reference",
+   "margin_db": 35.90939224628288,
+   "H_s": 2.0,
+   "trueloss_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 28,
+    "mean_diff": -0.04043565348022033,
+    "ci95_half_t": 0.03371678452912115,
+    "ci95": [
+     -0.07415243800934149,
+     -0.006718868951099181
+    ],
+    "wilcoxon_p_two_sided": 6.975768057541793e-06,
+    "n_scheme_lower": 27,
+    "n_scheme_higher": 1
+   },
+   "sensing_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 34,
+    "mean_diff": 0.0529544316474712,
+    "ci95_half_t": 0.042623233773097007,
+    "ci95": [
+     0.010331197874374191,
+     0.0955776654205682
+    ],
+    "wilcoxon_p_two_sided": 0.021182934820684302,
+    "n_scheme_lower": 13,
+    "n_scheme_higher": 21
+   }
+  },
+  {
+   "label": "v1 radio (high margin)",
+   "margin_db": 38.90939224628288,
+   "H_s": 0.5,
+   "trueloss_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 28,
+    "mean_diff": -0.014021031547320978,
+    "ci95_half_t": 0.007309271909572474,
+    "ci95": [
+     -0.021330303456893452,
+     -0.0067117596377485045
+    ],
+    "wilcoxon_p_two_sided": 0.00025511867140326966,
+    "n_scheme_lower": 23,
+    "n_scheme_higher": 5
+   },
+   "sensing_vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 33,
+    "mean_diff": 0.048572859288933394,
+    "ci95_half_t": 0.03711274884542887,
+    "ci95": [
+     0.011460110443504527,
+     0.08568560813436227
+    ],
+    "wilcoxon_p_two_sided": 0.01773591330745706,
+    "n_scheme_lower": 11,
+    "n_scheme_higher": 22
+   }
+  }
+ ]
+}

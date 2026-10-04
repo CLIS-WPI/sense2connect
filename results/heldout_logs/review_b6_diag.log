@@ -1,0 +1,11 @@
+timelines cached 60, to build 0
+0 dB: A5 + overhead 35.963 (+1.411) | advance only 35.920 (+1.368) | veto only 35.990 (+1.438) | advance + veto (check) 35.948 (+1.396)
+5 dB: A5 + overhead 10.338 (+1.546) | advance only 10.743 (+1.951) | veto only 10.405 (+1.613) | advance + veto (check) 11.017 (+2.225)
+10 dB: A5 + overhead 3.884 (+0.373) | advance only 5.280 (+1.769) | veto only 4.143 (+0.632) | advance + veto (check) 6.518 (+3.007)
+15 dB: A5 + overhead 2.011 (+0.041) | advance only 2.744 (+0.774) | veto only 2.231 (+0.260) | advance + veto (check) 3.108 (+1.137)
+20 dB: A5 + overhead 1.267 (+0.037) | advance only 1.584 (+0.354) | veto only 1.411 (+0.181) | advance + veto (check) 1.777 (+0.547)
+25 dB: A5 + overhead 0.454 (+0.024) | advance only 0.607 (+0.177) | veto only 0.532 (+0.102) | advance + veto (check) 0.692 (+0.262)
+30 dB: A5 + overhead 0.156 (+0.005) | advance only 0.212 (+0.061) | veto only 0.191 (+0.040) | advance + veto (check) 0.251 (+0.100)
+3GPP short-range reference: A5 + overhead 0.093 (+0.002) | advance only 0.112 (+0.020) | veto only 0.100 (+0.008) | advance + veto (check) 0.116 (+0.025)
+v1 radio (high margin): A5 + overhead 0.053 (+0.002) | advance only 0.061 (+0.010) | veto only 0.063 (+0.012) | advance + veto (check) 0.070 (+0.019)
+wrote /workspace/results/M5/review_b6_diag.json

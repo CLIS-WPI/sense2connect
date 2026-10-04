@@ -1,0 +1,11 @@
+timelines cached 60, to build 0
+0 dB: A3 34.579 | genie 35.046 | onset 35.121 | cost-aware any 34.448 epoch 34.448 | inst 34.448 | closed any 1.0 | diag n 0 los<10 0 other>=3 0 either 0
+5 dB: A3 8.949 | genie 9.735 | onset 10.279 | cost-aware any 8.584 epoch 8.608 | inst 8.528 | closed any 0.868 | diag n 1304 los<10 455 other>=3 147 either 458
+10 dB: A3 3.575 | genie 3.641 | onset 3.474 | cost-aware any 3.133 epoch 3.164 | inst 3.044 | closed any 0.833 | diag n 2504 los<10 817 other>=3 455 either 972
+15 dB: A3 2.001 | genie 2.075 | onset 2.089 | cost-aware any 1.687 epoch 1.718 | inst 1.598 | closed any 0.778 | diag n 1271 los<10 30 other>=3 512 either 521
+20 dB: A3 1.283 | genie 1.352 | onset 1.298 | cost-aware any 1.015 epoch 1.038 | inst 0.939 | closed any 0.778 | diag n 718 los<10 0 other>=3 286 either 286
+25 dB: A3 0.544 | genie 0.566 | onset 0.591 | cost-aware any 0.297 epoch 0.301 | inst 0.258 | closed any 0.864 | diag n 469 los<10 0 other>=3 257 either 257
+30 dB: A3 0.289 | genie 0.308 | onset 0.313 | cost-aware any 0.098 epoch 0.099 | inst 0.078 | closed any 0.906 | diag n 192 los<10 0 other>=3 149 either 149
+3GPP short-range reference: A3 0.205 | genie 0.239 | onset 0.218 | cost-aware any 0.035 epoch 0.035 | inst 0.027 | closed any 0.958 | diag n 158 los<10 0 other>=3 133 either 133
+v1 radio (high margin): A3 0.193 | genie 0.227 | onset 0.198 | cost-aware any 0.024 epoch 0.025 | inst 0.019 | closed any 0.967 | diag n 128 los<10 0 other>=3 106 either 106
+wrote /workspace/results/M5/dporacle.json

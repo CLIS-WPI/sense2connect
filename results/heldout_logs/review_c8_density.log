@@ -1,0 +1,10 @@
+0 dB: A5 low 33.145 high 35.959 | oracle low 33.045 high 35.852 | reduction share low 0.0030140276927957815 high 0.0029800863389499977
+5 dB: A5 low 5.823 high 11.762 | oracle low 5.643 high 11.524 | reduction share low 0.030871098116777008 high 0.02022266215381994
+10 dB: A5 low 1.763 high 5.260 | oracle low 1.462 high 4.803 | reduction share low 0.17031250000000003 high 0.08681993431386548
+15 dB: A5 low 0.851 high 3.090 | oracle low 0.657 high 2.717 | reduction share low 0.22719246615656277 high 0.12071619541440487
+20 dB: A5 low 0.542 high 1.918 | oracle low 0.405 high 1.626 | reduction share low 0.25311778290993064 high 0.15234986945169712
+25 dB: A5 low 0.168 high 0.692 | oracle low 0.091 high 0.503 | reduction share low 0.45590433482810155 high 0.27305605786618453
+30 dB: A5 low 0.037 high 0.265 | oracle low 0.008 high 0.187 | reduction share low 0.7755102040816325 high 0.2936732766761096
+3GPP short-range reference: A5 low 0.021 high 0.162 | oracle low 0.003 high 0.067 | reduction share low 0.8780487804878051 high 0.5870570107858243
+v1 radio (high margin): A5 low 0.017 high 0.084 | oracle low 0.002 high 0.047 | reduction share low 0.9130434782608697 high 0.4421364985163204
+wrote /workspace/results/M5/review_c8.json

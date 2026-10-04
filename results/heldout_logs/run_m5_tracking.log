@@ -1,0 +1,5 @@
+noghost|unconstrained {'bus/truck': 0.826, 'pedestrian': 0.283, 'car': 0.594} FA 4.0 xlane {'bus/truck': 2.07, 'pedestrian': 1.32, 'car': 1.85}
+noghost|map {'bus/truck': 0.908, 'pedestrian': 0.453, 'car': 0.721} FA 4.0 xlane {'bus/truck': 0.41, 'pedestrian': 0.39, 'car': 0.39}
+image|unconstrained {'bus/truck': 0.88, 'pedestrian': 0.289, 'car': 0.627} FA 3.83 xlane {'bus/truck': 2.01, 'pedestrian': 1.29, 'car': 1.83}
+image|map {'bus/truck': 0.941, 'pedestrian': 0.476, 'car': 0.753} FA 3.83 xlane {'bus/truck': 0.34, 'pedestrian': 0.36, 'car': 0.34}
+wrote /workspace/results/M5/tracking.json

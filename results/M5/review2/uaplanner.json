@@ -1,0 +1,957 @@
+{
+ "definition": "ADDED AFTER THE SECOND EXTERNAL REVIEW (2b): uncertainty-aware planner.\n\nA5 (tuned per margin, results/M5/planner.json) runs by default. At every E2\ndecision epoch the planner may ADVANCE a handover or VETO A5 until the next\nepoch, based on the expected outage reduction of switching now, estimated\nfrom K posterior samples of the scene:\n- tracks: the real map tracker (replayed from the stage-validated detection\n  caches; detector budget and horizon H fixed per margin at the\n  sensing-planner's values tuned on the tuning seeds); each confirmed\n  track's state is sampled from N(state, alpha * P) with P the diagonal of\n  the tracker's EKF covariance on x, y, vx, vy (pinned axes: ~0);\n- UE position: N(fix, alpha * sigma_UE^2) per horizontal axis around the\n  main runs' fix (sigma_UE = 1 m);\n- per sample: predicted SNR = unblocked SNR minus the predicted model-B LoS\n  loss (xapp/predict_torch.py); minimum outage over H (Viterbi as the\n  receding-horizon planner, switches at 0.1 s epochs, tau_HO outage per\n  switch) with the first action forced to stay or to switch;\n- Delta = mean over samples of (outage if staying - outage if switching) [s];\n  advance if Delta > theta; veto A5 if Delta < -theta.\nTuned per margin on the tuning seeds (101-105) over K {8, 32} (the first K\nof the same 32 samples), alpha {1, 4, 16}, theta {0.01, 0.03, 0.1, 0.3} s\n(24 points), objective as before; evaluated on the development seeds\n(1001-1010; or the held-out seeds with S2C_EVAL_SET=heldout) and compared with A5 by the paired test (Wilcoxon p = the\nsignificance test; t-based 95 % CI = effect size).\nCheck: the zero-noise sample reproduces the cached sensing-planner\npredictions (within 1e-3 dB).\n\nAlso reported: the share of decision epochs (lane x report) at which the\nadvance or veto condition holds for the serving cell.\n\nWrites results/M5/review2/uaplanner.json.\n",
+ "eval_set": "heldout",
+ "seeds": [
+  2001,
+  2002,
+  2003,
+  2004,
+  2005,
+  2006,
+  2007,
+  2008,
+  2009,
+  2010
+ ],
+ "grid": {
+  "K": [
+   8,
+   32
+  ],
+  "alpha": [
+   1.0,
+   4.0,
+   16.0
+  ],
+  "theta_s": [
+   0.01,
+   0.03,
+   0.1,
+   0.3
+  ]
+ },
+ "fixed": {
+  "0 dB": {
+   "H_s": 0.5,
+   "budget": 2
+  },
+  "5 dB": {
+   "H_s": 1.0,
+   "budget": 4
+  },
+  "10 dB": {
+   "H_s": 0.5,
+   "budget": 4
+  },
+  "15 dB": {
+   "H_s": 0.5,
+   "budget": 4
+  },
+  "20 dB": {
+   "H_s": 1.0,
+   "budget": 2
+  },
+  "25 dB": {
+   "H_s": 3.0,
+   "budget": 4
+  },
+  "30 dB": {
+   "H_s": 2.0,
+   "budget": 4
+  },
+  "3GPP short-range reference": {
+   "H_s": 2.0,
+   "budget": 4
+  },
+  "v1 radio (high margin)": {
+   "H_s": 0.5,
+   "budget": 2
+  }
+ },
+ "zero_noise_check_db": 6.349909777261797e-05,
+ "margins": [
+  {
+   "label": "0 dB",
+   "tuned": {
+    "K": 8,
+    "alpha": 1.0,
+    "theta_s": 0.01,
+    "H_s": 0.5,
+    "budget": 2
+   },
+   "tuning_objective": [
+    36.665498247371055,
+    1.5022533800701052
+   ],
+   "eval": {
+    "outage_req_s_per_min": {
+     "mean": 35.89233850776164,
+     "ci": 2.807904781011384,
+     "n": 40
+    },
+    "ho_per_min": {
+     "mean": 1.5022533800701052,
+     "ci": 0.0,
+     "n": 40
+    },
+    "ping_pong": {
+     "mean": 0.0,
+     "ci": 0.0,
+     "n": 40
+    },
+    "precision": {
+     "mean": 0.14166666666666666,
+     "ci": 0.08478985250794512,
+     "n": 40
+    }
+   },
+   "per_job": {
+    "2001/facade/high": 46.57986980470706,
+    "2001/facade/low": 43.595393089634456,
+    "2001/lamppost/high": 29.033550325488232,
+    "2001/lamppost/low": 26.955433149724588,
+    "2002/facade/high": 44.661992989484226,
+    "2002/facade/low": 44.101151727591386,
+    "2002/lamppost/high": 28.617926890335504,
+    "2002/lamppost/low": 24.516775162744114,
+    "2003/facade/high": 45.31797696544817,
+    "2003/facade/low": 43.99098647971958,
+    "2003/lamppost/high": 31.086629944917373,
+    "2003/lamppost/low": 25.01752628943415,
+    "2004/facade/high": 44.3365047571357,
+    "2004/facade/low": 43.980971457185774,
+    "2004/lamppost/high": 25.933900851276917,
+    "2004/lamppost/low": 26.404606910365548,
+    "2005/facade/high": 44.712068102153225,
+    "2005/facade/low": 44.40160240360541,
+    "2005/lamppost/high": 28.527791687531295,
+    "2005/lamppost/low": 23.610415623435152,
+    "2006/facade/high": 46.29444166249374,
+    "2006/facade/low": 44.481722583875815,
+    "2006/lamppost/high": 29.644466700050074,
+    "2006/lamppost/low": 24.76214321482223,
+    "2007/facade/high": 44.77215823735603,
+    "2007/facade/low": 44.2013019529294,
+    "2007/lamppost/high": 31.206810215322985,
+    "2007/lamppost/low": 26.364546820230345,
+    "2008/facade/high": 45.10265398097145,
+    "2008/facade/low": 43.40510766149224,
+    "2008/lamppost/high": 27.971957936905355,
+    "2008/lamppost/low": 23.009514271407106,
+    "2009/facade/high": 44.46169253880821,
+    "2009/facade/low": 43.63044566850275,
+    "2009/lamppost/high": 27.781672508763144,
+    "2009/lamppost/low": 25.12769153730596,
+    "2010/facade/high": 46.609914872308465,
+    "2010/facade/low": 44.661992989484226,
+    "2010/lamppost/high": 29.714571857786677,
+    "2010/lamppost/low": 27.105658487731596
+   },
+   "vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 1.3403855783675513,
+    "ci95_half_t": 0.20292111261417037,
+    "ci95": [
+     1.137464465753381,
+     1.5433066909817217
+    ],
+    "wilcoxon_p_two_sided": 3.568126323893353e-08,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   },
+   "intervention_share": {
+    "intervene": 0.39920833333333333,
+    "advance": 0.0017291666666666666,
+    "veto": 0.39747916666666666,
+    "epochs": 48000
+   },
+   "wall_s": 6.787383237853646
+  },
+  {
+   "label": "5 dB",
+   "tuned": {
+    "K": 8,
+    "alpha": 1.0,
+    "theta_s": 0.3,
+    "H_s": 1.0,
+    "budget": 4
+   },
+   "tuning_objective": [
+    12.256885327991988,
+    3.5302954431647473
+   ],
+   "eval": {
+    "outage_req_s_per_min": {
+     "mean": 10.338132198297448,
+     "ci": 1.4449072240199206,
+     "n": 40
+    },
+    "ho_per_min": {
+     "mean": 3.5553329994992486,
+     "ci": 0.5373446862693233,
+     "n": 40
+    },
+    "ping_pong": {
+     "mean": 0.08947916666666667,
+     "ci": 0.037252602725329854,
+     "n": 40
+    },
+    "precision": {
+     "mean": null,
+     "ci": null,
+     "n": 0
+    }
+   },
+   "per_job": {
+    "2001/facade/high": 14.702053079619429,
+    "2001/facade/low": 9.313970956434652,
+    "2001/lamppost/high": 10.14021031547321,
+    "2001/lamppost/low": 6.134201301952929,
+    "2002/facade/high": 13.655483224837255,
+    "2002/facade/low": 8.432648973460191,
+    "2002/lamppost/high": 9.01352028042063,
+    "2002/lamppost/low": 2.328492739108663,
+    "2003/facade/high": 15.227841762643965,
+    "2003/facade/low": 10.726089133700551,
+    "2003/lamppost/high": 14.3164747120681,
+    "2003/lamppost/low": 5.13770655983976,
+    "2004/facade/high": 12.408612919379069,
+    "2004/facade/low": 11.427140711066599,
+    "2004/lamppost/high": 6.3044566850275405,
+    "2004/lamppost/low": 6.985478217325989,
+    "2005/facade/high": 13.425137706559838,
+    "2005/facade/low": 6.00400600901352,
+    "2005/lamppost/high": 7.926890335503254,
+    "2005/lamppost/low": 1.6524787180771154,
+    "2006/facade/high": 15.688532799198796,
+    "2006/facade/low": 8.492739108662995,
+    "2006/lamppost/high": 10.440660991487231,
+    "2006/lamppost/low": 4.1462193289934905,
+    "2007/facade/high": 19.89484226339509,
+    "2007/facade/low": 11.156735102653979,
+    "2007/lamppost/high": 16.119178768152228,
+    "2007/lamppost/low": 6.800200300450676,
+    "2008/facade/high": 16.785177766649976,
+    "2008/facade/low": 7.080620931397095,
+    "2008/lamppost/high": 9.859789684526792,
+    "2008/lamppost/low": 2.4837255883825735,
+    "2009/facade/high": 17.44616925388082,
+    "2009/facade/low": 10.055082623935904,
+    "2009/lamppost/high": 9.133700550826239,
+    "2009/lamppost/low": 4.9824737105658485,
+    "2010/facade/high": 19.729594391587376,
+    "2010/facade/low": 14.056084126189283,
+    "2010/lamppost/high": 14.141211817726589,
+    "2010/lamppost/low": 9.769654481722585
+   },
+   "vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 1.545568352528793,
+    "ci95_half_t": 0.37333984665621056,
+    "ci95": [
+     1.1722285058725825,
+     1.9189081991850037
+    ],
+    "wilcoxon_p_two_sided": 3.568126323893353e-08,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   },
+   "intervention_share": {
+    "intervene": 0.0,
+    "advance": 0.0,
+    "veto": 0.0,
+    "epochs": 48000
+   },
+   "wall_s": 6.7849103435873985
+  },
+  {
+   "label": "10 dB",
+   "tuned": {
+    "K": 8,
+    "alpha": 1.0,
+    "theta_s": 0.3,
+    "H_s": 0.5,
+    "budget": 4
+   },
+   "tuning_objective": [
+    4.695793690535804,
+    5.458187280921382
+   ],
+   "eval": {
+    "outage_req_s_per_min": {
+     "mean": 3.8844516775162745,
+     "ci": 0.8447200134261199,
+     "n": 40
+    },
+    "ho_per_min": {
+     "mean": 6.58487731597396,
+     "ci": 0.82006747274613,
+     "n": 40
+    },
+    "ping_pong": {
+     "mean": 0.1277237692862693,
+     "ci": 0.031237432936156023,
+     "n": 40
+    },
+    "precision": {
+     "mean": null,
+     "ci": null,
+     "n": 0
+    }
+   },
+   "per_job": {
+    "2001/facade/high": 4.276414621932899,
+    "2001/facade/low": 2.0280420630946416,
+    "2001/lamppost/high": 5.067601402103154,
+    "2001/lamppost/low": 1.3219829744616924,
+    "2002/facade/high": 4.3915873810716075,
+    "2002/facade/low": 1.071607411116675,
+    "2002/lamppost/high": 3.0796194291437153,
+    "2002/lamppost/low": 0.7160741111667501,
+    "2003/facade/high": 8.192288432648972,
+    "2003/facade/low": 2.844266399599399,
+    "2003/lamppost/high": 6.379569354031046,
+    "2003/lamppost/low": 2.774161241862794,
+    "2004/facade/high": 3.6504757135703554,
+    "2004/facade/low": 3.7205808713069604,
+    "2004/lamppost/high": 3.0846269404106152,
+    "2004/lamppost/low": 3.049574361542313,
+    "2005/facade/high": 5.0525788683024535,
+    "2005/facade/low": 0.7110665998998498,
+    "2005/lamppost/high": 2.558838257386079,
+    "2005/lamppost/low": 0.5908863294942412,
+    "2006/facade/high": 6.72508763144717,
+    "2006/facade/low": 0.485728592889334,
+    "2006/lamppost/high": 2.849273910866299,
+    "2006/lamppost/low": 0.26039058587881825,
+    "2007/facade/high": 11.01151727591387,
+    "2007/facade/low": 3.1547320981472207,
+    "2007/lamppost/high": 8.793189784677015,
+    "2007/lamppost/low": 2.0380570856284423,
+    "2008/facade/high": 4.556835252879319,
+    "2008/facade/low": 1.1266900350525788,
+    "2008/lamppost/high": 4.126189283925889,
+    "2008/lamppost/low": 1.357035553329995,
+    "2009/facade/high": 8.412618928392588,
+    "2009/facade/low": 3.2648973460190285,
+    "2009/lamppost/high": 5.127691537305958,
+    "2009/lamppost/low": 1.8678017025538307,
+    "2010/facade/high": 10.420630946419628,
+    "2010/facade/low": 5.012518778167251,
+    "2010/lamppost/high": 6.86029043565348,
+    "2010/lamppost/low": 3.365047571357035
+   },
+   "vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 38,
+    "mean_diff": 0.373059589384076,
+    "ci95_half_t": 0.14532231421991645,
+    "ci95": [
+     0.22773727516415956,
+     0.5183819036039925
+    ],
+    "wilcoxon_p_two_sided": 7.739732463297963e-08,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 38
+   },
+   "intervention_share": {
+    "intervene": 0.0,
+    "advance": 0.0,
+    "veto": 0.0,
+    "epochs": 48000
+   },
+   "wall_s": 6.9089371133595705
+  },
+  {
+   "label": "15 dB",
+   "tuned": {
+    "K": 8,
+    "alpha": 1.0,
+    "theta_s": 0.3,
+    "H_s": 0.5,
+    "budget": 4
+   },
+   "tuning_objective": [
+    2.759639459188783,
+    8.31246870305458
+   ],
+   "eval": {
+    "outage_req_s_per_min": {
+     "mean": 2.0113920881321983,
+     "ci": 0.46322104934164976,
+     "n": 40
+    },
+    "ho_per_min": {
+     "mean": 8.28743114672008,
+     "ci": 1.5041374110879682,
+     "n": 40
+    },
+    "ping_pong": {
+     "mean": 0.2145527087646653,
+     "ci": 0.04223269154506702,
+     "n": 40
+    },
+    "precision": {
+     "mean": null,
+     "ci": null,
+     "n": 0
+    }
+   },
+   "per_job": {
+    "2001/facade/high": 2.674011016524787,
+    "2001/facade/low": 0.43565348022033046,
+    "2001/lamppost/high": 2.739108662994492,
+    "2001/lamppost/low": 0.3405107661492238,
+    "2002/facade/high": 2.088132198297446,
+    "2002/facade/low": 0.971457185778668,
+    "2002/lamppost/high": 1.8527791687531296,
+    "2002/lamppost/low": 0.40060090135202797,
+    "2003/facade/high": 3.4952428642964444,
+    "2003/facade/low": 1.1066599899849774,
+    "2003/lamppost/high": 3.2248372558838256,
+    "2003/lamppost/low": 0.6409614421632448,
+    "2004/facade/high": 3.1497245868803208,
+    "2004/facade/low": 1.842764146219329,
+    "2004/lamppost/high": 2.3635453179769654,
+    "2004/lamppost/low": 1.1216825237856785,
+    "2005/facade/high": 2.218327491236855,
+    "2005/facade/low": 0.5207811717576365,
+    "2005/lamppost/high": 1.5823735603405105,
+    "2005/lamppost/low": 0.3655483224837256,
+    "2006/facade/high": 3.089634451677516,
+    "2006/facade/low": 0.35052578868302453,
+    "2006/lamppost/high": 1.902854281422133,
+    "2006/lamppost/low": 0.21532298447671505,
+    "2007/facade/high": 5.353029544316474,
+    "2007/facade/low": 0.5758637956935403,
+    "2007/lamppost/high": 3.490235353029544,
+    "2007/lamppost/low": 0.5508262393590385,
+    "2008/facade/high": 2.3785678517776665,
+    "2008/facade/low": 0.971457185778668,
+    "2008/lamppost/high": 2.1682523785678516,
+    "2008/lamppost/low": 0.801201802704056,
+    "2009/facade/high": 5.833750625938908,
+    "2009/facade/low": 1.14672008012018,
+    "2009/lamppost/high": 3.790686029043565,
+    "2009/lamppost/low": 0.901352028042063,
+    "2010/facade/high": 4.957436154231347,
+    "2010/facade/low": 2.0430645968953427,
+    "2010/lamppost/high": 4.762143214822233,
+    "2010/lamppost/low": 2.0380570856284423
+   },
+   "vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 36,
+    "mean_diff": 0.040811216825237875,
+    "ci95_half_t": 0.021951046020606116,
+    "ci95": [
+     0.01886017080463176,
+     0.06276226284584399
+    ],
+    "wilcoxon_p_two_sided": 1.6189144970336712e-07,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 36
+   },
+   "intervention_share": {
+    "intervene": 0.0,
+    "advance": 0.0,
+    "veto": 0.0,
+    "epochs": 48000
+   },
+   "wall_s": 6.947615253739059
+  },
+  {
+   "label": "20 dB",
+   "tuned": {
+    "K": 8,
+    "alpha": 1.0,
+    "theta_s": 0.3,
+    "H_s": 1.0,
+    "budget": 2
+   },
+   "tuning_objective": [
+    1.6880320480721083,
+    6.259389083625438
+   ],
+   "eval": {
+    "outage_req_s_per_min": {
+     "mean": 1.2671507260891335,
+     "ci": 0.291281465391058,
+     "n": 40
+    },
+    "ho_per_min": {
+     "mean": 6.735102653980971,
+     "ci": 1.0583330964702877,
+     "n": 40
+    },
+    "ping_pong": {
+     "mean": 0.1710374183564973,
+     "ci": 0.040213748451023906,
+     "n": 40
+    },
+    "precision": {
+     "mean": null,
+     "ci": null,
+     "n": 0
+    }
+   },
+   "per_job": {
+    "2001/facade/high": 1.5373059589384075,
+    "2001/facade/low": 0.31547320981472204,
+    "2001/lamppost/high": 1.757636454682023,
+    "2001/lamppost/low": 0.26539809714571855,
+    "2002/facade/high": 1.086629944917376,
+    "2002/facade/low": 0.7361041562343514,
+    "2002/lamppost/high": 1.0065097646469703,
+    "2002/lamppost/low": 0.2954431647471206,
+    "2003/facade/high": 1.6474712068102153,
+    "2003/facade/low": 0.6359539308963444,
+    "2003/lamppost/high": 1.7376064096144215,
+    "2003/lamppost/low": 0.49073610415623425,
+    "2004/facade/high": 2.3835753630445664,
+    "2004/facade/low": 1.1517275913870806,
+    "2004/lamppost/high": 1.8678017025538307,
+    "2004/lamppost/low": 0.7461191787681523,
+    "2005/facade/high": 1.4822233350025036,
+    "2005/facade/low": 0.3455182774161242,
+    "2005/lamppost/high": 1.1917876815222832,
+    "2005/lamppost/low": 0.2904356534802203,
+    "2006/facade/high": 2.118177265898848,
+    "2006/facade/low": 0.23034551827741612,
+    "2006/lamppost/high": 1.2819228843264896,
+    "2006/lamppost/low": 0.13520280420630945,
+    "2007/facade/high": 2.5838758137205806,
+    "2007/facade/low": 0.2503755633450175,
+    "2007/lamppost/high": 2.063094641962944,
+    "2007/lamppost/low": 0.18027040560841262,
+    "2008/facade/high": 1.6424636955433147,
+    "2008/facade/low": 0.7561342013019529,
+    "2008/lamppost/high": 1.757636454682023,
+    "2008/lamppost/low": 0.5358037055583375,
+    "2009/facade/high": 4.1512268402603905,
+    "2009/facade/low": 0.7961942914371556,
+    "2009/lamppost/high": 1.9078617926890336,
+    "2009/lamppost/low": 0.6509764646970455,
+    "2010/facade/high": 3.560340510766149,
+    "2010/facade/low": 1.2118177265898846,
+    "2010/lamppost/high": 2.7941912869303955,
+    "2010/lamppost/low": 1.1066599899849774
+   },
+   "vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 36,
+    "mean_diff": 0.037180771156735085,
+    "ci95_half_t": 0.014533215638332618,
+    "ci95": [
+     0.022647555518402467,
+     0.0517139867950677
+    ],
+    "wilcoxon_p_two_sided": 1.643951131358209e-07,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 36
+   },
+   "intervention_share": {
+    "intervene": 0.0,
+    "advance": 0.0,
+    "veto": 0.0,
+    "epochs": 48000
+   },
+   "wall_s": 6.971277296543121
+  },
+  {
+   "label": "25 dB",
+   "tuned": {
+    "K": 8,
+    "alpha": 4.0,
+    "theta_s": 0.1,
+    "H_s": 3.0,
+    "budget": 4
+   },
+   "tuning_objective": [
+    0.642463695543315,
+    4.656985478217325
+   ],
+   "eval": {
+    "outage_req_s_per_min": {
+     "mean": 0.4608162243365047,
+     "ci": 0.12202010705859657,
+     "n": 40
+    },
+    "ho_per_min": {
+     "mean": 4.444166249374061,
+     "ci": 0.8295286450766705,
+     "n": 40
+    },
+    "ping_pong": {
+     "mean": 0.07948412698412699,
+     "ci": 0.033247252764666044,
+     "n": 40
+    },
+    "precision": {
+     "mean": null,
+     "ci": null,
+     "n": 0
+    }
+   },
+   "per_job": {
+    "2001/facade/high": 0.6509764646970455,
+    "2001/facade/low": 0.17526289434151227,
+    "2001/lamppost/high": 0.4757135703555333,
+    "2001/lamppost/low": 0.10015022533800699,
+    "2002/facade/high": 0.585878818227341,
+    "2002/facade/low": 0.1402103154732098,
+    "2002/lamppost/high": 0.39559339008512767,
+    "2002/lamppost/low": 0.05508262393590385,
+    "2003/facade/high": 0.5808713069604406,
+    "2003/facade/low": 0.22533800701051576,
+    "2003/lamppost/high": 0.8312468703054581,
+    "2003/lamppost/low": 0.2804206309464196,
+    "2004/facade/high": 0.6459689534301452,
+    "2004/facade/low": 0.35052578868302453,
+    "2004/lamppost/high": 0.1602403605408112,
+    "2004/lamppost/low": 0.20030045067601399,
+    "2005/facade/high": 0.7310966449674512,
+    "2005/facade/low": 0.10015022533800699,
+    "2005/lamppost/high": 0.4606910365548322,
+    "2005/lamppost/low": 0.0600901352028042,
+    "2006/facade/high": 0.6659989984977466,
+    "2006/facade/low": 0.0600901352028042,
+    "2006/lamppost/high": 0.615923885828743,
+    "2006/lamppost/low": 0.045067601402103155,
+    "2007/facade/high": 1.2869303955933902,
+    "2007/facade/low": 0.05508262393590385,
+    "2007/lamppost/high": 0.7210816224336505,
+    "2007/lamppost/low": 0.0300450676014021,
+    "2008/facade/high": 0.9163745618427641,
+    "2008/facade/low": 0.2754131196795193,
+    "2008/lamppost/high": 1.0265398097145717,
+    "2008/lamppost/low": 0.06009013520280421,
+    "2009/facade/high": 0.816224336504757,
+    "2009/facade/low": 0.2704056084126189,
+    "2009/lamppost/high": 0.2553830746119179,
+    "2009/lamppost/low": 0.19529293940911366,
+    "2010/facade/high": 1.5222834251377064,
+    "2010/facade/low": 0.500751126690035,
+    "2010/lamppost/high": 1.4972458688032046,
+    "2010/lamppost/low": 0.4106159238858288
+   },
+   "vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 35,
+    "mean_diff": 0.030921382073109672,
+    "ci95_half_t": 0.01769593833082389,
+    "ci95": [
+     0.013225443742285781,
+     0.04861732040393356
+    ],
+    "wilcoxon_p_two_sided": 3.131858821722462e-06,
+    "n_scheme_lower": 1,
+    "n_scheme_higher": 34
+   },
+   "intervention_share": {
+    "intervene": 0.0661875,
+    "advance": 0.0,
+    "veto": 0.0661875,
+    "epochs": 48000
+   },
+   "wall_s": 6.9680267767980695
+  },
+  {
+   "label": "30 dB",
+   "tuned": {
+    "K": 8,
+    "alpha": 1.0,
+    "theta_s": 0.3,
+    "H_s": 2.0,
+    "budget": 4
+   },
+   "tuning_objective": [
+    0.1760140210315473,
+    2.6539809714571856
+   ],
+   "eval": {
+    "outage_req_s_per_min": {
+     "mean": 0.15560841261892838,
+     "ci": 0.05847414113646524,
+     "n": 40
+    },
+    "ho_per_min": {
+     "mean": 1.915373059589384,
+     "ci": 0.46738985027781643,
+     "n": 40
+    },
+    "ping_pong": {
+     "mean": 0.027500000000000004,
+     "ci": 0.021321742310531168,
+     "n": 40
+    },
+    "precision": {
+     "mean": null,
+     "ci": null,
+     "n": 0
+    }
+   },
+   "per_job": {
+    "2001/facade/high": 0.22533800701051576,
+    "2001/facade/low": 0.02503755633450175,
+    "2001/lamppost/high": 0.21031547320981472,
+    "2001/lamppost/low": 0.0100150225338007,
+    "2002/facade/high": 0.19529293940911363,
+    "2002/facade/low": 0.0100150225338007,
+    "2002/lamppost/high": 0.10515773660490735,
+    "2002/lamppost/low": 0.0100150225338007,
+    "2003/facade/high": 0.24536805207811715,
+    "2003/facade/low": 0.08512769153730594,
+    "2003/lamppost/high": 0.3204807210816224,
+    "2003/lamppost/low": 0.0100150225338007,
+    "2004/facade/high": 0.03505257886830245,
+    "2004/facade/low": 0.050075112669003496,
+    "2004/lamppost/high": 0.0701051577366049,
+    "2004/lamppost/low": 0.050075112669003496,
+    "2005/facade/high": 0.30045067601402103,
+    "2005/facade/low": 0.0300450676014021,
+    "2005/lamppost/high": 0.2603905858788182,
+    "2005/lamppost/low": 0.0400600901352028,
+    "2006/facade/high": 0.35052578868302453,
+    "2006/facade/low": 0.01502253380070105,
+    "2006/lamppost/high": 0.2954431647471206,
+    "2006/lamppost/low": 0.0,
+    "2007/facade/high": 0.1101652478718077,
+    "2007/facade/low": 0.01502253380070105,
+    "2007/lamppost/high": 0.20530796194291437,
+    "2007/lamppost/low": 0.0100150225338007,
+    "2008/facade/high": 0.3955933900851277,
+    "2008/facade/low": 0.0200300450676014,
+    "2008/lamppost/high": 0.31046569854782174,
+    "2008/lamppost/low": 0.0300450676014021,
+    "2009/facade/high": 0.1201802704056084,
+    "2009/facade/low": 0.0100150225338007,
+    "2009/lamppost/high": 0.09013520280420631,
+    "2009/lamppost/low": 0.045067601402103155,
+    "2010/facade/high": 0.7461191787681521,
+    "2010/facade/low": 0.1301952929394091,
+    "2010/lamppost/high": 0.8462694041061591,
+    "2010/lamppost/low": 0.19028542814221328
+   },
+   "vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 25,
+    "mean_diff": 0.004631947921882822,
+    "ci95_half_t": 0.0015122469949719391,
+    "ci95": [
+     0.0031197009269108827,
+     0.006144194916854761
+    ],
+    "wilcoxon_p_two_sided": 1.1927070484013162e-05,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 25
+   },
+   "intervention_share": {
+    "intervene": 0.0,
+    "advance": 0.0,
+    "veto": 0.0,
+    "epochs": 48000
+   },
+   "wall_s": 6.948688636533916
+  },
+  {
+   "label": "3GPP short-range reference",
+   "tuned": {
+    "K": 8,
+    "alpha": 1.0,
+    "theta_s": 0.1,
+    "H_s": 2.0,
+    "budget": 4
+   },
+   "tuning_objective": [
+    0.052578868302453674,
+    0.901352028042063
+   ],
+   "eval": {
+    "outage_req_s_per_min": {
+     "mean": 0.09902353530295442,
+     "ci": 0.04605723733311442,
+     "n": 40
+    },
+    "ho_per_min": {
+     "mean": 0.7260891337005508,
+     "ci": 0.20172439173725595,
+     "n": 40
+    },
+    "ping_pong": {
+     "mean": 0.00625,
+     "ci": 0.012249999999999999,
+     "n": 40
+    },
+    "precision": {
+     "mean": null,
+     "ci": null,
+     "n": 0
+    }
+   },
+   "per_job": {
+    "2001/facade/high": 0.1802704056084126,
+    "2001/facade/low": 0.0,
+    "2001/lamppost/high": 0.12018027040560841,
+    "2001/lamppost/low": 0.0100150225338007,
+    "2002/facade/high": 0.0600901352028042,
+    "2002/facade/low": 0.0,
+    "2002/lamppost/high": 0.02503755633450175,
+    "2002/lamppost/low": 0.0,
+    "2003/facade/high": 0.10015022533800699,
+    "2003/facade/low": 0.0300450676014021,
+    "2003/lamppost/high": 0.24536805207811718,
+    "2003/lamppost/low": 0.02503755633450175,
+    "2004/facade/high": 0.0400600901352028,
+    "2004/facade/low": 0.02503755633450175,
+    "2004/lamppost/high": 0.03505257886830245,
+    "2004/lamppost/low": 0.02503755633450175,
+    "2005/facade/high": 0.2603905858788182,
+    "2005/facade/low": 0.0,
+    "2005/lamppost/high": 0.200300450676014,
+    "2005/lamppost/low": 0.0,
+    "2006/facade/high": 0.12518778167250877,
+    "2006/facade/low": 0.0,
+    "2006/lamppost/high": 0.0701051577366049,
+    "2006/lamppost/low": 0.0,
+    "2007/facade/high": 0.0100150225338007,
+    "2007/facade/low": 0.0,
+    "2007/lamppost/high": 0.02503755633450175,
+    "2007/lamppost/low": 0.0,
+    "2008/facade/high": 0.36554832248372554,
+    "2008/facade/low": 0.0300450676014021,
+    "2008/lamppost/high": 0.3605408112168252,
+    "2008/lamppost/low": 0.03505257886830245,
+    "2009/facade/high": 0.0701051577366049,
+    "2009/facade/low": 0.0,
+    "2009/lamppost/high": 0.0801201802704056,
+    "2009/lamppost/low": 0.0,
+    "2010/facade/high": 0.5908863294942415,
+    "2010/facade/low": 0.1402103154732098,
+    "2010/lamppost/high": 0.585878818227341,
+    "2010/lamppost/low": 0.09013520280420631
+   },
+   "vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 11,
+    "mean_diff": 0.007511266900350523,
+    "ci95_half_t": 0.006794503347031228,
+    "ci95": [
+     0.0007167635533192954,
+     0.014305770247381751
+    ],
+    "wilcoxon_p_two_sided": 0.003314452996697005,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 11
+   },
+   "intervention_share": {
+    "intervene": 0.0379375,
+    "advance": 0.0,
+    "veto": 0.0379375,
+    "epochs": 48000
+   },
+   "wall_s": 6.916168109513819
+  },
+  {
+   "label": "v1 radio (high margin)",
+   "tuned": {
+    "K": 32,
+    "alpha": 16.0,
+    "theta_s": 0.03,
+    "H_s": 0.5,
+    "budget": 2
+   },
+   "tuning_objective": [
+    0.028793189784677008,
+    0.7260891337005508
+   ],
+   "eval": {
+    "outage_req_s_per_min": {
+     "mean": 0.05808713069604406,
+     "ci": 0.023996842386998205,
+     "n": 40
+    },
+    "ho_per_min": {
+     "mean": 0.9889834752128193,
+     "ci": 0.24470655410406,
+     "n": 40
+    },
+    "ping_pong": {
+     "mean": 0.020833333333333332,
+     "ci": 0.02004686460838154,
+     "n": 40
+    },
+    "precision": {
+     "mean": 0.41358024691358025,
+     "ci": 0.17555240332532196,
+     "n": 27
+    }
+   },
+   "per_job": {
+    "2001/facade/high": 0.13520280420630948,
+    "2001/facade/low": 0.0100150225338007,
+    "2001/lamppost/high": 0.1502253380070105,
+    "2001/lamppost/low": 0.0100150225338007,
+    "2002/facade/high": 0.0100150225338007,
+    "2002/facade/low": 0.0,
+    "2002/lamppost/high": 0.0100150225338007,
+    "2002/lamppost/low": 0.0100150225338007,
+    "2003/facade/high": 0.09514271407110665,
+    "2003/facade/low": 0.0100150225338007,
+    "2003/lamppost/high": 0.19529293940911363,
+    "2003/lamppost/low": 0.0200300450676014,
+    "2004/facade/high": 0.0300450676014021,
+    "2004/facade/low": 0.0100150225338007,
+    "2004/lamppost/high": 0.0200300450676014,
+    "2004/lamppost/low": 0.0100150225338007,
+    "2005/facade/high": 0.20530796194291434,
+    "2005/facade/low": 0.0,
+    "2005/lamppost/high": 0.20530796194291437,
+    "2005/lamppost/low": 0.0100150225338007,
+    "2006/facade/high": 0.03505257886830245,
+    "2006/facade/low": 0.0,
+    "2006/lamppost/high": 0.0300450676014021,
+    "2006/lamppost/low": 0.0100150225338007,
+    "2007/facade/high": 0.0100150225338007,
+    "2007/facade/low": 0.0,
+    "2007/lamppost/high": 0.0300450676014021,
+    "2007/lamppost/low": 0.0100150225338007,
+    "2008/facade/high": 0.19529293940911369,
+    "2008/facade/low": 0.03505257886830245,
+    "2008/lamppost/high": 0.33550325488232347,
+    "2008/lamppost/low": 0.0300450676014021,
+    "2009/facade/high": 0.0300450676014021,
+    "2009/facade/low": 0.0100150225338007,
+    "2009/lamppost/high": 0.07511266900350524,
+    "2009/lamppost/low": 0.0100150225338007,
+    "2010/facade/high": 0.1101652478718077,
+    "2010/facade/low": 0.11517275913870806,
+    "2010/lamppost/high": 0.05508262393590385,
+    "2010/lamppost/low": 0.050075112669003496
+   },
+   "vs_a5": {
+    "n_jobs": 40,
+    "n_nonzero": 25,
+    "mean_diff": 0.007260891337005508,
+    "ci95_half_t": 0.006890134215208889,
+    "ci95": [
+     0.000370757121796619,
+     0.014151025552214397
+    ],
+    "wilcoxon_p_two_sided": 0.049786998629897564,
+    "n_scheme_lower": 8,
+    "n_scheme_higher": 17
+   },
+   "intervention_share": {
+    "intervene": 0.07902083333333333,
+    "advance": 0.0008333333333333334,
+    "veto": 0.0781875,
+    "epochs": 48000
+   },
+   "wall_s": 6.81478207744658
+  }
+ ],
+ "wall_s": 601.2428768007085
+}

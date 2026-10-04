@@ -1,0 +1,11 @@
+timelines cached 60, to build 0
+0 dB: oracle 34.448 | A3 34.579 genie 36.419 genie-no-ovh 35.046 | tau0: A3 34.531 genie 36.375 | 8 s
+5 dB: oracle 8.528 | A3 8.949 genie 10.955 genie-no-ovh 9.735 | tau0: A3 8.802 genie 10.816 | 8 s
+10 dB: oracle 3.044 | A3 3.575 genie 3.801 genie-no-ovh 3.641 | tau0: A3 3.358 genie 3.584 | 8 s
+15 dB: oracle 1.598 | A3 2.001 genie 2.125 genie-no-ovh 2.075 | tau0: A3 1.757 genie 1.878 | 8 s
+20 dB: oracle 0.939 | A3 1.283 genie 1.395 genie-no-ovh 1.352 | tau0: A3 1.029 genie 1.136 | 8 s
+25 dB: oracle 0.258 | A3 0.544 genie 0.599 genie-no-ovh 0.566 | tau0: A3 0.304 genie 0.345 | 8 s
+30 dB: oracle 0.078 | A3 0.289 genie 0.314 genie-no-ovh 0.308 | tau0: A3 0.088 genie 0.091 | 8 s
+3GPP short-range reference: oracle 0.027 | A3 0.205 genie 0.240 genie-no-ovh 0.239 | tau0: A3 0.034 genie 0.035 | 8 s
+v1 radio (high margin): oracle 0.019 | A3 0.193 genie 0.228 genie-no-ovh 0.227 | tau0: A3 0.024 genie 0.025 | 8 s
+wrote results/M3/genie.json in 77 s

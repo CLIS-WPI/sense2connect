@@ -13,34 +13,34 @@
  "variants": {
   "noghost|unconstrained": {
    "track_pd": {
-    "bus/truck": 0.8238245191565559,
-    "pedestrian": 0.2771023760610572,
-    "car": 0.5993659714803289
+    "bus/truck": 0.8260259612123455,
+    "pedestrian": 0.28274629853348815,
+    "car": 0.5941384919251772
    },
-   "false_alarms_per_cpi": 4.006333333333333,
+   "false_alarms_per_cpi": 3.995125,
    "cross_lane_rmse_mps": {
-    "bus/truck": 1.9736063373467942,
-    "pedestrian": 1.345215896650811,
-    "car": 1.8247596226571905
+    "bus/truck": 2.0723261311135768,
+    "pedestrian": 1.3183188883563781,
+    "car": 1.8483444198789591
    },
    "leads": {
     "lamppost": {
      "bus/truck": {
-      "n": 227,
+      "n": 199,
       "hits": {
-       "0.1": 189,
-       "0.3": 188,
-       "0.5": 186,
-       "1.0": 162
+       "0.1": 176,
+       "0.3": 169,
+       "0.5": 159,
+       "1.0": 152
       }
      },
      "pedestrian": {
-      "n": 167,
+      "n": 187,
       "hits": {
-       "0.1": 67,
-       "0.3": 64,
-       "0.5": 61,
-       "1.0": 53
+       "0.1": 68,
+       "0.3": 62,
+       "0.5": 60,
+       "1.0": 59
       }
      },
      "car": {
@@ -55,21 +55,21 @@
     },
     "facade": {
      "bus/truck": {
-      "n": 212,
+      "n": 196,
       "hits": {
-       "0.1": 188,
-       "0.3": 182,
-       "0.5": 173,
-       "1.0": 162
+       "0.1": 180,
+       "0.3": 173,
+       "0.5": 170,
+       "1.0": 156
       }
      },
      "pedestrian": {
-      "n": 188,
+      "n": 201,
       "hits": {
-       "0.1": 86,
-       "0.3": 85,
+       "0.1": 99,
+       "0.3": 101,
        "0.5": 96,
-       "1.0": 87
+       "1.0": 92
       }
      },
      "car": {
@@ -84,73 +84,73 @@
     }
    },
    "summary": {
-    "false_clusters_per_cpi": 5.280625,
-    "false_alarms_per_cpi": 4.006333333333333,
-    "cluster_fragment_per_cpi": 1.2742916666666666,
-    "cluster_ghost_per_cpi": 0.12366666666666666,
-    "cluster_other_per_cpi": 3.8826666666666667,
-    "track_fragment_per_cpi": 1.8972083333333334,
-    "track_ghost_per_cpi": 0.25616666666666665,
-    "track_other_per_cpi": 7.2195833333333335,
-    "ghost_track_rate": 0.49757462480230924,
+    "false_clusters_per_cpi": 5.277625,
+    "false_alarms_per_cpi": 3.995125,
+    "cluster_fragment_per_cpi": 1.2825,
+    "cluster_ghost_per_cpi": 0.12495833333333334,
+    "cluster_other_per_cpi": 3.8701666666666665,
+    "track_fragment_per_cpi": 1.914875,
+    "track_ghost_per_cpi": 0.25675,
+    "track_other_per_cpi": 7.257458333333333,
+    "ghost_track_rate": 0.49793387520518223,
     "classes": {
      "bus/truck": {
-      "gt_samples": 64782,
-      "detection_pd": 0.7001173165385447,
-      "track_pd": 0.8238245191565559,
-      "position_rmse_m": 2.9063117478526475,
-      "velocity_rmse_mps": 5.118651120031574,
-      "ospa_m": 2.89903641173954
+      "gt_samples": 64866,
+      "detection_pd": 0.7100484074862023,
+      "track_pd": 0.8260259612123455,
+      "position_rmse_m": 2.9108871661369125,
+      "velocity_rmse_mps": 5.0306592215892705,
+      "ospa_m": 2.9300854394779368
      },
      "pedestrian": {
-      "gt_samples": 254581,
-      "detection_pd": 0.23528464418004486,
-      "track_pd": 0.2771023760610572,
-      "position_rmse_m": 0.8268229216268317,
-      "velocity_rmse_mps": 2.2387671093661985,
-      "ospa_m": 1.2555980852186297
+      "gt_samples": 255777,
+      "detection_pd": 0.2382739652118838,
+      "track_pd": 0.28274629853348815,
+      "position_rmse_m": 0.8235407229988178,
+      "velocity_rmse_mps": 2.2302363264227494,
+      "ospa_m": 1.2463512030591106
      },
      "car": {
-      "gt_samples": 172232,
-      "detection_pd": 0.5194737331041851,
-      "track_pd": 0.5993659714803289,
-      "position_rmse_m": 1.6693286902873337,
-      "velocity_rmse_mps": 4.503951282420007,
-      "ospa_m": 1.996337315355729
+      "gt_samples": 172140,
+      "detection_pd": 0.5177878471011967,
+      "track_pd": 0.5941384919251772,
+      "position_rmse_m": 1.6755697032204786,
+      "velocity_rmse_mps": 4.718938679375709,
+      "ospa_m": 2.013382049259356
      }
     }
    }
   },
   "noghost|map": {
    "track_pd": {
-    "bus/truck": 0.9000339600506313,
-    "pedestrian": 0.44876483319650723,
-    "car": 0.7309443076780157
+    "bus/truck": 0.9075324515154318,
+    "pedestrian": 0.45252309629090964,
+    "car": 0.7211107238294412
    },
-   "false_alarms_per_cpi": 4.006333333333333,
+   "false_alarms_per_cpi": 3.995125,
    "cross_lane_rmse_mps": {
-    "bus/truck": 0.5252612126377735,
-    "pedestrian": 0.4112557925428976,
-    "car": 0.4416846643810543
+    "bus/truck": 0.40642272915239364,
+    "pedestrian": 0.3934523307761875,
+    "car": 0.3933199088833509
    },
    "leads": {
     "lamppost": {
      "bus/truck": {
-      "n": 227,
+      "n": 199,
       "hits": {
-       "0.1": 196,
-       "0.3": 192,
-       "0.5": 187,
-       "1.0": 170
+       "0.1": 180,
+       "0.3": 175,
+       "0.5": 165,
+       "1.0": 153
       }
      },
      "pedestrian": {
-      "n": 167,
+      "n": 187,
       "hits": {
-       "0.1": 91,
-       "0.3": 92,
-       "0.5": 90,
-       "1.0": 80
+       "0.1": 97,
+       "0.3": 94,
+       "0.5": 95,
+       "1.0": 90
       }
      },
      "car": {
@@ -165,21 +165,21 @@
     },
     "facade": {
      "bus/truck": {
-      "n": 212,
+      "n": 196,
       "hits": {
-       "0.1": 197,
-       "0.3": 191,
-       "0.5": 187,
-       "1.0": 171
+       "0.1": 184,
+       "0.3": 178,
+       "0.5": 175,
+       "1.0": 162
       }
      },
      "pedestrian": {
-      "n": 188,
+      "n": 201,
       "hits": {
-       "0.1": 127,
-       "0.3": 121,
-       "0.5": 117,
-       "1.0": 110
+       "0.1": 130,
+       "0.3": 127,
+       "0.5": 125,
+       "1.0": 120
       }
      },
      "car": {
@@ -194,73 +194,73 @@
     }
    },
    "summary": {
-    "false_clusters_per_cpi": 5.280625,
-    "false_alarms_per_cpi": 4.006333333333333,
-    "cluster_fragment_per_cpi": 1.2742916666666666,
-    "cluster_ghost_per_cpi": 0.12366666666666666,
-    "cluster_other_per_cpi": 3.8826666666666667,
-    "track_fragment_per_cpi": 3.5965416666666665,
-    "track_ghost_per_cpi": 0.2595,
-    "track_other_per_cpi": 9.099625,
-    "ghost_track_rate": 0.510248924728536,
+    "false_clusters_per_cpi": 5.277625,
+    "false_alarms_per_cpi": 3.995125,
+    "cluster_fragment_per_cpi": 1.2825,
+    "cluster_ghost_per_cpi": 0.12495833333333334,
+    "cluster_other_per_cpi": 3.8701666666666665,
+    "track_fragment_per_cpi": 3.663,
+    "track_ghost_per_cpi": 0.26158333333333333,
+    "track_other_per_cpi": 9.17375,
+    "ghost_track_rate": 0.5127343603461071,
     "classes": {
      "bus/truck": {
-      "gt_samples": 64782,
-      "detection_pd": 0.7001173165385447,
-      "track_pd": 0.9000339600506313,
-      "position_rmse_m": 2.470732761506829,
-      "velocity_rmse_mps": 3.87805543684036,
-      "ospa_m": 1.9602345829123453
+      "gt_samples": 64866,
+      "detection_pd": 0.7100484074862023,
+      "track_pd": 0.9075324515154318,
+      "position_rmse_m": 2.4638731634985938,
+      "velocity_rmse_mps": 3.734139841985841,
+      "ospa_m": 1.98951339951109
      },
      "pedestrian": {
-      "gt_samples": 254581,
-      "detection_pd": 0.23528464418004486,
-      "track_pd": 0.44876483319650723,
-      "position_rmse_m": 0.5534300258679974,
-      "velocity_rmse_mps": 1.4695121015092694,
-      "ospa_m": 0.9733373164399058
+      "gt_samples": 255777,
+      "detection_pd": 0.2382739652118838,
+      "track_pd": 0.45252309629090964,
+      "position_rmse_m": 0.550339628701146,
+      "velocity_rmse_mps": 1.4551084251770074,
+      "ospa_m": 0.9608132586995527
      },
      "car": {
-      "gt_samples": 172232,
-      "detection_pd": 0.5194737331041851,
-      "track_pd": 0.7309443076780157,
-      "position_rmse_m": 1.2989106112291806,
-      "velocity_rmse_mps": 2.783393760467086,
-      "ospa_m": 1.4746277006048742
+      "gt_samples": 172140,
+      "detection_pd": 0.5177878471011967,
+      "track_pd": 0.7211107238294412,
+      "position_rmse_m": 1.2911903292978932,
+      "velocity_rmse_mps": 2.9276682609192286,
+      "ospa_m": 1.4921566823159498
      }
     }
    }
   },
   "image|unconstrained": {
    "track_pd": {
-    "bus/truck": 0.8793800747121114,
-    "pedestrian": 0.28349326933274677,
-    "car": 0.6329834177156394
+    "bus/truck": 0.8801066814664077,
+    "pedestrian": 0.28941617111780965,
+    "car": 0.6272104101312885
    },
-   "false_alarms_per_cpi": 3.8725,
+   "false_alarms_per_cpi": 3.8290416666666665,
    "cross_lane_rmse_mps": {
-    "bus/truck": 1.9875694117715665,
-    "pedestrian": 1.2767248446111834,
-    "car": 1.8354301365349055
+    "bus/truck": 2.0091029965005367,
+    "pedestrian": 1.2897131812455425,
+    "car": 1.8338232922790894
    },
    "leads": {
     "lamppost": {
      "bus/truck": {
-      "n": 227,
+      "n": 199,
       "hits": {
-       "0.1": 196,
-       "0.3": 190,
-       "0.5": 188,
-       "1.0": 172
+       "0.1": 177,
+       "0.3": 173,
+       "0.5": 165,
+       "1.0": 154
       }
      },
      "pedestrian": {
-      "n": 167,
+      "n": 187,
       "hits": {
-       "0.1": 63,
-       "0.3": 64,
-       "0.5": 68,
-       "1.0": 56
+       "0.1": 59,
+       "0.3": 56,
+       "0.5": 63,
+       "1.0": 60
       }
      },
      "car": {
@@ -275,21 +275,21 @@
     },
     "facade": {
      "bus/truck": {
-      "n": 212,
+      "n": 196,
       "hits": {
-       "0.1": 193,
-       "0.3": 192,
-       "0.5": 188,
-       "1.0": 173
+       "0.1": 187,
+       "0.3": 180,
+       "0.5": 173,
+       "1.0": 164
       }
      },
      "pedestrian": {
-      "n": 188,
+      "n": 201,
       "hits": {
-       "0.1": 79,
-       "0.3": 78,
-       "0.5": 86,
-       "1.0": 78
+       "0.1": 89,
+       "0.3": 89,
+       "0.5": 89,
+       "1.0": 89
       }
      },
      "car": {
@@ -304,73 +304,73 @@
     }
    },
    "summary": {
-    "false_clusters_per_cpi": 5.401125,
-    "false_alarms_per_cpi": 3.8725,
-    "cluster_fragment_per_cpi": 1.528625,
-    "cluster_ghost_per_cpi": 0.057916666666666665,
-    "cluster_other_per_cpi": 3.814583333333333,
-    "track_fragment_per_cpi": 2.269791666666667,
-    "track_ghost_per_cpi": 0.15095833333333333,
-    "track_other_per_cpi": 7.202458333333333,
-    "ghost_track_rate": 0.4923228107273878,
+    "false_clusters_per_cpi": 5.350416666666667,
+    "false_alarms_per_cpi": 3.8290416666666665,
+    "cluster_fragment_per_cpi": 1.521375,
+    "cluster_ghost_per_cpi": 0.052958333333333336,
+    "cluster_other_per_cpi": 3.7760833333333332,
+    "track_fragment_per_cpi": 2.2592916666666665,
+    "track_ghost_per_cpi": 0.151625,
+    "track_other_per_cpi": 7.21675,
+    "ghost_track_rate": 0.49147181626172237,
     "classes": {
      "bus/truck": {
-      "gt_samples": 64782,
-      "detection_pd": 0.7657065234169985,
-      "track_pd": 0.8793800747121114,
-      "position_rmse_m": 2.7440517377596674,
-      "velocity_rmse_mps": 4.895404009115444,
-      "ospa_m": 2.5669890212896216
+      "gt_samples": 64866,
+      "detection_pd": 0.7739185397588876,
+      "track_pd": 0.8801066814664077,
+      "position_rmse_m": 2.7405724508652383,
+      "velocity_rmse_mps": 4.7173961535421665,
+      "ospa_m": 2.6074465978208012
      },
      "pedestrian": {
-      "gt_samples": 254581,
-      "detection_pd": 0.2535499507033125,
-      "track_pd": 0.28349326933274677,
-      "position_rmse_m": 0.8290347762973271,
-      "velocity_rmse_mps": 2.174728165294672,
-      "ospa_m": 1.2532004525624423
+      "gt_samples": 255777,
+      "detection_pd": 0.25750947114087663,
+      "track_pd": 0.28941617111780965,
+      "position_rmse_m": 0.8310261400840051,
+      "velocity_rmse_mps": 2.2104068504736376,
+      "ospa_m": 1.2462601640152369
      },
      "car": {
-      "gt_samples": 172232,
-      "detection_pd": 0.5504958428166659,
-      "track_pd": 0.6329834177156394,
-      "position_rmse_m": 1.6466051789367824,
-      "velocity_rmse_mps": 4.545747142511183,
-      "ospa_m": 1.9283574422179954
+      "gt_samples": 172140,
+      "detection_pd": 0.5487452073893343,
+      "track_pd": 0.6272104101312885,
+      "position_rmse_m": 1.6404256486127897,
+      "velocity_rmse_mps": 4.730773857127333,
+      "ospa_m": 1.9384283224643253
      }
     }
    }
   },
   "image|map": {
    "track_pd": {
-    "bus/truck": 0.9409249482881047,
-    "pedestrian": 0.4646772539977453,
-    "car": 0.762750243857123
+    "bus/truck": 0.940878117966269,
+    "pedestrian": 0.4761022296766324,
+    "car": 0.7529336586499361
    },
-   "false_alarms_per_cpi": 3.8725,
+   "false_alarms_per_cpi": 3.8290416666666665,
    "cross_lane_rmse_mps": {
-    "bus/truck": 0.3790742907790703,
-    "pedestrian": 0.3692675653522729,
-    "car": 0.3378941374077212
+    "bus/truck": 0.3389399701646964,
+    "pedestrian": 0.35877975604466383,
+    "car": 0.3375390693747726
    },
    "leads": {
     "lamppost": {
      "bus/truck": {
-      "n": 227,
+      "n": 199,
       "hits": {
-       "0.1": 200,
-       "0.3": 191,
-       "0.5": 191,
-       "1.0": 168
+       "0.1": 181,
+       "0.3": 175,
+       "0.5": 166,
+       "1.0": 156
       }
      },
      "pedestrian": {
-      "n": 167,
+      "n": 187,
       "hits": {
-       "0.1": 96,
-       "0.3": 94,
-       "0.5": 89,
-       "1.0": 73
+       "0.1": 104,
+       "0.3": 99,
+       "0.5": 100,
+       "1.0": 92
       }
      },
      "car": {
@@ -385,21 +385,21 @@
     },
     "facade": {
      "bus/truck": {
-      "n": 212,
+      "n": 196,
       "hits": {
-       "0.1": 200,
-       "0.3": 196,
-       "0.5": 190,
-       "1.0": 175
+       "0.1": 188,
+       "0.3": 181,
+       "0.5": 176,
+       "1.0": 164
       }
      },
      "pedestrian": {
-      "n": 188,
+      "n": 201,
       "hits": {
-       "0.1": 121,
-       "0.3": 117,
-       "0.5": 119,
-       "1.0": 104
+       "0.1": 131,
+       "0.3": 130,
+       "0.5": 130,
+       "1.0": 125
       }
      },
      "car": {
@@ -414,39 +414,39 @@
     }
    },
    "summary": {
-    "false_clusters_per_cpi": 5.401125,
-    "false_alarms_per_cpi": 3.8725,
-    "cluster_fragment_per_cpi": 1.528625,
-    "cluster_ghost_per_cpi": 0.057916666666666665,
-    "cluster_other_per_cpi": 3.814583333333333,
-    "track_fragment_per_cpi": 4.244,
-    "track_ghost_per_cpi": 0.12858333333333333,
-    "track_other_per_cpi": 9.079291666666666,
-    "ghost_track_rate": 0.5096468961336642,
+    "false_clusters_per_cpi": 5.350416666666667,
+    "false_alarms_per_cpi": 3.8290416666666665,
+    "cluster_fragment_per_cpi": 1.521375,
+    "cluster_ghost_per_cpi": 0.052958333333333336,
+    "cluster_other_per_cpi": 3.7760833333333332,
+    "track_fragment_per_cpi": 4.346125,
+    "track_ghost_per_cpi": 0.11841666666666667,
+    "track_other_per_cpi": 9.007333333333333,
+    "ghost_track_rate": 0.5085789518389535,
     "classes": {
      "bus/truck": {
-      "gt_samples": 64782,
-      "detection_pd": 0.7657065234169985,
-      "track_pd": 0.9409249482881047,
-      "position_rmse_m": 2.188542244895496,
-      "velocity_rmse_mps": 3.4691093361077407,
-      "ospa_m": 1.5669040588639673
+      "gt_samples": 64866,
+      "detection_pd": 0.7739185397588876,
+      "track_pd": 0.940878117966269,
+      "position_rmse_m": 2.175771303381775,
+      "velocity_rmse_mps": 3.3470623506740385,
+      "ospa_m": 1.6119728455985312
      },
      "pedestrian": {
-      "gt_samples": 254581,
-      "detection_pd": 0.2535499507033125,
-      "track_pd": 0.4646772539977453,
-      "position_rmse_m": 0.5668516391431944,
-      "velocity_rmse_mps": 1.4420906403806968,
-      "ospa_m": 0.9643234810133418
+      "gt_samples": 255777,
+      "detection_pd": 0.25750947114087663,
+      "track_pd": 0.4761022296766324,
+      "position_rmse_m": 0.5671214056225423,
+      "velocity_rmse_mps": 1.4593664483865014,
+      "ospa_m": 0.9441236496442722
      },
      "car": {
-      "gt_samples": 172232,
-      "detection_pd": 0.5504958428166659,
-      "track_pd": 0.762750243857123,
-      "position_rmse_m": 1.2576294698835222,
-      "velocity_rmse_mps": 2.8131947886392443,
-      "ospa_m": 1.3820070947466438
+      "gt_samples": 172140,
+      "detection_pd": 0.5487452073893343,
+      "track_pd": 0.7529336586499361,
+      "position_rmse_m": 1.2548942529191687,
+      "velocity_rmse_mps": 2.942829518686481,
+      "ospa_m": 1.4122271613876234
      }
     }
    }
