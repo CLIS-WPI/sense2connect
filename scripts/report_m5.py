@@ -181,7 +181,7 @@ def main() -> None:
             add(f"| {r['label']} | {a['offset_db']:.0f}/{a['hysteresis_db']:.0f}/{a['ttt_s'] * 1e3:.0f} | {b5['t1_db']:.0f}/{b5['t2_db']:.0f}/{b5['ttt_s'] * 1e3:.0f} | "
                 f"{r['best_reactive']} | {r['genie_planner_tuned_H']:.1f} s | {sh} s ({r['sensing_planner'][sh]['budget']}) |")
         add("")
-        add("### Value of foresight (best reactive vs cost-aware oracle, 0.1 s epochs, tau_HO 20 ms)")
+        add("### Value of foresight (best reactive vs cost-aware oracle, any-step switching, tau_HO 20 ms; changed after review A1)")
         add("")
         add("| Margin | Best reactive | Cost-aware | Difference [s/UE-min] | Share of best-reactive gap | bus/truck | pedestrian | car |")
         add("|---|---|---|---|---|---|---|---|")
@@ -189,7 +189,7 @@ def main() -> None:
             v = r["value_of_foresight"]
             bc = v["by_class_share_of_gap_pooled"]
             pc = lambda x: "—" if x is None else f"{100 * x:.0f} %"  # noqa: E731
-            add(f"| {r['label']} | {ci(r[r['best_reactive']]['eval']['outage_req_s_per_min'])} | {ci(v['costaware_epoch'])} | "
+            add(f"| {r['label']} | {ci(r[r['best_reactive']]['eval']['outage_req_s_per_min'])} | {ci(v['costaware'])} | "
                 f"{v['best_reactive_minus_costaware_s_per_ue_min']:.3f} | {pc(v['share_of_best_reactive_gap_pooled'])} | {pc(bc['bus/truck'])} | "
                 f"{pc(bc['pedestrian'])} | {pc(bc['car'])} |")
         add("")
@@ -214,7 +214,8 @@ def main() -> None:
                 row(f"sensing-planner, H = {h} s, budget {v['budget']}" + (" (tuned)" if float(h) == r["sensing_planner_tuned_H"] else ""), v["eval"])
             for h, v in r["diag_trueloss_planner"].items():
                 row(f"diagnostic: true-LoS-loss planner, H = {h} s", v["eval"])
-            add(f"| cost-aware oracle (0.1 s epochs) | {ci(dr['0.020']['costaware_epoch'])} | — | — |")
+            add(f"| cost-aware oracle (any step) | {ci(dr['0.020']['costaware_any'])} | — | — |")
+            add(f"| cost-aware oracle (0.1 s epochs; not a bound for the planners) | {ci(dr['0.020']['costaware_epoch'])} | — | — |")
             add(f"| instantaneous oracle | {ci(r['oracle_inst']['outage_req_s_per_min'])} | 0 | 0 |")
             add("")
         tl_rows = [(k, v) for k, v in cat.items() if k.startswith("x.trueloss_vs_a5.")]
@@ -232,12 +233,106 @@ def main() -> None:
                 + ("every one of these margins" if all(v["value"] == "yes" for _, v in tl_rows) else "some of these margins")
                 + " (unpaired comparison over jobs); 'beats A5' refers to the means.")
             add("")
+        pjf = R5 / "paired.json"
+        if pjf.exists():
+            pj = json.loads(pjf.read_text())
+            add("Paired comparison on the same 40 evaluation jobs (`scripts/run_m5_paired.py`; statistics only). d = scheme − A5 per job "
+                "[s/UE-min] (each job = mean over its UEs); mean with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero "
+                "differences dropped); negative = lower outage than A5. Not corrected for multiple comparisons.")
+            add("")
+            add("| Margin | H [s] | True-LoS-loss − A5: mean [95 % CI] | p | lower / higher jobs | Sensing − A5: mean [95 % CI] | p | lower / higher jobs |")
+            add("|---|---|---|---|---|---|---|---|")
+            for r in pj["margins"]:
+                t_, s_ = r["trueloss_vs_a5"], r["sensing_vs_a5"]
+                add(f"| {r['label']} | {r['H_s']:.1f} | {t_['mean_diff']:+.3f} [{t_['ci95'][0]:+.3f}, {t_['ci95'][1]:+.3f}] | {t_['wilcoxon_p_two_sided']:.2g} | "
+                    f"{t_['n_scheme_lower']} / {t_['n_scheme_higher']} | {s_['mean_diff']:+.3f} [{s_['ci95'][0]:+.3f}, {s_['ci95'][1]:+.3f}] | "
+                    f"{s_['wilcoxon_p_two_sided']:.2g} | {s_['n_scheme_lower']} / {s_['n_scheme_higher']} |")
+            add("")
+            sig = [r["label"] for r in pj["margins"] if r["trueloss_vs_a5"]["ci95"][1] < 0 and r["trueloss_vs_a5"]["wilcoxon_p_two_sided"] < 0.05]
+            add("Paired, the true-LoS-loss planner has significantly lower outage than A5 (CI below 0 and p < 0.05) at: "
+                + (", ".join(sig) if sig else "no margin") + ". The unpaired CIs above overlap because the job-to-job spread is large, "
+                "while the per-job differences are consistent. The sensing-planner is significantly worse than A5 wherever its CI excludes 0.")
+            add("")
         add("Reading (planner): the genie-planner reaches the cost-aware bound at every margin, and the horizon hardly matters (0.5 s "
             "suffices). The sensing-planner is worse than the best reactive scheme at every margin. The true-LoS-loss diagnostic separates "
             "the causes: with perfect blockage prediction the same planner model has a lower mean outage than the best reactive scheme at margins >= 15 dB even "
             "with the sensing overhead, and loses at 0-10 dB (overhead and the 'unblocked SNR minus LoS loss' approximation). The gap "
             "between the diagnostic and the sensing-planner is the blockage-prediction error of the current tracker/predictor (false "
             "and missed blockages, no measurement feedback in the plan as specified).")
+        add("")
+    a1f, a34f, ltf = R5 / "review_a1.json", R5 / "review_a34.json", R5 / "leadtime_final.json"
+    if a1f.exists():
+        add("## External review, block A (correctness) -- ADDED AFTER REVIEW")
+        add("")
+        a1 = json.loads(a1f.read_text())
+        add("### A1 Oracle accounting (`scripts/review_a1_oracle.py`)")
+        add("")
+        add("The simulator counts outage at the service rate as the UNION of handover interruption and rate below the service rate "
+            "(`outage = interrupted | rate < req`; an interrupted step counts once). The cost-aware Viterbi uses the same union objective "
+            "(state = cell and remaining interruption steps; an interrupted step costs 1 regardless of SNR). Per evaluation job and margin, "
+            "every scheme was compared with the cost-aware oracle (tau_HO 20 ms).")
+        add("")
+        add("| Margin | Any-step oracle | 0.1 s-epoch oracle | Instantaneous | Jobs below the any-step oracle (all schemes) | Jobs below the epoch oracle |")
+        add("|---|---|---|---|---|---|")
+        for r in a1["margins"]:
+            below_any = sum(len(c["jobs_below_anystep_oracle"]) for c in r["checks"].values())
+            below_ep = {n: c["jobs_below_epoch_oracle"] for n, c in r["checks"].items() if c["jobs_below_epoch_oracle"]}
+            add(f"| {r['label']} | {r['oracle_any_mean']:.3f} | {r['oracle_epoch_mean']:.3f} | {r['instantaneous_mean']:.3f} | {below_any} | "
+                + (", ".join(f"{n}: {k}" for n, k in below_ep.items()) or "0") + " |")
+        add("")
+        add("Result: no scheme beats the any-step cost-aware oracle on any job at any margin, and instantaneous <= any-step <= epoch holds "
+            "on every job. The 0.1 s-epoch oracle (switches at k mod 10 = 0) is NOT a bound for the planners, whose switches fall on the "
+            "E2-delay-offset grid (k mod 10 = 3); the genie-planner and the true-LoS-loss planner beat it on a few jobs. Fix: the any-step "
+            "oracle is now 'the cost-aware oracle' in fig_outage_margin, fig_value, the value-of-foresight shares and the macros "
+            "(\\numCostOracle*, \\numValue*, \\numPlanHorizon). The planner re-run changed only the value-of-foresight field; every "
+            "other field of planner.json is identical.")
+        add("")
+    if ltf.exists():
+        lt2 = json.loads(ltf.read_text())
+        add("### A2 Lead-time detector configuration")
+        add("")
+        add(f"fig_leadtime.pdf now uses the final detector configuration, the same as the Pd/FA/lead macros: {lt2['config']} (source "
+            "`results/M5/tracking.json`). The earlier no-ghost comparison stays available (`fig_leadtime.py --config noghost`) and "
+            "still reproduces results/M2/followup.md. \\numMapBus/\\numMapPed/\\numMapCross remain the no-ghost budget-4 detector, as "
+            "stated in the catalog.")
+        add("")
+        add("| Tracker | Class | Events | Confirmed track 0.5 s before onset | Wilson 95 % | lamppost | facade |")
+        add("|---|---|---|---|---|---|---|")
+        i5 = lt2["leads_s"].index(0.5)
+        for k, v in lt2["series"].items():
+            tr, cls = k.split("|")
+            add(f"| {tr} | {cls} | {v['n']} | {100 * v['share'][i5]:.1f} % | {100 * v['wilson95'][i5][0]:.1f}-{100 * v['wilson95'][i5][1]:.1f} % | "
+                + " | ".join(f"{b['hits'][i5]}/{b['n']}" for b in v["by_mount"].values()) + " |")
+        add("")
+    if a34f.exists():
+        a34 = json.loads(a34f.read_text())
+        add("### A3 Car share of the closable gap (fig_value)")
+        add("")
+        add("Net closed steps (A5 vs any-step oracle) by the dominant LoS blocker of A5's cell, as a share of the A5-to-oracle gap (pooled); "
+            "and the part of the car-attributed share that comes from LoS losses below 10 dB on A5's cell.")
+        add("")
+        add("| Margin | Car share of gap | Car share from < 10 dB loss |")
+        add("|---|---|---|")
+        for r in a34["a3_car_share"]:
+            cs = r["shares_of_gap"]["car"]
+            sub = r["car_sub10_share_of_car"]
+            add(f"| {r['label']} | {'—' if cs is None else f'{100 * cs:+.1f} %'} | {'—' if sub is None else f'{100 * sub:.0f} %'} |")
+        add("")
+        add("Cars never cause 10 dB events; all car-attributed closable gap comes from sub-10 dB LoS losses (A5 sits below the service rate "
+            "while the other cell is usable). Negative shares are net losses of the oracle path on car-attributed steps and are not drawn "
+            "in fig_value.")
+        add("")
+        add("### A4 Onset at 1 ms (analytic model B on the LoS segment, no re-trace)")
+        add("")
+        add("| Class | Events | Median 10-90 % onset at 1 ms | p10 / p90 at 1 ms | Median at 10 ms (same events) | Onsets below 10 ms at 1 ms |")
+        add("|---|---|---|---|---|---|")
+        for cls, v in a34["a4_onset"]["summary"].items():
+            add(f"| {cls} | {v['n_events']} | {1000 * v['median_1ms_s']:.1f} ms | {1000 * v['p10_p90_1ms_s'][0]:.1f} / {1000 * v['p10_p90_1ms_s'][1]:.1f} ms | "
+                f"{1000 * v['median_10ms_s']:.0f} ms | {100 * v['share_below_10ms_at_1ms']:.0f} % |")
+        add("")
+        add("The bus/truck onset is resolved at 10 ms (median 0.49 s at 1 ms vs 0.50 s). The pedestrian median equals the time step at both "
+            "resolutions (1 ms and 10 ms): with the model-B screen of a 0.5 m pedestrian the LoS loss is effectively a step; the onset is "
+            "below the 1 ms resolution, i.e. 'abrupt' is a property of the model, not a measured rise time.")
         add("")
     add("## paper/numbers.tex vs the defaults in main.tex")
     add("")

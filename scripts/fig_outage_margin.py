@@ -6,8 +6,9 @@ Schemes (evaluation seeds, mean and 95 % CI over 40 jobs, tau_HO = 20 ms):
 - sensing-planner: receding-horizon planner on predicted SNR, H tuned on
   the tuning seeds per margin (planner.json, sensing_planner);
 - genie-planner: same planner on true future SNR, H = 0.5 s;
-- cost-aware oracle: Viterbi with perfect SNR, switches at 0.1 s epochs,
-  tau_HO = 20 ms (results/M5/dporacle.json, costaware_epoch);
+- cost-aware oracle: Viterbi with perfect SNR, switches at any 10 ms step,
+  tau_HO = 20 ms (results/M5/dporacle.json, costaware_any; the strict lower
+  bound for every scheme, verified per job in scripts/review_a1_oracle.py);
 - instantaneous oracle (planner.json, oracle_inst).
 Log y axis; the 3GPP short-range reference margin is marked; the v1-radio
 point is not plotted.
@@ -39,7 +40,7 @@ def series() -> dict:
         "A5 (best reactive)": [r["a5"]["eval"]["outage_req_s_per_min"] for r in rows],
         "Sensing-planner": [r["sensing_planner"][f"{r['sensing_planner_tuned_H']:.1f}"]["eval"]["outage_req_s_per_min"] for r in rows],
         "Genie-planner (H = 0.5 s)": [r["genie_planner"]["0.5"]["eval"]["outage_req_s_per_min"] for r in rows],
-        "Cost-aware oracle": [dpm[r["label"]]["0.020"]["costaware_epoch"] for r in rows],
+        "Cost-aware oracle": [dpm[r["label"]]["0.020"]["costaware_any"] for r in rows],
         "Instantaneous oracle": [r["oracle_inst"]["outage_req_s_per_min"] for r in rows],
     }
     ref = next(r["margin_db"] for r in rows if r["label"] == "3GPP short-range reference")

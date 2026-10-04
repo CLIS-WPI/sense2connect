@@ -13,7 +13,9 @@ service rate incl. interruption, ties -> fewer HO/UE-min), evaluation on
      TTT {40,80,160,320,640} ms (100 points);
    - best reactive = the one with the lower tuning objective per margin.
 2. Value of foresight: best reactive vs the cost-aware oracle (Viterbi with
-   perfect SNR of both cells, switches only at 0.1 s epochs, tau_HO 20 ms),
+   perfect SNR of both cells, switches at any 10 ms step, tau_HO 20 ms; after
+   review A1 -- the 0.1 s-epoch variant is not a lower bound for planners
+   whose switches fall on the E2-delay-offset grid),
    absolute and as a share of the best-reactive-to-instantaneous-oracle gap
    (pooled), split by the dominant LoS blocker of the best reactive's cell.
 3. Receding-horizon planner: at every report r, from the current cell, a
@@ -219,6 +221,14 @@ def run_planner(jobs, table_fn, snr_m, built, rw, bw, rate_req, orates, overhead
     return rows
 
 
+def per_job_outage(rows: list[dict]) -> dict[str, float]:
+    """Per evaluation job: mean over its UEs of the outage at the service rate [s/UE-min] (for paired tests)."""
+    acc: dict[str, list[float]] = {}
+    for r in rows:
+        acc.setdefault("/".join(str(x) for x in r["job"]), []).append(float(r["outage_req_s_per_min"]))
+    return {k: float(np.mean(v)) for k, v in sorted(acc.items())}
+
+
 def main() -> None:
     import torch
 
@@ -275,14 +285,14 @@ def main() -> None:
             i = min(range(len(combos)), key=lambda c: (obj[c][0], obj[c][1], c))
             tuned[kind] = (combos[i], obj[i])
             rows_e = run_reactive(eval_jobs, [combos[i]], "a5" if kind == "a5" else "a3", snr_e, built, rw, bw, rate_req, or_e, snr_req)
-            res[kind] = {"params": combos[i], "tuning_objective": obj[i], "eval": R.aggregate(rows_e)}
+            res[kind] = {"params": combos[i], "tuning_objective": obj[i], "eval": R.aggregate(rows_e), "per_job": per_job_outage(rows_e)}
         best_kind = min(("a3_wide", "a5"), key=lambda k: (tuned[k][1][0], tuned[k][1][1]))
         res["best_reactive"] = best_kind
 
         # 2. value of foresight: best reactive vs cost-aware oracle (0.1 s epochs, tau_HO 20 ms)
         lanes, index, sim = sim_reactive_masks(eval_jobs, tuned[best_kind][0], "a5" if best_kind == "a5" else "a3", snr_e, built, rw, bw, rate_req, snr_req)
         bad = ~usable(lanes.snr_db, bw, rate_req)
-        ca, _ = viterbi(bad, tau, rs)
+        ca, _ = viterbi(bad, tau, 1)  # any-step cost-aware oracle (review A1: the 0.1 s-epoch variant is not a bound for planners on the E2-offset grid)
         inst = bad.all(-1)
         br = sim["outage_req"]
         n_t = bad.shape[1]
@@ -296,12 +306,13 @@ def main() -> None:
             for c in CLASSES:
                 by_cls[c] += int(net[cls == c].sum())
         gap = tot["br"] - tot["inst"]
-        ca_ref = dp["margins"][mi]["0.020"]["costaware_epoch"]
+        ca_ref = dp["margins"][mi]["0.020"]["costaware_any"]
         res["value_of_foresight"] = {
             "best_reactive_minus_costaware_s_per_ue_min": res[best_kind]["eval"]["outage_req_s_per_min"]["mean"] - ca_ref["mean"],
             "share_of_best_reactive_gap_pooled": (tot["br"] - tot["ca"]) / gap if gap > 0 else None,
             "by_class_share_of_gap_pooled": {c: (v / gap if gap > 0 else None) for c, v in by_cls.items()},
-            "costaware_epoch": ca_ref,
+            "costaware": ca_ref,
+            "costaware_variant": "any-step (switches at any 10 ms step), tau_HO 20 ms",
             "costaware_recomputed_check": abs(tot["ca"] * R.DT_COMM / (n_t * R.DT_COMM / 60.0) / len(index) - ca_ref["mean"]) < 1e-9 or None,
         }
 
@@ -373,7 +384,7 @@ def main() -> None:
         res["diag_trueloss_planner"] = {}
         for h_s in HORIZONS:
             rows_e = run_planner(eval_jobs, trueloss_tables(eval_jobs, h_s), snr_e, built, rw, bw, rate_req, or_e, ovh)
-            res["diag_trueloss_planner"][f"{h_s:.1f}"] = {"eval": R.aggregate(rows_e)}
+            res["diag_trueloss_planner"][f"{h_s:.1f}"] = {"eval": R.aggregate(rows_e), "per_job": per_job_outage(rows_e)}
         res["genie_planner"] = {}
         res["sensing_planner"] = {}
         gp_obj, sp_obj = {}, {}
@@ -381,7 +392,7 @@ def main() -> None:
             rows_t = run_planner(tune_jobs, genie_tables(tune_jobs, snr_t, h_s), snr_t, built, rw, bw, rate_req, or_t, 0.0)
             gp_obj[h_s] = R.objective(rows_t, 1)[0]
             rows_e = run_planner(eval_jobs, genie_tables(eval_jobs, snr_e, h_s), snr_e, built, rw, bw, rate_req, or_e, 0.0)
-            res["genie_planner"][f"{h_s:.1f}"] = {"tuning_objective": gp_obj[h_s], "eval": R.aggregate(rows_e)}
+            res["genie_planner"][f"{h_s:.1f}"] = {"tuning_objective": gp_obj[h_s], "eval": R.aggregate(rows_e), "per_job": per_job_outage(rows_e)}
             best_b, best_o = None, None
             for budget in BUDGETS:
                 rows_t = run_planner(tune_jobs, sensing_tables(tune_jobs, h_s, budget), snr_t, built, rw, bw, rate_req, or_t, ovh)
@@ -390,7 +401,7 @@ def main() -> None:
                     best_b, best_o = budget, o
             rows_e = run_planner(eval_jobs, sensing_tables(eval_jobs, h_s, best_b), snr_e, built, rw, bw, rate_req, or_e, ovh)
             sp_obj[h_s] = best_o
-            res["sensing_planner"][f"{h_s:.1f}"] = {"budget": best_b, "tuning_objective": best_o, "eval": R.aggregate(rows_e)}
+            res["sensing_planner"][f"{h_s:.1f}"] = {"budget": best_b, "tuning_objective": best_o, "eval": R.aggregate(rows_e), "per_job": per_job_outage(rows_e)}
         res["genie_planner_tuned_H"] = min(HORIZONS, key=lambda h: (gp_obj[h][0], gp_obj[h][1], h))
         res["sensing_planner_tuned_H"] = min(HORIZONS, key=lambda h: (sp_obj[h][0], sp_obj[h][1], h))
         res["wall_s"] = time.perf_counter() - t0
@@ -399,7 +410,7 @@ def main() -> None:
         s_ = res["sensing_planner"][f"{res['sensing_planner_tuned_H']:.1f}"]["eval"]["outage_req_s_per_min"]["mean"]
         print(f"{lab}: A3w {res['a3_wide']['eval']['outage_req_s_per_min']['mean']:.3f} A5 {res['a5']['eval']['outage_req_s_per_min']['mean']:.3f} "
               f"best {best_kind} | genie-planner(H={res['genie_planner_tuned_H']}) {g:.3f} | sensing-planner(H={res['sensing_planner_tuned_H']}) {s_:.3f} | "
-              f"cost-aware {res['value_of_foresight']['costaware_epoch']['mean']:.3f} inst {res['oracle_inst']['outage_req_s_per_min']['mean']:.3f} | "
+              f"cost-aware {res['value_of_foresight']['costaware']['mean']:.3f} inst {res['oracle_inst']['outage_req_s_per_min']['mean']:.3f} | "
               f"foresight share {res['value_of_foresight']['share_of_best_reactive_gap_pooled']} | {res['wall_s']:.0f} s", flush=True)
     out["wall_s"] = time.perf_counter() - clock
     dest = ROOT / "results" / "M5" / args.out

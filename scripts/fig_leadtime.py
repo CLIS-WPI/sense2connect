@@ -1,5 +1,11 @@
 """Lead time per class: map-constrained vs unconstrained tracker (paper/figs/fig_leadtime.pdf).
 
+DEFAULT (after review A2): the FINAL detector configuration used for the
+paper's Pd/FA/lead macros -- budget 4 FA/CPI, blind clutter, image-method
+ghost handling -- for both trackers, from results/M5/tracking.json
+(scripts/run_m5_tracking.py). ``--config noghost`` (below) recomputes the
+earlier no-ghost comparison and checks it against results/M2/followup.md.
+
 Recomputed from the M2 detection caches (``detections_1024.json``), which are
 validated with the stage-scoped provenance in ``sim/sensing/provenance.py``
 (sensing sources + sensing config; legacy caches against the M2 commit).
@@ -190,8 +196,27 @@ def main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--workers", type=int, default=4)
-    parser.add_argument("--plot-only", action="store_true", help="re-plot from results/M5/leadtime.json")
+    parser.add_argument("--plot-only", action="store_true", help="re-plot from results/M5/leadtime.json (no-ghost config)")
+    parser.add_argument("--config", choices=("final", "noghost"), default="final")
     args = parser.parse_args()
+    if args.config == "final":
+        trk = json.loads((ROOT / "results" / "M5" / "tracking.json").read_text())
+        table: dict[str, Any] = {}
+        for tracker in ("unconstrained", "map"):
+            leads = trk["variants"][f"image|{tracker}"]["leads"]
+            for mount, per_cls in leads.items():
+                for cls, row in per_cls.items():
+                    e = table.setdefault(tracker, {}).setdefault(cls, {"n": 0, "hits": [0] * len(LEADS), "by_mount": {}})
+                    hits = [row["hits"][str(L)] for L in LEADS]
+                    e["n"] += row["n"]
+                    e["hits"] = [a + b for a, b in zip(e["hits"], hits)]
+                    e["by_mount"][mount] = {"n": row["n"], "hits": hits}
+        series = plot(table)
+        dest = ROOT / "results" / "M5" / "leadtime_final.json"
+        dest.write_text(json.dumps({"config": "final: budget 4 FA/CPI, blind clutter, image-method ghost handling; trackers: unconstrained EKF and map-constrained (MAP_TUNED)",
+                                    "source": "results/M5/tracking.json", "leads_s": LEADS, "series": series}, indent=1) + "\n")
+        print(f"wrote {dest}")
+        return
     dest = ROOT / "results" / "M5" / "leadtime.json"
     if args.plot_only:
         data = json.loads(dest.read_text())

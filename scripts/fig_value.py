@@ -3,7 +3,7 @@
 For each margin the best-reactive-to-instantaneous-oracle gap (best reactive
 = A5 at every margin, results/M5/planner.json) is normalised to 1 and split
 into the part closed by perfect foresight -- the cost-aware oracle
-(results/M5/dporacle.json: 0.1 s epochs, tau_HO = 20 ms) -- stacked by the
+(any-step, tau_HO = 20 ms; results/M5/planner.json value_of_foresight) -- stacked by the
 class of the dominant LoS blocker of A5's cell (pedestrian, bus/truck, car;
 net steps, pooled over evaluation jobs), and the part that is not closable.
 A net-negative car share (at most a few percent) is not drawn; the

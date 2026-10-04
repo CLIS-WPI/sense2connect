@@ -56,8 +56,8 @@ MACRO_NAME = re.compile(r"\\(num[A-Za-z]+)")
 def run_scripts(leadtime_recompute: bool) -> None:
     for name in FIGURE_SCRIPTS:
         cmd = [sys.executable, str(ROOT / "scripts" / name)]
-        if name == "fig_leadtime.py" and not leadtime_recompute and (RESULTS / "M5" / "leadtime.json").exists():
-            cmd.append("--plot-only")
+        if name == "fig_leadtime.py" and leadtime_recompute:
+            subprocess.run([sys.executable, str(ROOT / "scripts" / name), "--config", "noghost"], cwd=ROOT, check=True)
         print("$", " ".join(cmd[1:]), flush=True)
         subprocess.run(cmd, cwd=ROOT, check=True)
 
@@ -232,6 +232,7 @@ def catalog() -> dict[str, dict[str, Any]]:
                         put(f"x.{v}.{tag}.{ttag}.gap_closed", _pct(blk[f"{v}_gap_closed_pooled"]), script=sd, config=M3_CFG + f"; margin {r['label']}; tau_HO {float(t) * 1e3:.0f} ms",
                             aggregation="POOLED: (A3 - cost-aware) / (A3 - instantaneous oracle) outage steps", raw=blk[f"{v}_gap_closed_pooled"])
     _planner_macros(put, R5, M3_CFG, EVAL)
+    _paired_extras(put, R5, M3_CFG)
     rref = next(r for r in gen["margins"] if r["label"] == "3GPP short-range reference")
     put("numTauZeroRef", _pct(closed(rref)), script=gn[0], config=tcfg + "; 3GPP reference margin", aggregation="1 - gap(0)/gap(20 ms), from means over jobs", raw=closed(rref))
     return out
@@ -256,8 +257,8 @@ def _planner_macros(put, R5: Path, M3_CFG: str, EVAL: str) -> None:
         a5 = r["a5"]
         put(f"numAfive{tag}", f"{a5['eval']['outage_req_s_per_min']['mean']:.2f}", script=sp, config=cfg + f"; margin {lab}; A5 tuned on tuning seeds (t1/t2/TTT = {a5['params']})",
             aggregation=mean_agg, raw=a5["eval"]["outage_req_s_per_min"]["mean"])
-        ca = dpr[lab]["0.020"]["costaware_epoch"]
-        put(f"numCostOracle{tag}", f"{ca['mean']:.2f}", script=sd, config=cfg + f"; margin {lab}; cost-aware oracle, switches at 0.1 s epochs, tau_HO 20 ms",
+        ca = dpr[lab]["0.020"]["costaware_any"]
+        put(f"numCostOracle{tag}", f"{ca['mean']:.2f}", script=sd, config=cfg + f"; margin {lab}; cost-aware oracle, switches at any 10 ms step (strict lower bound, review A1), tau_HO 20 ms",
             aggregation=mean_agg, raw=ca["mean"])
         g = r["genie_planner"]["0.5"]["eval"]["outage_req_s_per_min"]["mean"]
         put(f"numGeniePlan{tag}", f"{g:.2f}", script=sp, config=cfg + f"; margin {lab}; genie-planner, H = 0.5 s, true future SNR, no overhead",
@@ -296,7 +297,7 @@ def _planner_macros(put, R5: Path, M3_CFG: str, EVAL: str) -> None:
     ped = [r["value_of_foresight"]["by_class_share_of_gap_pooled"]["pedestrian"] for r in sel]
     bus = [r["value_of_foresight"]["by_class_share_of_gap_pooled"]["bus/truck"] for r in sel]
     vagg = "POOLED over evaluation jobs: (best reactive - cost-aware) / (best reactive - instantaneous oracle) outage steps"
-    vcfg = cfg + "; best reactive = A5 (all margins); cost-aware oracle at 0.1 s epochs, tau_HO 20 ms"
+    vcfg = cfg + "; best reactive = A5 (all margins); cost-aware oracle with switches at any 10 ms step (review A1), tau_HO 20 ms"
     put("numValueRange", _rng(val, "{:.0f}", pct=True), script=sp, config=vcfg + "; margins 5-30 dB and the 3GPP reference", aggregation=vagg + "; min-max over margins",
         raw={r["label"]: v for r, v in zip(sel, val)})
     cagg = "net closed steps by the dominant LoS blocker class of A5's cell, as a share of the best-reactive-to-oracle gap (pooled); min-max over margins"
@@ -311,12 +312,12 @@ def _planner_macros(put, R5: Path, M3_CFG: str, EVAL: str) -> None:
         aggregation="net closed steps (bus/truck) / best-reactive-to-oracle gap, pooled", raw=r10["value_of_foresight"]["by_class_share_of_gap_pooled"]["bus/truck"])
     rel = {}
     for hs in ("0.5", "1.0", "2.0", "3.0"):
-        rel[hs] = {lab: (r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - dpr[lab]["0.020"]["costaware_epoch"]["mean"]) / dpr[lab]["0.020"]["costaware_epoch"]["mean"]
+        rel[hs] = {lab: (r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - dpr[lab]["0.020"]["costaware_any"]["mean"]) / dpr[lab]["0.020"]["costaware_any"]["mean"]
                    for lab, r in rows.items()}
-    absx = {hs: {lab: r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - dpr[lab]["0.020"]["costaware_epoch"]["mean"] for lab, r in rows.items()}
+    absx = {hs: {lab: r["genie_planner"][hs]["eval"]["outage_req_s_per_min"]["mean"] - dpr[lab]["0.020"]["costaware_any"]["mean"] for lab, r in rows.items()}
             for hs in ("0.5", "1.0", "2.0", "3.0")}
     ok = [hs for hs in ("0.5", "1.0", "2.0", "3.0") if all(rel[hs][lab] <= 0.02 or absx[hs][lab] <= 0.01 for lab in rows)]
-    put("numPlanHorizon", ok[0] if ok else "--", script=sp, config=cfg + "; genie-planner vs cost-aware oracle (0.1 s epochs, tau_HO 20 ms), all margins incl. the v1-radio point",
+    put("numPlanHorizon", ok[0] if ok else "--", script=sp, config=cfg + "; genie-planner vs cost-aware oracle (any-step, tau_HO 20 ms; review A1), all margins incl. the v1-radio point",
         aggregation="RULE: smallest H [s] such that at every margin the genie-planner's mean outage exceeds the cost-aware oracle's by at most 2 % (relative) OR at most 0.01 s/UE-min (absolute)",
         raw={"relative_excess": rel, "absolute_excess_s_per_ue_min": absx},
         note=("" if ok else "no H meets the rule at every margin"))
@@ -341,6 +342,23 @@ def _planner_macros(put, R5: Path, M3_CFG: str, EVAL: str) -> None:
         aggregation="mean over evaluation jobs of the per-job ping-pong rate", raw=sv10["ping_pong"]["mean"], note="margin not specified in the request; 10 dB used")
     put("numAfiveHO", f"{r10['a5']['eval']['ho_per_min']['mean']:.1f}", script=sp, config=cfg + "; margin 10 dB; A5 (tuned)",
         aggregation="mean over evaluation jobs of handovers per UE-minute", raw=r10["a5"]["eval"]["ho_per_min"]["mean"], note="margin not specified in the request; 10 dB used")
+
+
+def _paired_extras(put, R5: Path, M3_CFG: str) -> None:
+    """Catalog extras: paired per-job comparisons vs A5 (statistics only)."""
+    pf = R5 / "paired.json"
+    if not pf.exists():
+        return
+    pj = json.loads(pf.read_text())
+    sp = "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)"
+    for r in pj["margins"]:
+        tag = {"3GPP short-range reference": "ref", "v1 radio (high margin)": "v1"}.get(r["label"], r["label"].replace(" dB", "db"))
+        for key, name in (("trueloss_vs_a5", "true-LoS-loss planner"), ("sensing_vs_a5", "sensing-planner")):
+            v = r[key]
+            put(f"x.paired.{tag}.{key}", f"{v['mean_diff']:+.3f} [{v['ci95'][0]:+.3f}, {v['ci95'][1]:+.3f}], p = {v['wilcoxon_p_two_sided']:.2g}", script=sp,
+                config=M3_CFG + f"; margin {r['label']}; {name} (H = {r['H_s']:.1f} s, the sensing-planner's tuned H) minus A5, same 40 evaluation jobs",
+                aggregation="paired: mean over jobs of the per-job outage difference [s/UE-min] with t-based 95 % CI (39 dof); two-sided Wilcoxon signed-rank p (zero differences dropped); not corrected for multiple comparisons",
+                raw=v)
 
 
 def macros_in_main() -> list[tuple[str, str]]:
