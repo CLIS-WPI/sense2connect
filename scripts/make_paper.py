@@ -33,6 +33,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "paper"
 RESULTS = ROOT / "results"
@@ -48,6 +50,9 @@ EXTRA_MACROS = [
     *[f"numErr{k}{t}" for k in ("Perf", "Miss", "False", "Noise", "Size", "All", "AllUE", "Real") for t in ("Ten", "Ref")],
     "numBEPosRange", "numBEPosRef", "numBEUERange", "numBEUERef", "numBEVelMin", "numUAPlanTen", "numUAPlanRef", "numUAPlanIntervene",
     "numCalPedAcq", "numCalPedOut", "numCalPosErr",
+    "numBEPosSigRange", "numBEUESigRange", "numUAK", "numUAAlpha", "numUATheta", "numUAKTen", "numUAKRef", "numUAAlphaTen", "numUAAlphaRef",
+    "numUAThetaTen", "numUAThetaRef", "numAfiveOHTen", "numAfiveOHRef", "numUAvsOHTen", "numUAvsOHRef", "numGeniePlanShareRange",
+    "numGeniePlanShareTen", "numMissPerFrameTen",
     "numRobustTen", "numRobustRef", "numDensLowTen", "numDensHighTen", "numRelRedRefLow", "numRelRedRefHigh", "numValueRange", "numValuePedRange",
     "numValueBusRange", "numValuePedTen", "numValueBusTen", "numPlanHorizon", "numSensePlanHO", "numSensePlanPP", "numAfiveHO",
 ]
@@ -251,6 +256,7 @@ def catalog(results: Path = RESULTS) -> dict[str, dict[str, Any]]:
     _paired_extras(put, R5, M3_CFG, out.get("numTrueLossFrom", {}).get("value"))
     _review_bc_macros(put, R5, M3_CFG)
     _review2_macros(put, R5, M3_CFG)
+    _review3_macros(put, R5, M3_CFG, out.get("numTrueLossFrom", {}).get("value"))
     rref = next(r for r in gen["margins"] if r["label"] == "3GPP short-range reference")
     put("numTauZeroRef", _pct(closed(rref)), script=gn[0], config=tcfg + "; 3GPP reference margin", aggregation="1 - gap(0)/gap(20 ms), from means over jobs", raw=closed(rref))
     return out
@@ -542,6 +548,125 @@ def _review2_macros(put, R5: Path, M3_CFG: str) -> None:
             put("numUAPlanIntervene", f"{100 * mx:.1f}\\%", script=su, config=cfg + "; uncertainty-aware planner; margins 10-30 dB and the 3GPP reference",
                 aggregation="share of decision epochs (UE lane x 0.1 s report) at which the advance or veto condition holds for the serving cell; MAXIMUM over those margins",
                 raw=shares)
+
+
+def _review3_macros(put, R5: Path, M3_CFG: str, true_loss_from: str | None) -> None:
+    """Third external review: seed-level statistics (unit = seed, n = 10), dense break-even points, A5 + overhead baseline.
+
+    Overrides the run-level significance of numPairedMaxP and the Table II daggers; the run-level values stay in each entry's raw.
+    """
+    slf = R5 / "review3" / "seedlevel.json"
+    if not slf.exists():
+        return
+    sl = json.loads(slf.read_text())
+    comp, be = sl["comparisons"], sl["break_even"]
+    ss = "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json"
+    cfg = M3_CFG + "; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level"
+    sagg = ("seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon "
+            "signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']")
+    dagger = "$^\\dagger$"
+    tags = (("Ten", "10 dB", 2), ("Ref", "3GPP short-range reference", 3))
+
+    def val(c: dict, nd: int, dag: bool = True) -> str:
+        v = c["seed"]
+        return f"{v['mean_diff']:+.{nd}f}" + (dagger if dag and not v["wilcoxon_p_two_sided"] < 0.05 else "")
+
+    # Table II with seed-level daggers
+    cols = {"Perf": "perfect | ue 0.0", "Miss": "R table miss", "False": "R table false", "Noise": "R table noise", "Size": "R table size",
+            "All": "R table all", "AllUE": "R table all + ue 1"}
+    for key, cname in cols.items():
+        for tag, lab, nd in tags:
+            c = comp[f"sweep: {cname} - A5"][lab]
+            put(f"numErr{key}{tag}", val(c, nd), script=ss + " (per-job outages: scripts/review2_sweeps.py)",
+                config=cfg + f"; Table II realistic error model, condition '{cname}', margin {lab}", aggregation=sagg, raw=c)
+    for tag, lab, nd in tags:
+        c = comp["sensing-planner - A5"][lab]
+        put(f"numErrReal{tag}", val(c, nd), script=ss + " (per-job outages: results/M5/planner.json)",
+            config=cfg + f"; real sensing-planner (own tuned H and budget) minus A5, margin {lab}", aggregation=sagg, raw=c)
+    # true-LoS-loss planner: max seed-level p over the margins of the claim
+    if true_loss_from not in (None, "--"):
+        lo = float(true_loss_from)
+        tl = comp["true-LoS-loss planner - A5"]
+        sel = [lab for lab in tl if (lab.endswith(" dB") and lo <= float(lab.split()[0]) <= 30.0) or lab == "3GPP short-range reference"]
+        ps = {lab: tl[lab]["seed"]["wilcoxon_p_two_sided"] for lab in sel}
+        pmax = max(ps.values())
+        e = math.floor(math.log10(pmax))
+        shown = math.ceil(pmax * 10 ** (1 - e)) / 10 ** (1 - e)
+        bonf = pmax * len(ps)
+        put("numPairedMaxP", f"{shown:.2g}", script=ss, config=cfg + f"; true-LoS-loss planner minus A5; margins {lo:.0f}-30 dB plus the 3GPP reference ({len(ps)} margins)",
+            aggregation="max over those margins of the exact two-sided Wilcoxon p on the 10 seed differences; rounded UP to 2 significant digits",
+            raw={"seed_p": ps, "p_max": pmax, "n_margins": len(ps), "bonferroni_p_max_times_n": bonf, "means": {lab: tl[lab]["seed"]["mean_diff"] for lab in sel},
+                 "seeds_lower": {lab: tl[lab]["seed"]["n_seeds_lower"] for lab in sel}, "run_level_p": {lab: tl[lab]["run"]["wilcoxon_p_two_sided"] for lab in sel}},
+            note=f"Bonferroni: p_max x {len(ps)} = {bonf:.3g} " + ("< 0.05 (holds)" if bonf < 0.05 else ">= 0.05 (does NOT hold)"))
+    # break-even on the dense grids
+    mid = ["15 dB", "20 dB", "25 dB", "30 dB"]
+
+    def fmt(x) -> str:
+        return "$>$1" if x == "inf" else f"{float(x):.2f}"
+
+    def rng_text(vals: list, exact: bool = False) -> str:
+        got = [v for v in vals if v is not None]
+        if not got:
+            return "--"
+        keyf = lambda v: math.inf if v == "inf" else float(v)  # noqa: E731
+        f = (lambda v: f"{float(v):g}") if exact else fmt  # evaluated sigmas are shown exactly
+        a, b = f(min(got, key=keyf)), f(max(got, key=keyf))
+        return a if a == b else f"{a}--{b}"
+
+    bagg = ("mean break-even: sigma at which the seed-level mean paired difference planner - A5 first reaches 0, linear interpolation between the "
+            "evaluated sigmas (dense grid, scripts/review3_eval.py, plus scripts/review2_sweeps.py); margins where perfect tracks are not below A5 are left out")
+    sagg2 = ("significant-advantage limit: largest evaluated sigma at which the planner is still significantly better than A5 at seed level "
+             "(mean < 0 and exact Wilcoxon p < 0.05 on 10 seeds; sigma = 0 = perfect tracks); min-max over the margins that have one, margins without one "
+             "are listed in raw; '--' if none")
+    for name, key, labs, kind in (("numBEPosRange", "blocker position (realistic), UE exact", mid, "mean"), ("numBEPosRef", "blocker position (realistic), UE exact", ["3GPP short-range reference"], "mean"),
+                                  ("numBEUERange", "UE position (perfect tracks)", mid, "mean"), ("numBEUERef", "UE position (perfect tracks)", ["3GPP short-range reference"], "mean"),
+                                  ("numBEPosSigRange", "blocker position (realistic), UE exact", mid, "sig"), ("numBEUESigRange", "UE position (perfect tracks)", mid, "sig")):
+        m = be[key]["margins"]
+        field = "mean_break_even" if kind == "mean" else "significant_advantage_limit"
+        vals = [m[lab][field] for lab in labs]
+        put(name, rng_text(vals, exact=(kind == "sig")), script=ss, config=cfg + f"; {key}; sigma = standard deviation per horizontal axis (realistic blocker model: along-line axis); "
+            f"{'min-max over 15-30 dB' if len(labs) > 1 else '3GPP reference'}", aggregation=(bagg if kind == "mean" else sagg2) + " [m]",
+            raw={"sigmas": be[key]["sigmas"], **{lab: m[lab] for lab in labs}})
+    # uncertainty-aware planner: tuned values, A5 + overhead
+    uaf = R5 / "review2" / "uaplanner.json"
+    if uaf.exists():
+        ua = {x["label"]: x for x in json.loads(uaf.read_text())["margins"]}
+        su = "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json"
+        for macro, field, f in (("numUAK", "K", "{:d}"), ("numUAAlpha", "alpha", "{:g}"), ("numUATheta", "theta_s", "{:g}")):
+            a, b = ua["10 dB"]["tuned"][field], ua["3GPP short-range reference"]["tuned"][field]
+            fa, fb = f.format(int(a) if field == "K" else a), f.format(int(b) if field == "K" else b)
+            tun = {lab: ua[lab]["tuned"][field] for lab in ua}
+            put(macro + "Ten", fa, script=su, config=cfg + f"; uncertainty-aware planner tuned on tuning seeds 101-105; {field} at 10 dB", aggregation="tuned value", raw=tun)
+            put(macro + "Ref", fb, script=su, config=cfg + f"; uncertainty-aware planner tuned on tuning seeds 101-105; {field} at the 3GPP reference", aggregation="tuned value", raw=tun)
+            put(macro, fa if fa == fb else f"{fa}/{fb}", script=su, config=cfg + f"; uncertainty-aware planner; {field} tuned per margin",
+                aggregation="tuned value at 10 dB and at the 3GPP reference ('a/b' = 10 dB / reference if they differ)", raw=tun)
+        for tag, lab, nd in tags:
+            put(f"numUAPlan{tag}", val(comp["uncertainty-aware planner - A5"][lab], nd), script=ss, config=cfg + f"; uncertainty-aware planner minus A5, margin {lab}",
+                aggregation=sagg, raw=comp["uncertainty-aware planner - A5"][lab])
+            put(f"numAfiveOH{tag}", val(comp["A5 + sensing overhead - A5"][lab], nd), script=ss + " (per-job outages: scripts/review3_eval.py)",
+                config=cfg + f"; A5 + sensing overhead (A5 decisions, overhead charged, no planner) minus A5, margin {lab}", aggregation=sagg,
+                raw=comp["A5 + sensing overhead - A5"][lab])
+            c = comp["uncertainty-aware planner - (A5 + sensing overhead)"][lab]
+            put(f"numUAvsOH{tag}", val(c, nd), script=ss, config=cfg + f"; uncertainty-aware planner minus (A5 + sensing overhead), margin {lab}", aggregation=sagg, raw=c)
+    # genie-planner share of the A5 -> instantaneous-oracle gap
+    pl = {x["label"]: x for x in json.loads((R5 / "planner.json").read_text())["margins"]}
+    go = {x["label"]: x for x in json.loads((R5 / "grid_oracle.json").read_text())["margins"]}
+    share = {}
+    for lab in pl:
+        a5 = pl[lab]["a5"]["eval"]["outage_req_s_per_min"]["mean"]
+        gp = float(np.mean(list(pl[lab]["genie_planner"]["0.5"]["per_job"].values())))
+        inst = float(np.mean(list(go[lab]["inst"]["per_job"].values())))
+        share[lab] = {"a5": a5, "genie_planner": gp, "inst_oracle": inst, "share": (a5 - gp) / (a5 - inst) if a5 > inst else None}
+    sel = [lab for lab in share if lab not in ("0 dB", "v1 radio (high margin)")]
+    gagg = "share of the A5-to-instantaneous-oracle gap closed by the genie-planner (H = 0.5 s): (A5 - genie-planner) / (A5 - instantaneous oracle), means over the 40 runs"
+    put("numGeniePlanShareRange", _rng([share[lab]["share"] for lab in sel], "{:.0f}", pct=True), script="results/M5/planner.json, results/M5/grid_oracle.json",
+        config=cfg + "; margins 5-30 dB and the 3GPP reference", aggregation=gagg + "; min-max over margins", raw={lab: share[lab] for lab in sel})
+    put("numGeniePlanShareTen", _pct(share["10 dB"]["share"]), script="results/M5/planner.json, results/M5/grid_oracle.json", config=cfg + "; margin 10 dB",
+        aggregation=gagg, raw=share["10 dB"])
+    c = comp["sweep: M table miss - A5"]["10 dB"]
+    put("numMissPerFrameTen", val(c, 2), script=ss + " (per-job outages: scripts/review2_sweeps.py, condition 'M table miss')",
+        config=cfg + "; MEMORYLESS model (first-review B5 injection, scripts/review_b5_ablation.inject): each blocker dropped independently per report with "
+        "probability 1 - track Pd (per class, measured); perfect-track planner, H fixed; margin 10 dB", aggregation=sagg, raw=c)
 
 
 def macros_in_main() -> list[tuple[str, str]]:
