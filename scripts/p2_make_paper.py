@@ -19,7 +19,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[1]
+for _p in (ROOT, ROOT / "scripts"):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 P2 = ROOT / "results" / "P2"
 PAPER2 = ROOT / "paper2"
 MACRO = re.compile(r"\\(p[A-Z][A-Za-z]*)")
@@ -116,6 +121,42 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
             put(f"pClose{K}{M}", f"{v['mean_diff']:+.3f}" + ("$^\\dagger$" if not v["wilcoxon_p_two_sided"] < 0.05 else ""),
                 script="scripts/p2_closing.py -> results/P2/closing_%s.json" % tag, config=f"paper-1 planner (v1.4.1, perfect blocker tracks, H fixed) with UE position '{cname}'; margin {lab}",
                 aggregation="planner - A5 outage [s/UE-min], mean over seeds of per-seed means; dagger = exact Wilcoxon p >= 0.05 (pointwise, exploratory)", raw=v)
+    # --- added after the freeze (numbers only, no analysis change): configuration constants and further result macros
+    from sim.scenes.config import load_yaml
+
+    p2cfg = load_yaml(ROOT / "configs" / "p2.yaml")
+    m2 = load_yaml(ROOT / "configs" / "m2_scenario.yaml")
+    sc = "configs/p2.yaml, configs/m2_scenario.yaml"
+    const = {
+        "pCarrier": f"{float(m2['carrier_hz']) / 1e9:g}", "pTxPower": f"{float(p2cfg['link']['ue_tx_power_dbm']):g}", "pNoiseFig": f"{float(p2cfg['link']['oru_noise_figure_db']):g}",
+        "pScs": f"{15 * 2 ** int(p2cfg['numerology']):g}", "pNumerology": str(int(p2cfg["numerology"])),
+        "pBwA": "100", "pBwB": "200", "pBwC": "400",
+        "pNscA": str(p2cfg["bandwidths"]["100"]["n_sc"]), "pNscB": str(p2cfg["bandwidths"]["200"]["n_sc"]), "pNscC": str(p2cfg["bandwidths"]["400"]["n_sc"]),
+        "pArray": "\\ensuremath{" + f"{m2['array']['oru']['num_rows']}\\times{m2['array']['oru']['num_cols']}" + "}", "pNumEl": str(int(m2["array"]["oru"]["num_rows"]) * int(m2["array"]["oru"]["num_cols"])),
+        "pEpoch": "0.1", "pBlockedDb": f"{float(p2cfg['blockage']['blocked_los_db']):g}", "pDecThr": f"{100 * float(p2cfg['thresholds_m']['decimeter']):g}",
+        "pBreakEven": f"{100 * p2cfg['thresholds_m']['paper1_break_even'][0]:g}--{100 * p2cfg['thresholds_m']['paper1_break_even'][1]:g}",
+        "pSyncList": "0, 0.3, 1 and 3", "pPhiList": "0, 2 and 5", "pSyncMain": "1", "pPhiMain": "2", "pBootN": "10{,}000",
+        "pSeedsTune": "101--105", "pSeedsDev": "1001--1010", "pSeedsHeld": "2001--2010", "pFdStep": "1", "pClockBias": "50", "pMaxDepth": "2", "pMaxPaths": "8",
+        "pSensRange": f"{float(m2['sensing_radar']['sensing_range_m']):g}", "pRatioThr": "5", "pRatioPtwo": "2", "pUeHeight": "1.5", "pLitLow": "0.6", "pLitHigh": "0.8",
+        "pSyncWorst": "3", "pPhiWorst": "5", "pMarginFifteen": "15", "pMarginTwenty": "20", "pBinM": "5", "pCi": "95",
+        "pGridSize": str(int(np.prod([len(v) for v in __import__("p2_estimate").GRID.values()]))),
+    }
+    for k, v in const.items():
+        put(k, v, script="scripts/p2_make_paper.py", config=sc, aggregation="configuration constant (added after the freeze; no analysis change)")
+    for name, K in (("bw400_tdoa_s1_p2_b", "FourHundred"), ("bw100_tdoa_s1_p2_b", "Hundred"), ("bw400_tdoa_s0_p0_b", "IdealHw")):
+        if name in c:
+            put(f"pEstRmse{K}", f"{c[name]['rmse_m']:.1f}", script=se, config=name, aggregation="RMSE [m] (errors capped at 100 m); " + seedagg)
+    for cname, K in (("estimator bw400_tdoa_s1_p2_b", "Est"), ("PEB los-only", "PebLos"), ("PEB map-aided", "PebMap"), ("perfect", "Perf"), ("white 1 m", "White"),
+                     ("estimator bw400_tdoa_s0_p0_b", "EstIdeal")):
+        if cname not in cl:
+            continue
+        for lab, M in (("15 dB", "Fifteen"), ("20 dB", "Twenty"), ("25 dB", "TwentyFive"), ("30 dB", "Thirty"), ("3GPP short-range reference", "Ref")):
+            v = cl[cname][lab]
+            put(f"pClose{K}{M}", f"{v['mean_diff']:+.3f}" + ("$^\\dagger$" if not v["wilcoxon_p_two_sided"] < 0.05 else ""),
+                script="scripts/p2_closing.py -> results/P2/closing_%s.json" % tag, config=f"paper-1 planner with UE position '{cname}'; margin {lab}",
+                aggregation="planner - A5 outage [s/UE-min], mean over seeds of per-seed means; dagger = exact Wilcoxon p >= 0.05 (pointwise, exploratory)", raw=v)
+    if "P4_part1" in est:
+        put("pPartOneRatio", f"{est['P4_part1']['median']:.1f}", script=se, config="P4 part 1, main configuration", aggregation="median over seeds of median error/PEB")
     return out
 
 
