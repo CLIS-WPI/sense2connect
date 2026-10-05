@@ -346,6 +346,58 @@ class EstimatorTest(unittest.TestCase):
         self.assertLess(abs(m["uz"][0] - u[0, 0, 2]), 2e-3)
 
 
+class MirrorTest(unittest.TestCase):
+    """Variant A: a UE behind an O-RU's array plane must be resolved (not placed at its front/back mirror image)."""
+
+    WMAP = {"x_min": -40.0, "x_max": 40.0, "sidewalks_y": [(-8.613335, -4.25), (4.25, 9.571564)], "street_y": (-8.613335, 9.571564),
+            "crossings_x": [], "crossing_half_width": 1.5}
+    PARAMS = {"gate_db": 0.0, "floor_tau_ns": 0.3, "floor_u": 0.002, "res_gate": 30.0, "q": 0.1, "chi2": 1e9, "sel_gate": 1e9, "refl_penalty": 10.0}
+
+    def _track(self, xs, oru, timing="tdoa", noise=0.0, variant=None, reflect_c=None):
+        from sim.positioning.estimator import noise_model
+        from sim.positioning.estimator_v2 import candidates, reflection_planes, run_tracker_v2
+
+        E = len(xs)
+        ue = np.stack([xs, np.full(E, -7.0), np.full(E, 1.5)], -1)
+        o = np.broadcast_to(np.array(oru), (E, 2, 3))
+        rng = np.random.default_rng(0)
+        m = {k: np.zeros((E, 2)) for k in ("tau_ns", "uy", "uz")}
+        for c in range(2):
+            q = ue.copy()
+            if c == reflect_c:  # dominant path = north-facade reflection (image of the UE across y = 9.571564)
+                q[:, 1] = 2 * 9.571564 - q[:, 1]
+            d = q - o[:, c]
+            r = np.linalg.norm(d, axis=-1)
+            m["tau_ns"][:, c] = r / C0 * 1e9
+            m["uy"][:, c] = d[:, 1] / r + noise * rng.standard_normal(E)
+            m["uz"][:, c] = d[:, 2] / r + noise * rng.standard_normal(E)
+        m["snr"] = np.full((E, 2), 1e6)
+        m["ratio_db"] = np.full((E, 2), 30.0)
+        use, st, su = noise_model(m, self.PARAMS, 960e3, 3168)
+        planes = reflection_planes({"known_planes": {"y": [-8.613335, 9.571564, 10.337294], "z": [-0.030794]}}) if variant == "AB" else None
+        cand = candidates(m, o, use, timing, st, su, 1.5, self.WMAP, planes)
+        return run_tracker_v2(cand, self.PARAMS)["xy_ekf"], ue
+
+    def test_ue_behind_first_panel_resolved(self):
+        xs = np.linspace(2.0, 5.0, 31)  # behind O-RU 0 (x = 12), in front of O-RU 1 (x = -28)
+        for timing in ("tdoa", "aoa"):
+            est, ue = self._track(xs, [[12.0, 6.5, 5.0], [-28.0, -7.0, 5.0]], timing, noise=1e-4)
+            err = np.linalg.norm(est - ue[:, :2], axis=-1)
+            self.assertLess(np.nanmax(err[5:]), 0.3, f"{timing}: {np.nanmax(err[5:]):.2f} m (mirror of x=3 across x=12 is x=21)")
+
+    def test_ue_behind_second_panel_resolved(self):
+        xs = np.linspace(-36.0, -33.0, 31)  # behind O-RU 1 (x = -28), behind O-RU 0 (x = 12)
+        est, ue = self._track(xs, [[12.0, 6.5, 5.0], [-28.0, -7.0, 5.0]], "tdoa", noise=1e-4)
+        err = np.linalg.norm(est - ue[:, :2], axis=-1)
+        self.assertLess(np.nanmax(err[5:]), 0.3, f"{np.nanmax(err[5:]):.2f} m")
+
+    def test_reflection_hypothesis_used_when_dominant_path_is_reflected(self):
+        xs = np.linspace(14.0, 17.0, 31)
+        est, ue = self._track(xs, [[12.0, 6.5, 5.0], [-28.0, -7.0, 5.0]], "tdoa", noise=1e-4, variant="AB", reflect_c=1)
+        err = np.linalg.norm(est - ue[:, :2], axis=-1)
+        self.assertLess(np.nanmax(err[5:]), 0.3, f"{np.nanmax(err[5:]):.2f} m")
+
+
 @unittest.skipUnless(_cuda(), "needs the GPU")
 class JobTest(unittest.TestCase):
     def test_model_b_per_path_matches_paper1(self):

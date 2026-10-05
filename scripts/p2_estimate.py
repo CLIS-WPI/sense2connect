@@ -45,6 +45,7 @@ for p in (ROOT, ROOT / "scripts"):
 
 K_B, T0, C0 = 1.380649e-23, 290.0, 299_792_458.0
 Z_UE = 1.5
+VGRID = {"A": {"sel_gate": [9.21, 25.0, 1e9]}, "AB": {"sel_gate": [9.21, 25.0, 1e9], "refl_penalty": [0.0, 10.0, 30.0]}}
 GRID = {"gate_db": [0.0, 6.0, 12.0], "floor_tau_ns": [0.1, 0.3, 1.0], "floor_u": [0.002, 0.01], "res_gate": [30.0, 1e9], "q": [0.1, 1.0],
         "chi2": [9.21, 1e9]}
 
@@ -194,8 +195,35 @@ def track(meas: dict, jp: dict, timing: str, params: dict, n_sc: int, df: float,
     return {"xy_ekf": xy_ekf, "xy_fix": xy_fix}
 
 
+def track_v2(meas: dict, oru: np.ndarray, timing: str, params: dict, n_sc: int, df: float, job: tuple, raw: dict, p2cfg: dict, variant: str,
+             memo: dict | None = None) -> dict:
+    """Variants A (mirror disambiguation) and AB (A + map-aided reflections); sim/positioning/estimator_v2.py."""
+    from sim.positioning.estimator import noise_model
+    from sim.positioning.estimator_v2 import candidates, reflection_planes, run_tracker_v2, walk_map
+    from sim.scenes.traffic import prepare_scenario
+
+    T, U, C = meas["uy"].shape
+    out = {"xy_ekf": np.zeros((T, U, 2)), "xy_fix": np.zeros((T, U, 2))}
+    for uu in range(U):
+        key = ("cand", uu)
+        if memo is not None and key in memo:
+            cand = memo[key]
+        else:
+            sc = prepare_scenario(raw, seed=job[0], mount=job[1], density=job[2], duration_s=60.0, dt_s=0.1)
+            wmap = walk_map(raw, sc, p2cfg)
+            m = {k: v[:, uu, :] for k, v in meas.items()}
+            use, st, su = noise_model(m, params, df, n_sc)
+            cand = candidates(m, oru, use, timing, st, su, Z_UE, wmap, reflection_planes(p2cfg) if variant == "AB" else None)
+            if memo is not None:
+                memo[key] = cand
+        tr = run_tracker_v2(cand, params)
+        out["xy_ekf"][:, uu] = tr["xy_ekf"]
+        out["xy_fix"][:, uu] = tr["xy_fix"]
+    return out
+
+
 def jobs_of(which: str) -> list[tuple]:
-    from seedsets import load_seeds
+    from p2_seeds import load as load_seeds
 
     seeds = load_seeds()
     return [(int(s), m, d) for s in seeds[which] for m in ("lamppost", "facade") for d in ("low", "high")]
@@ -204,7 +232,7 @@ def jobs_of(which: str) -> list[tuple]:
 def main() -> None:
     import torch
 
-    from seedsets import eval_set
+    from p2_seeds import eval_tag
     from sim.scenes.config import load_yaml
 
     ap = argparse.ArgumentParser()
@@ -212,10 +240,11 @@ def main() -> None:
     ap.add_argument("--set", default="evaluation", help="tuning | evaluation")
     ap.add_argument("--configs", nargs="*")
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--variant", default="v1", choices=["v1", "A", "AB"], help="estimator variant (v1 = frozen p2-freeze estimator)")
     args = ap.parse_args()
     raw = load_yaml(ROOT / "configs" / "m2_scenario.yaml")
     p2cfg = load_yaml(ROOT / "configs" / "p2.yaml")
-    tag = "tuning" if args.set == "tuning" else ("heldout" if eval_set() == "heldout" else "dev")
+    tag = "tuning" if args.set == "tuning" else eval_tag()
     jobs = jobs_of(args.set)[: args.limit or None]
     cfgs = configs()
     names = args.configs or (list(cfgs) if args.set != "tuning" else [main_cfg_name(bw, tm) for bw in ("100", "200", "400") for tm in ("toa", "tdoa", "aoa")])
@@ -237,6 +266,38 @@ def main() -> None:
                 m = measure_job(job, jp, cfgs[name], p2cfg)
                 np.savez(dest, **m, ue=jp["ue"], oru=jp["oru"], blocked=jp["blocked"], los_loss=jp["los_loss"])
             print(f"measured {job} ({len(names)} configs) in {time.perf_counter() - t0:.0f} s", flush=True)
+        return
+    if args.stage == "tune" and args.variant != "v1":
+        if args.set != "tuning":
+            raise SystemExit("tuning runs on the tuning seeds only")
+        base_t = json.loads((ROOT / "results" / "P2" / "est_tuned.json").read_text())["tuned"]
+        grid = VGRID[args.variant]
+        tuned = {}
+        for bw in ("100", "200", "400"):
+            for tm in ("toa", "tdoa", "aoa"):
+                name = main_cfg_name(bw, tm)
+                p0 = base_t[f"{bw}|{tm}"]["params"]
+                data = [(j, dict(np.load(base / name / ("%s_%s_%d.npz" % (j[1], j[2], j[0]))))) for j in jobs]
+                memos = [{} for _ in data]
+                n_sc = int(p2cfg["bandwidths"][bw]["n_sc"])
+                scores = {}
+                for combo in itertools.product(*grid.values()):
+                    params = {**p0, **dict(zip(grid, combo))}
+                    errs = []
+                    for (j, d), memo in zip(data, memos):
+                        meas = {k: d[k] for k in ("tau_ns", "uy", "uz", "snr", "ratio_db")}
+                        out = track_v2(meas, d["oru"], tm, params, n_sc, df, j, raw, p2cfg, args.variant, memo)
+                        e = np.linalg.norm(out["xy_ekf"] - d["ue"][..., :2], axis=-1)
+                        errs.append(np.where(np.isfinite(e), e, 1e3).ravel())
+                    e = np.concatenate(errs)
+                    scores[combo] = (float(np.median(e)), float(np.percentile(e, 90)))
+                best = min(scores, key=lambda c: (scores[c][0], scores[c][1], c))
+                tuned[f"{bw}|{tm}"] = {"params": {**p0, **dict(zip(grid, best))}, "median_m": scores[best][0], "p90_m": scores[best][1],
+                                       "grid_points": len(scores)}
+                print(f"tuned {args.variant} {bw} MHz {tm}: {tuned[f'{bw}|{tm}']}", flush=True)
+        (ROOT / "results" / "P2" / f"est_tuned_{args.variant}.json").write_text(json.dumps(
+            {"grid": grid, "base": "results/P2/est_tuned.json (v1 parameters, tuning seeds)", "tuned": tuned, "jobs": [list(j) for j in jobs],
+             "objective": "median EKF error, then p90, pooled over tuning runs"}, indent=1) + "\n")
         return
     if args.stage == "tune":
         if args.set != "tuning":
@@ -266,7 +327,9 @@ def main() -> None:
         (ROOT / "results" / "P2" / "est_tuned.json").write_text(json.dumps({"grid": GRID, "tuned": tuned, "jobs": [list(j) for j in jobs],
                                                                             "objective": "median EKF error, then p90, pooled over tuning runs"}, indent=1) + "\n")
         return
-    tuned = json.loads((ROOT / "results" / "P2" / "est_tuned.json").read_text())["tuned"]
+    tf = "est_tuned.json" if args.variant == "v1" else f"est_tuned_{args.variant}.json"
+    tuned = json.loads((ROOT / "results" / "P2" / tf).read_text())["tuned"]
+    out_base = base if args.variant == "v1" else ROOT / "results" / "P2" / f"est_{args.variant}" / tag
     for name in names:
         c = cfgs[name]
         params = tuned[f"{c['bw']}|{c['timing']}"]["params"]
@@ -275,8 +338,12 @@ def main() -> None:
             src = base / name / ("%s_%s_%d.npz" % (job[1], job[2], job[0]))
             d = np.load(src)
             meas = {k: d[k] for k in ("tau_ns", "uy", "uz", "snr", "ratio_db")}
-            out = track(meas, {"oru": d["oru"]}, c["timing"], params, n_sc, df)
-            np.savez(base / name / ("%s_%s_%d_track.npz" % (job[1], job[2], job[0])), **out)
+            if args.variant == "v1":
+                out = track(meas, {"oru": d["oru"]}, c["timing"], params, n_sc, df)
+            else:
+                out = track_v2(meas, d["oru"], c["timing"], params, n_sc, df, job, raw, p2cfg, args.variant)
+            (out_base / name).mkdir(parents=True, exist_ok=True)
+            np.savez(out_base / name / ("%s_%s_%d_track.npz" % (job[1], job[2], job[0])), **out)
         print(f"evaluated {name} on {len(jobs)} jobs ({time.perf_counter() - clock:.0f} s)", flush=True)
 
 

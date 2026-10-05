@@ -61,12 +61,16 @@ def main() -> None:
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", default="dev")
+    ap.add_argument("--variant", default="v1", choices=["v1", "A", "AB"])
     args = ap.parse_args()
+    vtag = "" if args.variant == "v1" else f"_{args.variant}"
+    clabel = (lambda n: f"estimator {n}") if args.variant == "v1" else (lambda n: f"estimator {args.variant} {n}")
     p2cfg = load_yaml(ROOT / "configs" / "p2.yaml")
     nb, bs = int(p2cfg["bootstrap"]["n"]), int(p2cfg["bootstrap"]["seed"])
-    base = ROOT / "results" / "P2" / "est" / args.set
+    base = ROOT / "results" / "P2" / ("est" if args.variant == "v1" else f"est_{args.variant}") / args.set
+    mbase = ROOT / "results" / "P2" / "est" / args.set  # measurements (shared by all variants)
     cfgs = configs()
-    out = {"set": args.set, "definition": __doc__, "configs": {}}
+    out = {"set": args.set, "variant": args.variant, "definition": __doc__, "configs": {}}
     L = [f"# P2 estimator ({args.set} seeds)", "", "Seed-level values (mean over seeds of per-seed statistics; 95 % bootstrap CI over seeds). "
          "Error to PEB: LoS-only bound of the same configuration.", "",
          "| Config | median [m] | p90 [m] | RMSE [m] | median error/PEB | median, LoS both | median, blocked | share <= 0.1 m |", "|---|---|---|---|---|---|---|---|"]
@@ -79,7 +83,7 @@ def main() -> None:
         for f in files:
             mount, density, seed = f.stem.replace("_track", "").split("_")
             tr = np.load(f)
-            ms = np.load(str(f).replace("_track", ""))
+            ms = np.load(mbase / name / f.name.replace("_track", ""))
             err = np.linalg.norm(tr["xy_ekf"] - ms["ue"][..., :2], axis=-1)[WARMUP:]
             nb_ = ms["blocked"].sum(-1)[WARMUP:]
             pebf = ROOT / "results" / "P2" / "peb" / args.set / f"{mount}_{density}_{seed}.npz"
@@ -135,7 +139,7 @@ def main() -> None:
             bl = {m["label"]: m["vs_a5"] for m in res["margins"]}
             L.append(f"| {cname} | " + " | ".join(f"{bl[m]['mean_diff']:+.3f} [{bl[m]['ci95_boot'][0]:+.3f}, {bl[m]['ci95_boot'][1]:+.3f}] p={bl[m]['wilcoxon_p_two_sided']:.2g}"
                                                 for m in CLAIM_MARGINS) + " |")
-        main_c = cl.get(f"estimator {MAIN}")
+        main_c = cl.get(clabel(MAIN))
         if main_c:
             bl = {m["label"]: m["vs_a5"] for m in main_c["margins"]}
             better = [m for m in CLAIM_MARGINS if bl[m]["mean_diff"] < 0 and bl[m]["wilcoxon_p_two_sided"] < 0.05]
@@ -147,8 +151,12 @@ def main() -> None:
         h1, h2 = out["P4_part1"]["holds"], out["P4_part2"]["holds"]
         out["P4"] = "supported" if (h1 and h2) else ("not supported" if not (h1 or h2) else "mixed")
         L += [f"**P4: {out['P4']}**"]
-    (ROOT / "results" / "P2" / f"est_{args.set}.json").write_text(json.dumps(out, indent=1) + "\n")
-    (ROOT / "results" / "P2" / f"est_{args.set}.md").write_text("\n".join(L) + "\n")
+    if cf.exists():
+        tl = json.loads(cf.read_text()).get("tails", {})
+        out["tails"] = tl
+        L += ["", "Tail metrics of the estimator conditions (closing experiment):", ""] + [f"- {k}: " + ", ".join(f"{kk} {vv:.3f}" for kk, vv in v.items()) for k, v in tl.items()]
+    (ROOT / "results" / "P2" / f"est_{args.set}{vtag}.json").write_text(json.dumps(out, indent=1) + "\n")
+    (ROOT / "results" / "P2" / f"est_{args.set}{vtag}.md").write_text("\n".join(L) + "\n")
     print("\n".join(L))
 
 

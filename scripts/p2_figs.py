@@ -60,12 +60,16 @@ def load_runs(tag: str):
     return load(tag)
 
 
+VARIANT = "v1"
+
+
 def est_runs(tag: str, cfg: str):
     out = {}
-    for f in sorted((ROOT / "results" / "P2" / "est" / tag / cfg).glob("*_track.npz")):
+    d_ = "est" if VARIANT == "v1" else f"est_{VARIANT}"
+    for f in sorted((ROOT / "results" / "P2" / d_ / tag / cfg).glob("*_track.npz")):
         mount, density, seed = f.stem.replace("_track", "").split("_")
         tr = np.load(f)
-        ms = np.load(str(f).replace("_track", ""))
+        ms = np.load(ROOT / "results" / "P2" / "est" / tag / cfg / f.name.replace("_track", ""))
         err = np.linalg.norm(tr["xy_ekf"] - ms["ue"][..., :2], axis=-1)
         out[(int(seed), mount, density)] = {"err": np.nan_to_num(err, nan=1e3), "nb": ms["blocked"].sum(-1), "x": ms["ue"][..., 0]}
     return out
@@ -85,7 +89,10 @@ def main() -> None:
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", default="dev")
+    ap.add_argument("--variant", default="v1", choices=["v1", "A", "AB"])
     args = ap.parse_args()
+    global VARIANT
+    VARIANT = args.variant
     plt = setup()
     runs = load_runs(args.set)
     LOS = lambda r: r["nb"] == 0  # noqa: E731
@@ -176,16 +183,18 @@ def main() -> None:
     cf = ROOT / "results" / "P2" / f"closing_{args.set}.json"
     if cf.exists():
         cl = json.loads(cf.read_text())["conditions"]
-        p1 = ROOT / "results" / ("M5" if args.set == "heldout" else "dev/M5") / "planner.json"
-        pl = json.loads(p1.read_text())["margins"]
+        clj = json.loads(cf.read_text())
+        pl = json.loads((ROOT / "results" / "M5" / "planner.json").read_text())["margins"]
+        a5o = clj.get("a5_outage")
         labs = [m["label"] for m in pl if m["label"] != "v1 radio (high margin)"]
         xm = np.array([m["margin_db"] for m in pl if m["label"] != "v1 radio (high margin)"])
         fig, ax = plt.subplots(figsize=(COL, 3.0))
-        a5 = np.array([m["a5"]["eval"]["outage_req_s_per_min"]["mean"] for m in pl if m["label"] != "v1 radio (high margin)"])
+        a5 = np.array([a5o[m["label"]] if a5o else m["a5"]["eval"]["outage_req_s_per_min"]["mean"] for m in pl if m["label"] != "v1 radio (high margin)"])
+        est_key = "estimator bw400_tdoa_s1_p2_b" if VARIANT == "v1" else f"estimator {VARIANT} bw400_tdoa_s1_p2_b"
         ax.plot(xm, a5, color="black", marker="v", label="A5 (3GPP)")
         style = {"perfect": ("#2ca02c", "o", "Planner, exact UE position"), "PEB map-aided": ("#17becf", "s", "Planner, map-aided bound error"),
                  "PEB los-only": ("#1f77b4", "s", "Planner, LoS-only bound error"),
-                 "estimator bw400_tdoa_s1_p2_b": ("#d62728", "^", "Planner, estimator (400 MHz)"), "white 1 m": ("#7f7f7f", "x", "Planner, white 1 m error")}
+                 est_key: ("#d62728", "^", "Planner, estimator (400 MHz)"), "white 1 m": ("#7f7f7f", "x", "Planner, white 1 m error")}
         for k, (color, mk, lab) in style.items():
             if k not in cl:
                 continue

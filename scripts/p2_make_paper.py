@@ -27,6 +27,7 @@ for _p in (ROOT, ROOT / "scripts"):
         sys.path.insert(0, str(_p))
 P2 = ROOT / "results" / "P2"
 PAPER2 = ROOT / "paper2"
+VARIANT = "v1"
 MACRO = re.compile(r"\\(p[A-Z][A-Za-z]*)")
 
 
@@ -45,14 +46,16 @@ def pfmt(p: float) -> str:
 
 def catalog(tag: str) -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
-    seeds = "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml)" if tag == "heldout" else "development seeds 1001-1010"
+    seeds = {"heldout": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml; pre-fix record)",
+             "heldout2": "held-out test seeds 3001-3010 (configs/p2.yaml heldout2; after the estimator fix, tag p2-freeze2)"}.get(tag, "development seeds 1001-1010")
 
     def put(name, value, *, script, config, aggregation, raw=None):
         out[name] = {"value": value, "script": script, "config": config, "seeds": seeds + ", 40 runs (2 mounts x 2 densities), 2 UEs, 600 epochs",
                      "aggregation": aggregation, "raw": raw}
 
     peb = json.loads((P2 / f"peb_{tag}.json").read_text())
-    est = json.loads((P2 / f"est_{tag}.json").read_text())
+    est = json.loads((P2 / f"est_{tag}{'' if VARIANT == 'v1' else '_' + VARIANT}.json").read_text())
+    elabel = (lambda n: f"estimator {n}") if VARIANT == "v1" else (lambda n: f"estimator {VARIANT} {n}")
     sp = "scripts/p2_peb.py + scripts/p2_peb_report.py -> results/P2/peb_%s.json" % tag
     se = "scripts/p2_estimate.py + scripts/p2_est_report.py -> results/P2/est_%s.json" % tag
     main = "main configuration: TDoA (unknown UE clock bias), sigma_sync 1 ns constant per run, sigma_phi 2 deg, blocked LoS biased"
@@ -113,7 +116,7 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
         put("pVerdictFour", est["P4"], script=se, config="P4 (parts 1 and 2, pre-specified)", aggregation="rule in scripts/p2_est_report.py",
             raw={"part1": est["P4_part1"], "part2": est["P4_part2"]})
     cl = est.get("closing", {})
-    for cname, K in (("estimator bw400_tdoa_s1_p2_b", "Est"), ("PEB los-only", "PebLos"), ("PEB map-aided", "PebMap"), ("perfect", "Perf"), ("white 1 m", "White")):
+    for cname, K in ((elabel("bw400_tdoa_s1_p2_b"), "Est"), ("PEB los-only", "PebLos"), ("PEB map-aided", "PebMap"), ("perfect", "Perf"), ("white 1 m", "White")):
         if cname not in cl:
             continue
         for lab, M in (("15 dB", "Fifteen"), ("20 dB", "Twenty"), ("3GPP short-range reference", "Ref")):
@@ -146,8 +149,8 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
     for name, K in (("bw400_tdoa_s1_p2_b", "FourHundred"), ("bw100_tdoa_s1_p2_b", "Hundred"), ("bw400_tdoa_s0_p0_b", "IdealHw")):
         if name in c:
             put(f"pEstRmse{K}", f"{c[name]['rmse_m']:.1f}", script=se, config=name, aggregation="RMSE [m] (errors capped at 100 m); " + seedagg)
-    for cname, K in (("estimator bw400_tdoa_s1_p2_b", "Est"), ("PEB los-only", "PebLos"), ("PEB map-aided", "PebMap"), ("perfect", "Perf"), ("white 1 m", "White"),
-                     ("estimator bw400_tdoa_s0_p0_b", "EstIdeal")):
+    for cname, K in ((elabel("bw400_tdoa_s1_p2_b"), "Est"), ("PEB los-only", "PebLos"), ("PEB map-aided", "PebMap"), ("perfect", "Perf"), ("white 1 m", "White"),
+                     (elabel("bw400_tdoa_s0_p0_b"), "EstIdeal"), (elabel("bw400_tdoa_s1_p2_b") + " capped at p90", "EstCap")):
         if cname not in cl:
             continue
         for lab, M in (("15 dB", "Fifteen"), ("20 dB", "Twenty"), ("25 dB", "TwentyFive"), ("30 dB", "Thirty"), ("3GPP short-range reference", "Ref")):
@@ -175,7 +178,10 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", default="heldout")
     ap.add_argument("--compile", action="store_true")
+    ap.add_argument("--variant", default="v1", choices=["v1", "A", "AB"], help="estimator variant quoted by the paper")
     args = ap.parse_args()
+    global VARIANT
+    VARIANT = args.variant
     cat = catalog(args.set)
     (P2 / "numbers_catalog.json").write_text(json.dumps(cat, indent=1, default=str) + "\n")
     PAPER2.mkdir(exist_ok=True)

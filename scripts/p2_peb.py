@@ -213,7 +213,8 @@ def reference_check(res: dict, cfg: dict, rng: np.random.Generator, n: int = 12)
 def main() -> None:
     import torch
 
-    from seedsets import eval_set, load_seeds
+    from p2_seeds import eval_tag
+    from p2_seeds import load as load_seeds
     from sim.scenes.config import load_yaml
 
     ap = argparse.ArgumentParser()
@@ -226,7 +227,7 @@ def main() -> None:
     cfg = load_cfg()
     seeds = load_seeds()
     which = args.set or "evaluation"
-    tag = "tuning" if which == "tuning" else ("heldout" if eval_set() == "heldout" else "dev")
+    tag = "tuning" if which == "tuning" else eval_tag()
     jobs = [(int(s), m, d) for s in seeds[which] for m in ("lamppost", "facade") for d in ("low", "high")]
     if args.limit:
         jobs = jobs[: args.limit]

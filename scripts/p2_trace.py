@@ -170,13 +170,13 @@ def _one(item: tuple) -> dict[str, Any]:
 
 
 def main() -> None:
-    from seedsets import load_seeds
+    from p2_seeds import load as load_seeds
     from sim.scenes.config import load_yaml
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--seeds", type=int, nargs="*")
-    ap.add_argument("--sets", nargs="*", default=["tuning", "evaluation"], help="seed sets from seedsets.load_seeds()")
+    ap.add_argument("--sets", nargs="*", default=["tuning", "evaluation"], help="seed sets from p2_seeds.load()")
     ap.add_argument("--frames", type=int, default=0)
     ap.add_argument("--fd", action="store_true")
     ap.add_argument("--mounts", nargs="*", default=list(MOUNTS))

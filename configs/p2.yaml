@@ -34,3 +34,7 @@ known_planes:
   x: [-62.411423, -62.107651, -15.11901, 16.002499, 32.356606, 62.640274, 63.478111]
   y: [-8.613335, 9.571564, 10.337294]
   z: [-0.030794]
+# Second held-out set (after the estimator fix, tag p2-freeze2); never used before.
+# The 2001-2010 results stay as the pre-fix record. Selected with S2C_EVAL_SET=heldout2.
+heldout2: [3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010]
+lane_width_m: 3.5
