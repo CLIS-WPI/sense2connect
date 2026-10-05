@@ -18,7 +18,7 @@
 \begin{document}
 
 \title{mmWave UE Positioning Under Blockage:\\
-Error Bounds and Implications for Handover}
+Limits for ISAC-Assisted Handover}
 
 \author{
 \IEEEauthorblockN{Seyed Bagher Hashemi Natanzi\IEEEauthorrefmark{1}\textsuperscript{,}\thanks{*Corresponding author: snatanzi@wpi.edu}, Bo Tang\IEEEauthorrefmark{2}}
@@ -39,12 +39,13 @@ bounds that include synchronization and array calibration errors as
 Bayesian priors, contrast LoS-only information with map-aided
 information from a digital twin, and evaluate a practical estimator
 with an extended Kalman filter. In ray-traced experiments in a street
-canyon, reported on held-out scenarios, the bound is limited by array
-calibration rather than bandwidth and degrades during blockage unless
-reflected paths are exploited through the digital twin. Fixed-geometry experiments reveal substantial systematic errors in a
-practical estimator, alongside geometry-dependent random error, and its
-errors grow sharply around blockage events. Fed into a blockage-aware handover planner, its
-positions do not let foresight outperform 3GPP event-triggered handover,
+canyon, reported on held-out scenarios, the bound is limited by array calibration rather than bandwidth, blockage
+substantially degrades the LoS-only bound, and known reflected paths
+preserve a much lower map-aided bound. Fixed-geometry experiments reveal substantial systematic errors in the
+evaluated estimator, alongside geometry-dependent random error, and its
+errors grow sharply around blockage events. Fed into a blockage-aware
+handover planner, its positions do not let foresight outperform 3GPP
+event-triggered handover,
 whereas synthetic errors at the level of the map-aided bound do.
 \end{abstract}
 
@@ -250,10 +251,17 @@ O-RU time offsets ($\sigma_{\mathrm{sync}}$) and of the element phases
 arrival, TDoA). In the \emph{map-aided} bound, the reflected paths are
 not nuisance parameters: their geometry is known from the digital twin,
 and their entries of $\mathbf T$ follow analytically from the virtual
-anchors. Of the derivative values, \pDerivAgreeValues{} agree with re-tracing
-at $\pm\pFdStep$\,cm to a relative error of $10^{-3}$ (all derivatives
-of a path in \pDerivAgree{} of the paths); the others are limited by the
-single-precision floor of the ray tracer. The GPU implementation of
+anchors. In double precision, the analytic derivatives of delay
+and angles agree with central finite differences for single- and
+double-bounce paths at \pDerivFdNumUe{} random UE positions to a
+relative error of at most \pDerivFdMaxRel{} (step \pDerivFdBestStep\,m),
+with the expected $O(h^2)$ behavior for larger steps. Against
+single-precision re-tracing with Sionna at $\pm\pFdStep$\,cm,
+\pDerivAgreeValues{} of the derivative values agree to a relative error
+of $10^{-3}$; of the disagreeing paths, \pDerivDisFloat{} are explained
+by single-precision rounding (absolute error growing as $1/h$) and
+\pDerivDisNearZero{} by derivatives that are exactly zero, with
+\pDerivDisOther{} unexplained. The GPU implementation of
 \eqref{eq:efim} matches an independent NumPy implementation to a
 relative deviation of \pFimJobErr{} and a brute-force numerical Fisher
 matrix on toy cases to \pFimToyErr. The position
@@ -432,8 +440,9 @@ Elsewhere                & \pOnsetElseMed\,cm & \pOnsetElsePninety\,m & \pOnsetE
 \begin{table}[t]
 \centering
 \caption{Planner outage minus A5 [s/UE-min] by source of UE position
-(perfect blocker tracks; $^\dagger$: not significant, seed-level
-Wilcoxon $p\ge0.05$; pointwise tests, exploratory).}
+(perfect blocker tracks; columns: link margin, Ref.\ = 3GPP reference
+budget with a margin of \pRefMargin\,dB; $^\dagger$: not significant,
+seed-level Wilcoxon $p\ge0.05$; pointwise tests, exploratory).}
 \label{tab:closing}
 \setlength{\tabcolsep}{2.2pt}
 \begin{tabular}{@{}lccccc@{}}
@@ -455,7 +464,7 @@ White \SI{1}{m} error     & \pCloseWhiteFifteen & \pCloseWhiteTwenty & \pCloseWh
 \end{tabular}
 \end{table}
 
-\subsection{Errors When Handover Decisions Are Made}
+\subsection{Positioning Errors Around Blockage Onsets}
 Table~\ref{tab:onset} shows the estimator error around the
 \pOnsetNumEvents{} blockage events of the serving cell, defined per UE
 as the cell with the larger unblocked received power; an event is an
@@ -491,8 +500,8 @@ single-epoch bound of the respective model, which is anisotropic
 (median ratio of principal standard deviations \pAniso). Errors at the
 map-aided bound preserve a lower mean outage than A5 at most tested
 margins, with significant improvements at 15 and \SI{25}{dB}; errors at the LoS-only bound, which grow during
-blockage, make it worse than A5 at every margin. With the estimator's
-positions, the planner is significantly worse than A5 at every margin,
+blockage, make it worse than A5 at every margin. With the positions of the evaluated estimator, the planner is
+significantly worse than A5 at every margin,
 also with ideal hardware. Capping the errors at their 90th percentile or
 removing the mirror solutions with the true position reduces the loss
 but leaves it significant, so the largest errors are not its only
@@ -504,8 +513,9 @@ practical estimator achieves it.
 \section{Discussion and Limitations}
 % ---------------------------------------------------------------------
 For blockage-aware handover, the relevant accuracy is the error around
-blockage onsets, not the overall median, and at most tested geometries the gap between the bound and our
-estimator is mainly systematic multipath error. The
+blockage onsets, not the overall median, and at most tested geometries the gap between the bound and the
+evaluated estimator is mainly systematic multipath error; these results
+do not rule out stronger practical estimators. The
 information to close this gap is present in the reflected paths, as the
 map-aided bound shows, but our simple virtual-anchor variant did not
 extract it; map-aided estimators that reliably associate reflections
@@ -523,11 +533,10 @@ ambiguity a physical back plane would remove in hardware
 \section{Conclusion}
 % ---------------------------------------------------------------------
 We examined whether the mmWave radio units that serve a user can
-localize it accurately enough for blockage-aware handover. The
-single-epoch bound shows that decimeter accuracy is limited by array
-calibration rather than bandwidth and is lost during blockage unless
-reflected paths are exploited through the digital twin. A practical
-estimator shows substantial systematic multipath errors, and its errors
+localize it accurately enough for blockage-aware handover. Under the tested configurations, the single-epoch bound is limited by
+array calibration rather than bandwidth; blockage substantially degrades
+the LoS-only bound, while known reflected paths preserve a much lower
+map-aided bound. The evaluated estimator shows substantial systematic multipath errors, and its errors
 worsen in the time windows relevant to proactive handover; its positions
 do not let foresight outperform reactive handover. Map-aided estimation that turns
 reflections into reliable position information is therefore the next
