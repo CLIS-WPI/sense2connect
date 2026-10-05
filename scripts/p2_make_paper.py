@@ -158,6 +158,24 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
             put(f"pClose{K}{M}", f"{v['mean_diff']:+.3f}" + ("$^\\dagger$" if not v["wilcoxon_p_two_sided"] < 0.05 else ""),
                 script="scripts/p2_closing.py -> results/P2/closing_%s.json" % tag, config=f"paper-1 planner with UE position '{cname}'; margin {lab}",
                 aggregation="planner - A5 outage [s/UE-min], mean over seeds of per-seed means; dagger = exact Wilcoxon p >= 0.05 (pointwise, exploratory)", raw=v)
+    of = P2 / f"diag_mirror_oracle_{tag}.json"
+    if of.exists():  # ORACLE diagnostic (uses the ground truth; not an estimator)
+        od = json.loads(of.read_text())
+        so = "scripts/p2_diag_mirror_oracle.py -> results/P2/diag_mirror_oracle_%s.json (ORACLE diagnostic)" % tag
+        ocfg = "estimator A, 400 MHz TDoA main configuration; mirror epochs replaced by the hypothesis closest to the true UE (oracle)"
+        o = od["oracle"]
+        for key, K in (("A", "A"), ("A_mirror_corrected_oracle", "Oracle")):
+            put(f"pMirror{K}Med", f"{100 * o[key]['median_m']:.0f}", script=so, config=ocfg, aggregation="median error [cm], pooled epochs after 2 s", raw=o[key])
+            put(f"pMirror{K}Pninety", f"{o[key]['p90_m']:.2f}", script=so, config=ocfg, aggregation="90th percentile error [m], pooled")
+            put(f"pMirror{K}Rmse", f"{o[key]['rmse_m']:.2f}", script=so, config=ocfg, aggregation="RMSE [m], pooled")
+        put("pMirrorShareEpochs", pct(o["mirror_share_of_epochs"]), script=so, config=ocfg, aggregation="share of epochs classified as mirror solutions")
+        put("pMirrorAboveP", pct(o["mirror_epochs_above_A_p90_share"]), script=so, config=ocfg, aggregation="share of mirror epochs whose A error exceeds A's p90")
+        put("pMirrorOfTopTen", pct(o["tail_above_p90_that_is_mirror_share"]), script=so, config=ocfg, aggregation="share of the epochs above A's p90 that are mirror solutions")
+        oc = {m["label"]: m["vs_a5"] for m in od["conditions"]["estimator A bw400_tdoa_s1_p2_b mirror-corrected (oracle)"]["margins"]}
+        for lab, M in (("15 dB", "Fifteen"), ("20 dB", "Twenty"), ("25 dB", "TwentyFive"), ("30 dB", "Thirty"), ("3GPP short-range reference", "Ref")):
+            v = oc[lab]
+            put(f"pCloseOracle{M}", f"{v['mean_diff']:+.3f}" + ("$^\\dagger$" if not v["wilcoxon_p_two_sided"] < 0.05 else ""), script=so,
+                config=ocfg + f"; paper-1 planner; margin {lab}", aggregation="planner - A5 outage [s/UE-min], seed level; dagger = Wilcoxon p >= 0.05", raw=v)
     if "P4_part1" in est:
         put("pPartOneRatio", f"{est['P4_part1']['median']:.1f}", script=se, config="P4 part 1, main configuration", aggregation="median over seeds of median error/PEB")
     return out
