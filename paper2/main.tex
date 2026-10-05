@@ -1,96 +1,499 @@
+% =====================================================================
+% IEEE WCNC 2027 submission (6 pages max, not blind, EDAS). Paper 2.
+% NUMBERS: every quoted result is a macro from numbers2.tex, generated
+% by scripts/p2_make_paper.py from the held-out results (branch paper2).
+% =====================================================================
 \documentclass[conference]{IEEEtran}
-\usepackage{amsmath,amssymb}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{siunitx}
-\usepackage{cite}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
 \input{numbers2.tex}
-% DRAFT generated with the paper-2 pipeline (branch paper2). Every number is a
-% macro from numbers2.tex (scripts/p2_make_paper.py, held-out seeds); author
-% names and acknowledgements are left to the authors.
+\providecommand{\pBreakEvenRms}{11--18}
+\providecommand{\pBreakEvenMedDist}{9--15}
 
 \begin{document}
-\title{How Accurately Can mmWave Infrastructure Localize the User?\\ Bounds, Blockage and Hardware Limits}
-\author{\IEEEauthorblockN{[Authors to be added]}}
+
+\title{Infrastructure-Based mmWave Positioning\\
+for Blockage-Aware Handover:\\
+Bounds and Practical Limits}
+
+\author{
+\IEEEauthorblockN{Seyed Bagher Hashemi Natanzi\IEEEauthorrefmark{1}\textsuperscript{,}\thanks{*Corresponding author: snatanzi@wpi.edu}, Bo Tang\IEEEauthorrefmark{2}}
+\IEEEauthorblockA{\IEEEauthorrefmark{1}\IEEEauthorrefmark{2}Department of Electrical and Computer Engineering, Worcester Polytechnic Institute (WPI), USA}
+\IEEEauthorblockA{Email: \{snatanzi, btang1\}@wpi.edu}
+}
+
 \maketitle
 
 \begin{abstract}
-Blockage-aware proactive handover needs the user position to within about \pBreakEven\,cm, a requirement found in our companion study. We ask whether the two-O-RU \pCarrier\,GHz infrastructure that serves the user can deliver that accuracy from its own uplink sounding reference signals, at which bandwidth, and what happens during blockage. On a ray-traced street canyon with traffic-driven 3GPP blockage, we derive position error bounds that include inter-O-RU synchronization and array calibration errors as Bayesian priors, compare line-of-sight-only and map-aided (digital-twin) information, and build a practical beamspace/delay estimator with an EKF. On held-out seeds, decimeter bounds are not limited by bandwidth but by calibration: the line-of-sight-only bound reaches \pDecThr\,cm in \pDecLosFourHundredLos{} of the epochs with line of sight to both O-RUs at \pBwC\,MHz and still \pDecLosHundredLos{} at \pBwA\,MHz. A blocked line of sight that loses its geometric meaning raises the bound by a factor of \pRatioLosB, while map-aided reflections lower it to \pMapToLosBlk{} times the LoS-only value. The estimator reaches a median error of \pEstMedFourHundred\,cm, only \pPartOneRatio{} times the bound, but its heavy tails (90th percentile \pEstPninetyFourHundred\,m) make the paper-1 planner worse than 3GPP A5 at every margin.
+Blockage-aware proactive handover in millimeter-wave (mmWave) networks
+predicts when a body will cross the line of sight (LoS) between a radio
+unit and a user, and is therefore only as good as the network's
+knowledge of the user position. This paper studies whether the radio
+units that serve a user can localize it accurately enough from its
+uplink sounding reference signals. We derive single-epoch position error
+bounds that include synchronization and array calibration errors as
+Bayesian priors, contrast LoS-only information with map-aided
+information from a digital twin, and evaluate a practical estimator
+with an extended Kalman filter. In ray-traced experiments in a street
+canyon, reported on held-out scenarios, the bound is limited by array
+calibration rather than bandwidth and degrades during blockage unless
+reflected paths are exploited through the digital twin. The practical
+estimator is close to the bound in its random error but suffers from
+systematic multipath errors, which grow by an order of magnitude during
+blockage events. Fed into a blockage-aware handover planner, its
+positions do not let foresight outperform 3GPP event-triggered handover,
+whereas synthetic errors at the level of the map-aided bound do.
 \end{abstract}
 
+\begin{IEEEkeywords}
+mmWave positioning, position error bound, uplink SRS, blockage,
+proactive handover, digital twin, ISAC.
+\end{IEEEkeywords}
+
+% ---------------------------------------------------------------------
 \section{Introduction}
-Millimeter-wave links are fragile under human and vehicle blockage~\cite{rappaport2013mmwave,maccartney2017blockage}. Integrated sensing and communication~\cite{liu2022isac} promises to anticipate blockage and hand the user over before the link breaks. Our companion study showed that such foresight beats the 3GPP A5 event only if the user position is known to about \pBreakEven\,cm. Street-canyon uplink positioning with several gNBs reports \pLitLow--\pLitHigh\,m RMSE~\cite{eswa2026srs}, and decimeter accuracy has so far been shown for target sensing rather than for the user. Classical bounds~\cite{shahmansoori2018position,abushaban2018bounds,shen2010fundamental} assume ideal hardware, under which the bound at the signal-to-noise ratios of a short street canyon is far below a centimeter and therefore uninformative.
+% ---------------------------------------------------------------------
+Millimeter-wave (mmWave) bands provide the bandwidth that 5G and 6G
+networks need for high data rates, but their links are fragile: a
+pedestrian or vehicle crossing the line of sight (LoS) attenuates the
+signal by tens of decibels within milliseconds
+\cite{rappaport2013mmwave,maccartney2017blockage}. Reactive mobility
+procedures, which hand over after measurements have degraded, cannot
+avoid such outages. Integrated sensing and communication (ISAC) and
+other sensing-aided approaches therefore aim to predict blockage and
+hand the user over in advance
+\cite{liu2022isac,charan2021vision,li2025lookbefore}.
 
-We test four hypotheses, fixed before any held-out data was used: (P1) decimeter accuracy is theoretically possible only with wide bandwidth and line of sight (LoS) to both O-RUs; (P2) accuracy degrades sharply during blockage; (P3) map-aided use of reflected paths recovers part of that loss; (P4) a practical estimator stays well above the bound, and with its errors the paper-1 planner does not beat A5. Our contributions are (i) position error bounds with synchronization and calibration errors as Bayesian priors, two models of a blocked LoS and analytic image-method derivatives on the known facades; (ii) a practical estimator tuned on separate seeds; (iii) a closing experiment that feeds its positions into the frozen paper-1 planner; and (iv) a seed-level held-out evaluation of P1--P4.
+Predicting a blockage means predicting whether a body will cross the
+line between a radio unit and the user. The prediction can thus be no
+better than the network's knowledge of where the user is. In a companion
+study \cite{natanzi2027companion}, we found that a blockage-aware
+handover planner outperforms the service-aware 3GPP A5 event only if
+the user position is known with an error of about \pBreakEven\,cm (per
+horizontal axis), and that a meter-level error removes the benefit
+entirely. Positioning accuracy is therefore not a side issue but a
+prerequisite of sensing-aided mobility.
 
-\section{System Model}
-\subsection{Scenario}
-The scenario is that of the companion study: a ray-traced street canyon (Sionna RT~\cite{hoydis2023sionnart}, specular paths up to order \pMaxDepth, at most \pMaxPaths{} paths per link) at \pCarrier\,GHz with two O-RUs, each with a \pArray{} uniform planar array, and pedestrian user equipments (UEs) at height \pUeHeight\,m on the sidewalk. Cars, buses, trucks and pedestrians block every segment of every path according to 3GPP TR~38.901 blockage model~B~\cite{3gpp38901}. An O-RU is \emph{blocked} for a UE when its LoS loss is at least \pBlockedDb\,dB. Seeds: tuning \pSeedsTune, development \pSeedsDev, held-out \pSeedsHeld; each seed has \pNumRuns/\pNumSeeds{} runs (two mounts, two traffic densities), two UEs and one epoch every \pEpoch\,s.
+Can the network meet this requirement with the infrastructure it
+already has? 5G NR supports uplink positioning from sounding reference
+signals (SRS) \cite{3gpp38855}, and recent street-scale studies with
+several base stations report errors below a meter
+\cite{dong2026deployable}. Position error bounds for mmWave systems
+suggest that much better accuracy is possible in principle
+\cite{shahmansoori2018position,abushaban2018bounds}, but they usually
+assume ideal hardware and static scenes. It remains unclear which effect
+limits decimeter accuracy in practice, how blockage changes it, how
+close practical estimators come, and whether their errors are small
+enough at the moments when a handover decision is made.
 
-\subsection{Signal model}
-Each UE sends one uplink SRS symbol per epoch at \pTxPower\,dBm from a single antenna; each O-RU receives with noise figure \pNoiseFig\,dB. Numerology \pNumerology{} (\pScs\,kHz) with \pBwA, \pBwB{} and \pBwC\,MHz carriers uses \pNscA, \pNscB{} and \pNscC{} active subcarriers~\cite{3gpp38101_2}. At O-RU $c$, subcarrier $n$ and element $m$,
+This paper addresses these questions in a street canyon served by two
+O-RAN radio units (O-RUs). Our contributions are:
+\begin{itemize}
+\item A positioning analysis tailored to blockage-aware handover: a
+single-epoch equivalent Fisher information analysis with
+synchronization and array calibration errors as Bayesian priors, two
+models of a blocked LoS, and map-aided information from reflected paths
+with known geometry.
+\item A practical uplink estimator with an extended Kalman filter (EKF),
+validated against the bound at fixed geometries, which separates its
+random error from systematic multipath errors.
+\item An analysis of positioning errors around blockage onsets and a
+closing experiment that feeds estimated and synthetic bound-level
+positions into a blockage-aware handover planner.
+\item Findings on held-out scenarios: calibration rather than bandwidth
+limits the bound; blockage degrades it unless the digital twin is used;
+and practical errors are largest exactly when handover decisions are
+made.
+\end{itemize}
+
+% ---------------------------------------------------------------------
+\section{Related Work}
+% ---------------------------------------------------------------------
+\textit{Bounds for mmWave positioning.} Fisher information analyses
+show that the angle and delay resolution of mmWave arrays support
+sub-decimeter accuracy \cite{shahmansoori2018position,abushaban2018bounds},
+building on the equivalent Fisher information framework for wideband
+localization \cite{shen2010fundamental}. Multipath components with known
+geometry carry position information as virtual anchors
+\cite{leitinger2015evaluation,witrisal2016high}. We use these tools, add
+hardware errors as priors, and evaluate them under traffic-driven
+blockage.
+
+\textit{Uplink SRS positioning.} 3GPP specifies uplink time- and
+angle-based positioning \cite{3gpp38855}. Dong \emph{et al.}
+\cite{dong2026deployable} combine LoS/NLoS gating, dominant-path angle
+and delay estimation, and multi-base-station EKF fusion, reach sub-meter
+errors in a ray-traced campus, and point to reflections as virtual
+anchors for future work. Our estimator follows a similar architecture;
+our question is whether its accuracy suffices for a specific downstream
+use.
+
+\textit{Sensing-aided handover.} Vision-, radar-, and ISAC-aided
+handover predicts blockage or user motion
+\cite{charan2021vision,li2025lookbefore}. Our companion study
+\cite{natanzi2027companion} separated the value of foresight from what
+sensing realizes and identified the user position as the binding
+requirement; this paper examines whether the infrastructure can meet it.
+
+% ---------------------------------------------------------------------
+\section{System Model and Problem Formulation}
+% ---------------------------------------------------------------------
+\subsection{Signal Model}
+A single-antenna user equipment (UE) at horizontal position $\mathbf p$
+transmits an uplink SRS that is received by a set $\mathcal C$ of O-RUs,
+each with an $M$-element array. At O-RU $c$, subcarrier frequency
+$f_n$, and element $m$, the received sample is
 \begin{equation}
-y_{c,n,m} = \textstyle\sum_p \beta_p\, e^{-j2\pi f_n(\tau_p+\delta_c+b)}\, e^{j\psi_{c,m}}\, s_m(\mathbf u_p) + w_{c,n,m},
+y_{c,n,m}=\sum_{\ell}\beta_{c,\ell}\,
+e^{-j2\pi f_n(\tau_{c,\ell}+\delta_c+b)}\,
+e^{j\psi_{c,m}}\,s_m(\mathbf u_{c,\ell})+w_{c,n,m},
+\label{eq:signal}
 \end{equation}
-with complex path gains $\beta_p$ from the ray tracer and model~B, delays $\tau_p$, arrival directions $\mathbf u_p$, steering vector $s_m$, O-RU time offset $\delta_c\sim\mathcal N(0,\sigma_\mathrm{sync}^2)$ (\pSyncList\,ns, drawn once per run), per-element phase errors $\psi_{c,m}\sim\mathcal N(0,\sigma_\phi^2)$ (\pPhiList\,deg, fixed per O-RU and run) and UE clock bias $b$. Three timing cases are considered: synchronized ToA ($b$ known), TDoA ($b$ unknown) and AoA only. The main configuration uses TDoA, $\sigma_\mathrm{sync}=\pSyncMain$\,ns and $\sigma_\phi=\pPhiMain$\,deg.
+where path $\ell$ has complex gain $\beta_{c,\ell}$ (including blockage
+loss), delay $\tau_{c,\ell}$, and arrival direction
+$\mathbf u_{c,\ell}$ with steering response $s_m$; $\delta_c$ is the time
+offset of O-RU $c$, $b$ the UE clock bias, $\psi_{c,m}$ the calibration
+phase error of element $m$, and $w_{c,n,m}$ thermal noise. Hardware
+errors are random with $\delta_c\sim\mathcal N(0,\sigma_{\mathrm{sync}}^2)$
+and $\psi_{c,m}\sim\mathcal N(0,\sigma_\phi^2)$.
 
-\subsection{Blocked line of sight}
-Model~B attenuates a blocked LoS but leaves its geometry intact. We therefore evaluate two variants: (a) \emph{kept}, where the attenuated LoS still carries exact delay and angle information (optimistic), and (b) \emph{biased}, where its delay and angles carry an unknown bias, i.e.\ its geometric information is removed. In the estimator, variant (b) is realized by letting the blocked LoS arrive via the shortest detour over or around its dominant blocker. Claims use (b).
+\subsection{Geometry and Blockage}
+The LoS delay and angles are functions of $\mathbf p$ and the O-RU
+position $\mathbf p_c$, e.g., $\tau_{c,0}=\|\mathbf p-\mathbf p_c\|/c_0$.
+A specular reflection on a known surface is an LoS path from the virtual
+anchor $\tilde{\mathbf p}_{c,\ell}$, the image of $\mathbf p_c$ in that
+surface, so that $\tau_{c,\ell}=\|\mathbf p-\tilde{\mathbf p}_{c,\ell}\|/c_0$
+\cite{leitinger2015evaluation}. Moving bodies attenuate every path
+segment according to 3GPP blockage model~B \cite{3gpp38901}. An O-RU is
+\emph{blocked} for a UE at an epoch when the model-B loss of its LoS path
+is at least \pBlockedDb\,dB. Model~B reduces the power of a blocked LoS
+but keeps its geometry, whereas the field that actually arrives
+diffracts around the blocker. We therefore consider two models of a
+blocked LoS: \emph{kept}, in which its delay and angles still follow
+$\mathbf p$ (optimistic), and \emph{biased}, in which they carry an
+unknown bias. In the biased model, the bound treats them as free
+parameters, and the signal fed to the estimator routes the blocked LoS
+over or around its dominant blocker, so that the estimator also sees a
+biased path.
 
-\section{Position Error Bounds}
-The Fisher information of the channel parameters follows from the Slepian--Bangs formula; the Gram matrix of the derivatives factorizes into frequency and antenna sums, so it is exact without synthesizing the channel. Complex gains are nuisance parameters and are eliminated by a Schur complement. The equivalent Fisher information in the horizontal position follows from the Jacobian of delays and angles and further Schur complements over the nuisance parameters~\cite{shen2010fundamental}: free path parameters (all reflected paths for LoS-only information, the blocked LoS in variant (b), all delays for AoA only), the clock bias, and the O-RU offsets and the $2\times\pNumEl$ element phases with their Gaussian priors (Bayesian information). For reflected paths, the derivatives are analytic by the image method on the known facades and ground; re-tracing at $\pm\pFdStep$\,cm validates them. The position error bound (PEB) is the square root of the trace of the inverse. An independent NumPy implementation (a single pseudo-inverse of the full information matrix) and a brute-force numeric Fisher matrix on a toy case verify the GPU code.
+\subsection{Positioning Requirement of Blockage-Aware Handover}
+The handover planner of \cite{natanzi2027companion} receives tracks of
+the blockers and the reported UE position every \pEpoch\,s, predicts the
+signal-to-noise ratio (SNR) of each cell by applying model~B on the line
+between each O-RU and the reported position, and chooses the serving
+cell sequence that minimizes the predicted outage, accounting for the
+interruption of every handover. Its performance is measured by the
+outage time at a service rate, compared with the 3GPP A5 event. With
+perfect blocker tracks and a white Gaussian UE position error, the
+planner beats A5 only up to a per-axis standard deviation of about
+\pBreakEven\,cm, i.e., an RMS distance error of about \pBreakEvenRms\,cm or a
+median distance error of about \pBreakEvenMedDist\,cm. The positioning problem is
+thus to estimate $\mathbf p$ at every decision epoch such that the
+resulting handover outage stays below that of A5; we examine (i) what
+limits the bound, (ii) how blockage and map knowledge change it, (iii)
+how a practical estimator compares, and (iv) whether its positions
+suffice for the planner.
 
-\section{Practical Estimator}
-Per O-RU and epoch, a zero-padded 2-D DFT over the array finds the strongest beam; beamforming and a zero-padded, Hann-windowed delay transform give the delay of the dominant path, refined by parabolic interpolation, followed by an angle refinement at that delay. A peak-to-second-peak gate flags reflected dominant paths. Weighted least squares over the gated O-RUs, started from every single-O-RU angle fix (the planar array cannot distinguish the two sides of its plane), gives a fix and its covariance; a constant-velocity EKF tracks the UE. All thresholds, noise floors and the process noise ($\pGridSize$ grid points per bandwidth and timing case) were tuned on the tuning seeds only.
+% ---------------------------------------------------------------------
+\section{Position Error Bound and Estimator}
+% ---------------------------------------------------------------------
+\subsection{Single-Epoch Position Error Bound}
+Collect the channel parameters of all O-RUs at one epoch in
+$\boldsymbol\eta$ (delays, angles, complex gains) and the hardware and
+timing errors in $\boldsymbol\nu=[\{\delta_c\},b,\{\psi_{c,m}\}]$. The
+Fisher information of $\boldsymbol\eta$ follows from \eqref{eq:signal}
+by the Slepian--Bangs formula; we compute it exactly by factorizing its
+frequency and antenna sums. With $\mathbf T=\partial\boldsymbol\eta/\partial\mathbf p$,
+the equivalent Fisher information of the position is
+\begin{equation}
+\mathbf J_{\mathbf p}=\mathbf T^{\mathsf T}\mathbf J_{\boldsymbol\eta}\mathbf T
+-\mathbf T^{\mathsf T}\mathbf J_{\boldsymbol\eta\boldsymbol\nu}
+\bigl(\mathbf J_{\boldsymbol\nu\boldsymbol\nu}+\boldsymbol\Lambda\bigr)^{-1}
+\mathbf J_{\boldsymbol\nu\boldsymbol\eta}\mathbf T,
+\label{eq:efim}
+\end{equation}
+after the nuisance parameters have been removed by Schur complements:
+the complex gains of all paths; in the \emph{LoS-only} bound, the delays
+and angles of all reflected paths; in the biased model, the delay and
+angles of a blocked LoS; and the timing and hardware errors in
+$\boldsymbol\nu$. $\boldsymbol\Lambda$ holds the Gaussian priors of the
+O-RU time offsets ($\sigma_{\mathrm{sync}}$) and of the element phases
+($\sigma_\phi$); the UE clock bias has no prior (time difference of
+arrival, TDoA). In the \emph{map-aided} bound, the reflected paths are
+not nuisance parameters: their geometry is known from the digital twin,
+and their entries of $\mathbf T$ follow analytically from the virtual
+anchors, validated by re-tracing at $\pm\pFdStep$\,cm. The position
+error bound is $\mathrm{PEB}=\sqrt{\mathrm{tr}(\mathbf J_{\mathbf p}^{-1})}$.
+It bounds the root-mean-square (RMS) error of unbiased single-epoch
+estimates for a given geometry; it is neither a median error nor a
+guarantee that an estimator attains it, and it excludes the temporal
+information that a tracking filter accumulates.
 
-\section{Results (held-out seeds)}
-All statistics use the seed as the unit: per-seed values over its runs, two-sided exact Wilcoxon signed-rank tests over the \pNumSeeds{} seeds and \pBootN-sample bootstrap intervals over seeds.
+\subsection{Practical Estimator}
+Per O-RU and epoch, a zero-padded two-dimensional DFT over the array
+selects the strongest beam; a Hann-windowed delay transform of the
+beamformed signal gives the delay of the dominant path, refined by
+parabolic interpolation and followed by an angle refinement at that
+delay. A peak-to-second-peak test flags reflected dominant paths.
+Because a planar array of isotropic elements cannot distinguish the two
+sides of its plane, each angle yields two direction hypotheses; the
+estimator keeps the joint hypothesis that is consistent across O-RUs,
+lies in the walkable area of the digital-twin map, and passes the gate
+of a constant-velocity EKF, which fuses weighted least-squares fixes
+over time.
 
-\subsection{Bounds}
-Fig.~\ref{fig:bw} shows median bounds and estimator errors versus bandwidth. The LoS-only bound reaches \pDecThr\,cm in \pDecLosFourHundredLos{} of the epochs with LoS to both O-RUs at \pBwC\,MHz and \pDecLosHundredLos{} at \pBwA\,MHz, but only \pDecLosFourHundredBlk{} of the blocked epochs. The map-aided bound reaches it in \pDecMapFourHundredLos{} and \pDecMapFourHundredBlk{} of these epochs. P1 is therefore \textbf{\pVerdictOneLos}: bandwidth is not the limit. Relaxing one limit at a time at \pBwB\,MHz scales the median LoS-only bound (\pLimLosBase\,cm) by \pLimLosBw{} for twice the bandwidth, \pLimLosSnr{} for ten times the SNR, \pLimLosSync{} for perfect synchronization and \pLimLosCal{} for perfect calibration: calibration dominates. Without hardware errors the LoS-only bound reaches \pDecThr\,cm in \pHwLosIdeal{} of the epochs, with \pSyncWorst\,ns and \pPhiWorst\,deg errors in \pHwLosWorst; the map-aided bound stays at \pHwMapIdeal{} and \pHwMapWorst.
+% ---------------------------------------------------------------------
+\section{Experiments and Results}
+% ---------------------------------------------------------------------
+\subsection{Setup}
+\textit{Scenario.} We use the street canyon of
+\cite{natanzi2027companion}: two O-RUs with \pArray{} half-wavelength
+arrays at \pCarrier\,GHz (one on a lamppost or a facade on one side, one
+on a lamppost on the opposite sidewalk), pedestrian UEs at
+\pUeHeight\,m, and traffic of cars, buses, trucks, and pedestrians. Paths
+are traced with Sionna RT \cite{hoydis2023sionnart,sionna} (specular,
+order up to \pMaxDepth, at most \pMaxPaths{} paths per link).
+
+\textit{Signals and hardware.} The UE transmits one SRS symbol per
+\pEpoch-s epoch at \pTxPower\,dBm; the O-RU noise figure is
+\pNoiseFig\,dB. Numerology~\pNumerology{} (\pScs\,kHz) with \pBwA,
+\pBwB, and \pBwC\,MHz carriers uses \pNscA, \pNscB, and \pNscC{} active
+subcarriers \cite{3gpp38101_2}. We sweep
+$\sigma_{\mathrm{sync}}\in\{\pSyncList\}$\,ns (drawn once per run, a bias
+that the EKF cannot average out) and $\sigma_\phi\in\{\pPhiList\}$\,deg
+(fixed per O-RU and run). The main configuration uses TDoA, \pBwC\,MHz,
+$\sigma_{\mathrm{sync}}=\pSyncMain$\,ns, $\sigma_\phi=\pPhiMain$\,deg, and
+the biased blocked-LoS model.
+
+\textit{Protocol.} Estimator parameters were tuned on seeds
+\pSeedsTune{} and methods fixed on development seeds \pSeedsDev. An
+earlier held-out set was consumed before the front/back disambiguation
+was added, so all results come from a second, never-used set of ten
+seeds (\pSeedsHeld), each simulated for two mounts and two traffic
+densities. The seed is the statistical unit: we average its runs,
+compare conditions with the exact two-sided Wilcoxon signed-rank test
+over the ten seeds, and give \pCi\% bootstrap intervals over seeds.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/fig_p2_bw.pdf}
-\caption{Median position error bound (LoS-only, map-aided) and median estimator error versus bandwidth, epochs with LoS to both O-RUs (solid) and with a blocked O-RU (dashed); main configuration; seed means with \pCi\,\% bootstrap intervals.}
+\caption{Median single-epoch position error bound (LoS-only, map-aided)
+and median estimator error versus bandwidth, for epochs with LoS to both
+O-RUs and with a blocked O-RU; main configuration (\pCi\% CI). The bound
+and the error are different quantities (Section~IV).}
 \label{fig:bw}
 \end{figure}
 
-During blockage (variant (b)), the median LoS-only bound rises by a factor of \pRatioLosB{} ($p=\pRatioPLosB$): P2 is \textbf{\pVerdictTwo}. If the attenuated LoS kept its geometry (variant (a)), the factor would only be \pRatioLosA{} (P2 \pVerdictTwoKept). Map-aided information lowers the bound during blockage to \pMapToLosBlk{} times the LoS-only value ($p=\pMapToLosP$): P3 is \textbf{\pVerdictThree}. Fig.~\ref{fig:sidewalk} shows where along the sidewalk this happens.
+\subsection{What Limits the Bound}
+Fig.~\ref{fig:bw} shows the median bounds versus bandwidth. With LoS to
+both O-RUs, the LoS-only PEB is below \pDecThr\,cm in
+\pDecLosFourHundredLos{} of the epochs at \pBwC\,MHz and still in
+\pDecLosHundredLos{} at \pBwA\,MHz. Relaxing one limit at a time at
+\pBwB\,MHz scales the median LoS-only PEB (\pLimLosBase\,cm) by
+\pLimLosBw{} for twice the bandwidth, \pLimLosSnr{} for ten times the
+SNR, \pLimLosSync{} for perfect synchronization, and \pLimLosCal{} for
+perfect calibration. On these short links, the delay and angle
+measurements are precise enough that the element phase errors, which
+bias the angles, dominate. Without hardware errors, the LoS-only PEB is
+below \pDecThr\,cm in \pHwLosIdeal{} of the epochs; with
+\pSyncWorst\,ns and \pPhiWorst\,deg errors, in \pHwLosWorst. The
+map-aided PEB is far less sensitive (\pHwMapIdeal{} and \pHwMapWorst),
+because reflections from known surfaces add independent geometric
+information.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/fig_p2_sidewalk.pdf}
-\caption{Median bound and estimator error along the sidewalk (UE position, \pBinM\,m bins); main configuration.}
+\caption{Median bound and estimator error along the sidewalk
+(\pBinM-m bins of the UE position); main configuration.}
 \label{fig:sidewalk}
 \end{figure}
 
-\subsection{Estimator}
-At \pBwC\,MHz the estimator achieves a median error of \pEstMedFourHundred\,cm (\pEstLosFourHundred\,cm with LoS to both O-RUs, \pEstBlkFourHundred\,cm during blockage) and a 90th percentile of \pEstPninetyFourHundred\,m; at \pBwA\,MHz the median is \pEstMedHundred\,cm. Its median is within the \pLitLow--\pLitHigh\,m range of~\cite{eswa2026srs}, but its RMSE (\pEstRmseFourHundred\,m) is dominated by front/back mirror solutions and reflected dominant paths. The error is \pPartOneRatio{} times the LoS-only bound, i.e.\ not \emph{well} above it, because the same calibration error limits both (Fig.~\ref{fig:cdf}); without hardware errors the ratio rises to \pEstToPebIdealHw. A sync error drawn per epoch instead of once per run changes the median by less than a centimeter (\pEstMedSyncEpoch\,cm).
+\subsection{Blockage and the Digital Twin}
+In the biased model, the median LoS-only PEB rises by a factor of
+\pRatioLosB{} during blockage ($p=\pRatioPLosB$), and only
+\pDecLosFourHundredBlk{} of the blocked epochs remain below \pDecThr\,cm.
+If the attenuated LoS kept its geometry, the factor would be only
+\pRatioLosA, which shows how optimistic it is to apply model~B's power
+loss without its geometric consequence. Map-aided information lowers
+the PEB during blockage to \pMapToLosBlk{} times the LoS-only value
+($p=\pMapToLosP$). Along the street (Fig.~\ref{fig:sidewalk}), the
+LoS-only PEB varies with the geometry of the two O-RUs from about a
+centimeter to over a decimeter, while the map-aided PEB stays mostly in
+the millimeter range. A low map-aided PEB indicates that the
+information is present in the signal; whether an estimator can extract
+it is a separate question.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/fig_p2_cdf.pdf}
-\caption{CDF of the LoS-only and map-aided bounds and of the estimator error, main configuration; shaded: the paper-1 break-even range.}
+\caption{Distributions over all epochs of the LoS-only and map-aided
+PEB (i.e., of the geometry) and of the estimator error (main
+configuration). The curves describe different quantities and are shown
+for scale only.}
 \label{fig:cdf}
 \end{figure}
 
-\subsection{Closing experiment}
-Fig.~\ref{fig:closing} feeds positions into the frozen paper-1 planner with perfect blocker tracks. With exact positions the planner is below A5 (\pClosePerfTwenty\,s/UE-min at \pMarginTwenty\,dB, \pClosePerfRef{} at the reference); with the map-aided bound-level error it stays close (\pClosePebMapTwenty, \pClosePebMapRef). Already the LoS-only bound-level error makes it worse (\pClosePebLosTwenty, \pClosePebLosRef), and the estimator's positions make it significantly worse than A5 at every margin from \pMarginFifteen\,dB (\pCloseEstFifteen, \pCloseEstTwenty, \pCloseEstTwentyFive, \pCloseEstThirty, \pCloseEstRef), even without hardware errors (\pCloseEstIdealTwenty{} at \pMarginTwenty\,dB). Daggers mark non-significant differences (pointwise, exploratory). Together with the estimator-to-bound ratio, P4 is \textbf{\pVerdictFour}.
+\subsection{Practical Estimator and the Bound}
+At \pBwC\,MHz, the estimator reaches a median error of
+\pEstMedFourHundred\,cm (\pEstLosFourHundred\,cm with LoS to both O-RUs,
+\pEstBlkFourHundred\,cm during blockage); \pEstDecFourHundred{} of its
+errors are below \pDecThr\,cm, and its 90th percentile is
+\pEstPninetyFourHundred\,m (Fig.~\ref{fig:cdf}). At \pBwA\,MHz, the
+median grows to \pEstMedHundred\,cm.
+
+To compare the estimator with the bound on equal terms, we ran
+\pValNumDraws{} independent noise and hardware draws through the
+single-epoch estimator (without EKF) at \pValNumGeom{} fixed geometries.
+With LoS to both O-RUs, the random spread of the estimates around their
+mean is \pValSpreadToPeb{} times the PEB, i.e., close to the bound, but
+the mean itself is offset from the true position by
+\pValBiasLos\,m, caused by interference of unresolved multipath; the
+largest offset is a front/back mirror solution. The RMS error is
+therefore \pValRmseToPeb{} times the PEB. In blocked geometries, the
+offset is \pValBiasBlk\,m. The gap to the bound is thus a systematic
+error, not a lack of precision. Over the held-out runs, front/back
+mirror solutions remain in \pMirrorShareEpochs{} of the epochs and
+dominate the squared error (RMS \pMirrorARmse\,m), while reflected
+dominant paths set the 90th percentile. A variant that used reflections
+as virtual anchors did not reduce the tail on the development seeds
+(90th percentile \pDevBPninety{} vs.\ \pDevAPninety\,m) and was not
+pursued.
+
+\begin{table}[t]
+\centering
+\caption{Estimator error around serving-cell blockage events
+(10\,dB, main configuration).}
+\label{tab:onset}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Window & Median & 90th perc. & $>$\SI{0.1}{m} & $>$\SI{0.25}{m}\\
+\midrule
+1.0--0.5\,s before onset & \pOnsetPreOneMed\,cm & \pOnsetPreOnePninety\,m & \pOnsetPreOneShTen & \pOnsetPreOneShQuarter\\
+0.5--0\,s before onset   & \pOnsetPreHalfMed\,cm & \pOnsetPreHalfPninety\,m & \pOnsetPreHalfShTen & \pOnsetPreHalfShQuarter\\
+During the event         & \pOnsetDuringMed\,cm & \pOnsetDuringPninety\,m & \pOnsetDuringShTen & \pOnsetDuringShQuarter\\
+Elsewhere                & \pOnsetElseMed\,cm & \pOnsetElsePninety\,m & \pOnsetElseShTen & \pOnsetElseShQuarter\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Errors When Handover Decisions Are Made}
+Table~\ref{tab:onset} shows the estimator error around the blockage
+events of the serving cell. In the second before onset, when a
+blockage-aware planner must decide, the median error is as small as
+elsewhere, but the 90th percentile is almost three times larger
+(\pOnsetPreHalfPninety{} vs.\ \pOnsetElsePninety\,m), and about half of
+the errors exceed \SI{0.1}{m}. During the event, the median grows by an
+order of magnitude to \pOnsetDuringMed\,cm. The error is therefore
+largest exactly when the planner needs the position, which the overall
+median hides.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/fig_p2_closing.pdf}
-\caption{Outage at the service rate versus link margin: A5 and the paper-1 planner fed with UE positions of decreasing quality.}
+\caption{Outage at \SI{400}{Mbit/s} versus link margin: 3GPP A5 and the
+blockage-aware planner with perfect blocker tracks, fed with UE
+positions of different quality (bound-level errors are synthetic).}
 \label{fig:closing}
 \end{figure}
 
-\section{Discussion and Limitations}
-The infrastructure can localize the user to a decimeter in principle, but the binding limits are hardware calibration and the loss of LoS geometry during blockage, not bandwidth, and the practical bottleneck for proactive handover is the tail of the estimator error, not its median. The ray tracer is limited to specular paths of order \pMaxDepth{} with at most \pMaxPaths{} paths, which bounds what map-aided information can contribute; bodies are not traced as scatterers; the blocked-LoS detour is a modelling choice; the array is the companion study's \pArray{} planar array with its front/back ambiguity.
+\begin{table}[t]
+\centering
+\caption{Planner outage minus A5 [s/UE-min] by source of UE position
+(perfect blocker tracks; $^\dagger$: not significant, seed-level
+Wilcoxon $p\ge0.05$; pointwise tests, exploratory).}
+\label{tab:closing}
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+UE position & 15\,dB & 20\,dB & 25\,dB & 30\,dB & Ref.\\
+\midrule
+Exact                     & \pClosePerfFifteen & \pClosePerfTwenty & \pClosePerfTwentyFive & \pClosePerfThirty & \pClosePerfRef\\
+\multicolumn{6}{@{}l}{\textit{Synthetic, bound level (full covariance)}}\\
+\quad map-aided           & \pCloseFullMapFifteen & \pCloseFullMapTwenty & \pCloseFullMapTwentyFive & \pCloseFullMapThirty & \pCloseFullMapRef\\
+\quad LoS-only            & \pCloseFullLosFifteen & \pCloseFullLosTwenty & \pCloseFullLosTwentyFive & \pCloseFullLosThirty & \pCloseFullLosRef\\
+\multicolumn{6}{@{}l}{\textit{Estimated}}\\
+\quad estimator           & \pCloseEstFifteen & \pCloseEstTwenty & \pCloseEstTwentyFive & \pCloseEstThirty & \pCloseEstRef\\
+\quad ideal hardware      & \pCloseEstIdealFifteen & \pCloseEstIdealTwenty & \pCloseEstIdealTwentyFive & \pCloseEstIdealThirty & \pCloseEstIdealRef\\
+\quad capped at p90       & \pCloseEstCapFifteen & \pCloseEstCapTwenty & \pCloseEstCapTwentyFive & \pCloseEstCapThirty & \pCloseEstCapRef\\
+\quad mirror-corr.$^\ast$ & \pCloseOracleFifteen & \pCloseOracleTwenty & \pCloseOracleTwentyFive & \pCloseOracleThirty & \pCloseOracleRef\\
+White \SI{1}{m} error     & \pCloseWhiteFifteen & \pCloseWhiteTwenty & \pCloseWhiteTwentyFive & \pCloseWhiteThirty & \pCloseWhiteRef\\
+\bottomrule
+\multicolumn{6}{@{}l@{}}{\footnotesize $^\ast$Oracle diagnostic: mirror solutions replaced using the true position.}
+\end{tabular}
+\end{table}
 
+\subsection{Implications for Handover}
+Fig.~\ref{fig:closing} and Table~\ref{tab:closing} feed positions into
+the planner, with perfect blocker tracks so that the user position is
+the only source of error. With exact positions, the planner has a lower
+outage than A5 from \pMarginFifteen\,dB margin upward (significantly at
+15 and \SI{25}{dB} and at the reference). As a sensitivity test, we feed
+synthetic errors drawn independently per epoch from the full inverse of
+the single-epoch $\mathbf J_{\mathbf p}$, which is anisotropic (median
+ratio of principal standard deviations \pAniso). Errors at the
+map-aided bound keep the planner at or below A5 (significantly below at
+15 and \SI{25}{dB}); errors at the LoS-only bound, which grow during
+blockage, make it worse than A5 at every margin. With the estimator's
+positions, the planner is significantly worse than A5 at every margin,
+also with ideal hardware. Capping the errors at their 90th percentile or
+removing the mirror solutions with the true position reduces the loss
+but leaves it significant: removing the largest errors is not enough,
+because errors of a few decimeters around blockage onsets already
+mislead the planner. Synthetic bound-level errors are an optimistic
+model; they show what positioning would have to achieve, not that a
+practical estimator achieves it.
+
+% ---------------------------------------------------------------------
+\section{Discussion and Limitations}
+% ---------------------------------------------------------------------
+For blockage-aware handover, the relevant accuracy is the error around
+blockage onsets, not the overall median, and the gap between the bound
+and our estimator is systematic multipath error rather than noise. The
+information to close this gap is present in the reflected paths, as the
+map-aided bound shows, but our simple virtual-anchor variant did not
+extract it; map-aided estimators that reliably associate reflections
+with known surfaces \cite{witrisal2016high,dong2026deployable} and
+better array calibration are the main levers. The study has
+limitations: a single street canyon with two O-RUs; specular paths of
+order at most \pMaxDepth{} and no diffuse scattering; a perfectly known
+map in the map-aided bound; the biased model of a blocked LoS as our
+modelling choice; single-epoch bounds without the temporal information
+of tracking; and planar arrays of isotropic elements, whose front/back
+ambiguity a physical back plane would remove in hardware
+\cite{dong2026deployable}.
+
+% ---------------------------------------------------------------------
 \section{Conclusion}
-Decimeter user positioning from two \pCarrier\,GHz O-RUs is limited by array calibration and blockage rather than by bandwidth; map-aided reflections close the gap in theory, but a practical estimator's tail errors keep blockage-aware handover behind A5.
+% ---------------------------------------------------------------------
+We examined whether the mmWave radio units that serve a user can
+localize it accurately enough for blockage-aware handover. The
+single-epoch bound shows that decimeter accuracy is limited by array
+calibration rather than bandwidth and is lost during blockage unless
+reflected paths are exploited through the digital twin. A practical
+estimator is close to the bound in its random error but suffers from
+systematic multipath errors that peak around blockage onsets, exactly
+when handover decisions are made, and its positions do not let
+foresight outperform reactive handover. Map-aided estimation that turns
+reflections into reliable position information is therefore the next
+step toward ISAC-assisted mobility.
+
+\section*{Acknowledgment}
+This material is based upon work supported in part by NSF under Awards
+CNS-2120442 and IIS-2325863, and NTIA under Award No.\ 51-60-IF007. Any
+opinions, findings, and conclusions or recommendations expressed in this
+publication are those of the author(s) and do not necessarily reflect
+the views of the NSF and NTIA.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs2}
+
 \end{document}

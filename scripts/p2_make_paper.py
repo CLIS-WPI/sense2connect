@@ -125,6 +125,15 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
                 script="scripts/p2_closing.py -> results/P2/closing_%s.json" % tag, config=f"paper-1 planner (v1.4.1, perfect blocker tracks, H fixed) with UE position '{cname}'; margin {lab}",
                 aggregation="planner - A5 outage [s/UE-min], mean over seeds of per-seed means; dagger = exact Wilcoxon p >= 0.05 (pointwise, exploratory)", raw=v)
     # --- added after the freeze (numbers only, no analysis change): configuration constants and further result macros
+    def seed_range(which: str) -> str:
+        """First--last seed of a seed set from the configs actually used (tuning, development, dev, heldout, heldout2)."""
+        from sim.scenes.config import load_yaml as _ly
+
+        sets = {"tuning": _ly(ROOT / "configs" / "seeds.yaml")["tuning"], "development": _ly(ROOT / "configs" / "seeds.yaml")["evaluation"],
+                "dev": _ly(ROOT / "configs" / "seeds.yaml")["evaluation"], "heldout": _ly(ROOT / "configs" / "seeds_heldout.yaml")["heldout"],
+                "heldout2": _ly(ROOT / "configs" / "p2.yaml")["heldout2"]}[which]
+        return f"{min(sets)}--{max(sets)}"
+
     from sim.scenes.config import load_yaml
 
     p2cfg = load_yaml(ROOT / "configs" / "p2.yaml")
@@ -139,13 +148,20 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
         "pEpoch": "0.1", "pBlockedDb": f"{float(p2cfg['blockage']['blocked_los_db']):g}", "pDecThr": f"{100 * float(p2cfg['thresholds_m']['decimeter']):g}",
         "pBreakEven": f"{100 * p2cfg['thresholds_m']['paper1_break_even'][0]:g}--{100 * p2cfg['thresholds_m']['paper1_break_even'][1]:g}",
         "pSyncList": "0, 0.3, 1 and 3", "pPhiList": "0, 2 and 5", "pSyncMain": "1", "pPhiMain": "2", "pBootN": "10{,}000",
-        "pSeedsTune": "101--105", "pSeedsDev": "1001--1010", "pSeedsHeld": "2001--2010", "pFdStep": "1", "pClockBias": "50", "pMaxDepth": "2", "pMaxPaths": "8",
+        "pSeedsTune": seed_range("tuning"), "pSeedsDev": seed_range("development"), "pSeedsHeld": seed_range(tag), "pFdStep": "1", "pClockBias": "50", "pMaxDepth": "2", "pMaxPaths": "8",
         "pSensRange": f"{float(m2['sensing_radar']['sensing_range_m']):g}", "pRatioThr": "5", "pRatioPtwo": "2", "pUeHeight": "1.5", "pLitLow": "0.6", "pLitHigh": "0.8",
         "pSyncWorst": "3", "pPhiWorst": "5", "pMarginFifteen": "15", "pMarginTwenty": "20", "pBinM": "5", "pCi": "95",
         "pGridSize": str(int(np.prod([len(v) for v in __import__("p2_estimate").GRID.values()]))),
     }
     for k, v in const.items():
         put(k, v, script="scripts/p2_make_paper.py", config=sc, aggregation="configuration constant (added after the freeze; no analysis change)")
+    be = [float(x) for x in p2cfg["thresholds_m"]["paper1_break_even"]]
+    put("pBreakEvenRms", f"{round(100 * be[0] * math.sqrt(2)):d}--{round(100 * be[1] * math.sqrt(2)):d}", script="scripts/p2_make_paper.py",
+        config="configs/p2.yaml thresholds_m.paper1_break_even (paper-1 per-axis sigma)",
+        aggregation="RMS distance error sigma * sqrt(2) of a 2-D isotropic Gaussian with that per-axis sigma [cm], rounded", raw=be)
+    put("pBreakEvenMedDist", f"{round(100 * be[0] * math.sqrt(2 * math.log(2))):d}--{round(100 * be[1] * math.sqrt(2 * math.log(2))):d}",
+        script="scripts/p2_make_paper.py", config="configs/p2.yaml thresholds_m.paper1_break_even (paper-1 per-axis sigma)",
+        aggregation="median distance error sigma * sqrt(2 ln 2) of a 2-D isotropic Gaussian (Rayleigh median) [cm], rounded", raw=be)
     for name, K in (("bw400_tdoa_s1_p2_b", "FourHundred"), ("bw100_tdoa_s1_p2_b", "Hundred"), ("bw400_tdoa_s0_p0_b", "IdealHw")):
         if name in c:
             put(f"pEstRmse{K}", f"{c[name]['rmse_m']:.1f}", script=se, config=name, aggregation="RMSE [m] (errors capped at 100 m); " + seedagg)
