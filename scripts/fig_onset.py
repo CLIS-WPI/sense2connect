@@ -95,7 +95,7 @@ def main() -> None:
             for ho in rec["handovers"].get(key, []):
                 ax.axvline(ho["switch_s"] - ev["start_s"], color=color, lw=lw, ls=ls, alpha=alpha, zorder=z)
         ax.set_ylabel("LoS loss [dB]")
-        ax.set_ylim(-1, CAP_DB if cls == "pedestrian" else 20)
+        ax.set_ylim(-1, CAP_DB)
         ax.grid(True, alpha=0.5)
         ax.text(0.01, 0.95, f"{tag} {cls}, 10–90 % onset {onset * 1e3:.0f} ms", transform=ax.transAxes, ha="left", va="top", fontsize=7, zorder=6, bbox={"facecolor": "white", "edgecolor": "none", "pad": 1.0})
     axes[-1].set_xlabel("Time relative to event start [s]")

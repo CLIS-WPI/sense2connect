@@ -47,6 +47,7 @@ EXTRA_MACROS = [
     "numGridCost", "numOnsetPedFast", "numRelRedTen", "numAbsRedTen", "numRelRedRef", "numAbsRedRef",
     *[f"numErr{k}{t}" for k in ("Perf", "Miss", "False", "Noise", "Size", "All", "AllUE", "Real") for t in ("Ten", "Ref")],
     "numBEPosRange", "numBEPosRef", "numBEUERange", "numBEUERef", "numBEVelMin", "numUAPlanTen", "numUAPlanRef", "numUAPlanIntervene",
+    "numCalPedAcq", "numCalPedOut", "numCalPosErr",
     "numRobustTen", "numRobustRef", "numDensLowTen", "numDensHighTen", "numRelRedRefLow", "numRelRedRefHigh", "numValueRange", "numValuePedRange",
     "numValueBusRange", "numValuePedTen", "numValueBusTen", "numPlanHorizon", "numSensePlanHO", "numSensePlanPP", "numAfiveHO",
 ]
@@ -446,6 +447,23 @@ def _crossover(xs: list[float], ys: list[float]) -> float | None:
 def _review2_macros(put, R5: Path, M3_CFG: str) -> None:
     """Macros from the second external review: realistic error budget (Table II), break-even sigmas, uncertainty-aware planner."""
     swf, uaf, pf = R5 / "review2" / "sweeps.json", R5 / "review2" / "uaplanner.json", R5 / "paired.json"
+    calf = R5 / "review2" / "calibration.json"
+    if calf.exists():
+        cal = json.loads(calf.read_text())
+        sc = "scripts/review2_calibrate.py -> results/M5/review2/calibration.json"
+        ccfg = (M3_CFG + "; ADDED AFTER THE SECOND EXTERNAL REVIEW; tracker-error calibration on the DEVELOPMENT seeds 1001-1010 (used unchanged by the "
+                "frozen pipeline on every seed set): final map tracker, detector budget 4, image-method ghost handling; one CPI = 0.1 s")
+        o = cal["outages"]["pedestrian"]
+        put("numCalPedAcq", f"{0.1 * o['median']['acquisition']:.1f}", script=sc, config=ccfg + "; pedestrians",
+            aggregation="median over pedestrian range visits of the CPIs from entering the 40 m range to the first matched track, x 0.1 s [s]",
+            raw={"median_cpi": o["median"]["acquisition"], "mean_cpi": o["mean"]["acquisition"]}, seeds="development seeds 1001-1010")
+        put("numCalPedOut", f"{0.1 * o['median']['outage']:.1f}", script=sc, config=ccfg + "; pedestrians",
+            aggregation="median over pedestrian track outages (unmatched runs after a match, inside the range) of their length, x 0.1 s [s]",
+            raw={"median_cpi": o["median"]["outage"], "mean_cpi": o["mean"]["outage"]}, seeds="development seeds 1001-1010")
+        sx = {c: e["std"]["x"] for c, e in cal["errors"].items()}
+        put("numCalPosErr", f"{min(sx.values()):.2f}--{max(sx.values()):.2f}", script=sc, config=ccfg + "; classes bus/truck, pedestrian, car",
+            aggregation="min-max over classes of the standard deviation of the along-lane (x) position error of matched tracks on the predictor's state [m]",
+            raw=sx, seeds="development seeds 1001-1010")
     cfg = M3_CFG + "; ADDED AFTER THE SECOND EXTERNAL REVIEW"
     tags = (("Ten", "10 dB", 2), ("Ref", "3GPP short-range reference", 3))
     dagger = "$^\\dagger$"
