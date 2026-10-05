@@ -210,24 +210,94 @@ suffice for the planner.
 % ---------------------------------------------------------------------
 \section{Position Error Bound and Estimator}
 % ---------------------------------------------------------------------
-\begin{table*}[t]
+\begin{figure*}[t]
 \centering
-\caption{Single-epoch estimator error at fixed geometries
-(\pValNumDraws{} draws each, main hardware, TDoA, no EKF) versus the
-single-epoch LoS-only PEB (biased model for a blocked LoS); all values in
-cm; RMSE$^2$ = bias$^2$ + centered RMS$^2$
-(Eq.~\eqref{eq:decomp}).}
-\label{tab:val}
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}llr|rrrr|rrrr@{}}
-\toprule
- & & & \multicolumn{4}{c|}{\pBwC\,MHz} & \multicolumn{4}{c}{\pBwA\,MHz}\\
-Mount & LoS state & UE $x$ [m] & PEB & bias & centered & RMSE & PEB & bias & centered & RMSE\\
-\midrule
-\csname @@input\endcsname tables/validation.tex
-\bottomrule
-\end{tabular}
-\end{table*}
+\begin{minipage}[b]{0.60\textwidth}
+\centering
+\begin{tikzpicture}[x=1.26mm,y=2.5mm,font=\footnotesize]
+  % facades
+  \fill[pattern=north east lines,pattern color=gray!70] (-40,9.57) rectangle (40,11.0);
+  \fill[pattern=north east lines,pattern color=gray!70] (-40,-8.61) rectangle (40,-10.0);
+  \draw[gray] (-40,9.57)--(40,9.57); \draw[gray] (-40,-8.61)--(40,-8.61);
+  \node[gray!60!black,fill=white,inner sep=1pt] at (-30,10.3) {buildings};
+  % sidewalks
+  \fill[gray!12] (-40,4.25) rectangle (40,9.57);
+  \fill[gray!12] (-40,-8.61) rectangle (40,-4.25);
+  \draw[gray!60] (-40,4.25)--(40,4.25); \draw[gray!60] (-40,-4.25)--(40,-4.25);
+  \draw[densely dashed,gray] (-40,2.5)--(40,2.5); \draw[densely dashed,gray] (-40,-2.5)--(40,-2.5);
+  \draw[gray!70] (-40,0)--(40,0);
+  \node[gray,anchor=south east] at (40,2.5) {westbound};
+  \node[gray,anchor=north east] at (40,-2.5) {eastbound};
+  \node[gray!60!black,anchor=north west] at (-40,9.4) {north sidewalk};
+  \node[gray!60!black,anchor=south east] at (40,-8.4) {south sidewalk};
+  % bus
+  \draw[fill=orange!35,draw=orange!70!black] (0,-3.75) rectangle (12,-1.25);
+  \node at (7.5,-2.5) {bus};
+  % links
+  \draw[very thick,red!75!black] (12,6.5)--(-6,-7);
+  \draw[thick,red!75!black,densely dotted] (12,6.5)--(-9,-7);
+  \draw[very thick,green!50!black] (-28,-7)--(-6,-7);
+  \draw[thick,green!50!black,dashed] (-28,-7)--(-17,9.57)--(-6,-7);
+  % UE track
+  \draw[-{Latex[length=1.5mm]},blue!70!black,densely dotted] (14,-6.4)--(26,-6.4);
+  \node[blue!70!black,anchor=south] at (20,-6.4) {UE track};
+  % UEs
+  \fill[blue!70!black] (-6,-7) circle (2.2pt);
+  \draw[blue!70!black,thick,fill=white] (-9,-7) circle (2.2pt);
+  \draw[-{Latex[length=1.3mm]},blue!70!black] (-6.3,-6.4) to[bend right=50] (-8.7,-6.4);
+  \node[blue!70!black,anchor=south] at (-7.5,-5.4) {error};
+  \node[blue!70!black,anchor=north west] at (-5.6,-7.3) {True UE};
+  \node[blue!70!black,anchor=south east] at (-9.8,-6.7) {Reported UE};
+  % O-RUs
+  \fill (12,6.5) circle (2.6pt); \node[anchor=south west] at (12.6,6.6) {O-RU 0 (\SI{5}{m})};
+  \fill (-28,-7) circle (2.6pt); \node[anchor=north] at (-28,-7.6) {O-RU 1 (\SI{5}{m})};
+  % dimensions
+  \draw[{Latex[length=1.3mm]}-{Latex[length=1.3mm]}] (-28,-12)--(12,-12);
+  \draw[gray] (-28,-9.4)--(-28,-12.6); \draw[gray] (12,6)--(12,-12.6);
+  \node[fill=white,inner sep=1pt] at (-8,-12) {\SI{40}{m}};
+  \draw[{Latex[length=1.3mm]}-{Latex[length=1.3mm]}] (43,-8.61)--(43,9.57);
+  \draw[gray] (40,-8.61)--(44,-8.61); \draw[gray] (40,9.57)--(44,9.57);
+  \node[rotate=90,anchor=south] at (43.3,0.5) {\SI{18.2}{m}};
+\end{tikzpicture}\\[0.5mm]
+{\footnotesize (a) Top view, lamppost deployment}
+\end{minipage}\hfill
+\begin{minipage}[b]{0.37\textwidth}
+\centering
+\begin{tikzpicture}[x=2.5mm,y=4mm,font=\footnotesize]
+  \draw[->] (0,0)--(24,0) node[anchor=north east,align=right] {distance from UE [m]};
+  \draw[->] (0,0)--(0,6) node[anchor=south] {$z$ [m]};
+  \foreach \z in {2,4} {\draw (-0.2,\z)--(0.2,\z); \node[anchor=east] at (-0.2,\z) {\z};}
+  \draw[fill=orange!35,draw=orange!70!black] (6.25,0) rectangle (8.75,3.2);
+  \node at (7.5,1.4) {bus};
+  \draw[fill=gray!25] (14.8,0) rectangle (16.8,1.6);
+  \node at (15.8,0.8) {car};
+  \draw[very thick,red!75!black] (0,1.5)--(22.5,5);
+  \fill[blue!70!black] (0,1.5) circle (2.2pt); \node[anchor=south west] at (0.2,1.7) {UE};
+  \fill (22.5,5) circle (2.6pt); \node[anchor=south east] at (22.3,5.1) {O-RU 0};
+\end{tikzpicture}\\[0.5mm]
+{\footnotesize (b) Side view along the serving link}\\[2mm]
+\begin{tikzpicture}[x=0.55mm,y=1.0mm,font=\footnotesize]
+  \fill[gray!12] (-40,-8.61) rectangle (40,9.57);
+  \draw[gray] (-40,9.57)--(40,9.57); \draw[gray] (-40,-8.61)--(40,-8.61);
+  \fill (0,9.2) circle (2.4pt); \node[anchor=south] at (0,9.8) {O-RU 0 (facade, \SI{8}{m})};
+  \fill (-40,-7) circle (2.4pt); \node[anchor=west] at (-38,-6) {O-RU 1};
+  \draw[{Latex[length=1.2mm]}-{Latex[length=1.2mm]}] (-40,-13)--(0,-13);
+  \node[fill=white,inner sep=1pt] at (-20,-13) {\SI{40}{m}};
+\end{tikzpicture}\\[0.5mm]
+{\footnotesize (c) Facade deployment}
+\end{minipage}
+\caption{Scenario (to scale). (a) Two neighboring cells share the
+street; O-RU~1 is \SI{40}{m} further along the street than O-RU~0. The
+true serving link (solid red) crosses the bus, whereas the link predicted
+from the reported UE position (dotted) passes it, so a position error
+turns into a missed blockage prediction; green: link to the other cell
+and one of its facade reflections (dashed). (b) The LoS passes through a
+bus but above a car. (c) In the facade deployment, O-RU~0 is mounted on
+the north facade at \SI{8}{m}.}
+\label{fig:scenario}
+\end{figure*}
+
+
 
 \subsection{Single-Epoch Position Error Bound}
 Collect the channel parameters of all O-RUs at one epoch in
@@ -293,66 +363,26 @@ over time.
 % ---------------------------------------------------------------------
 
 
-\begin{figure}[t]
+
+
+\begin{table*}[t]
 \centering
-\begin{tikzpicture}[x=0.95mm,y=2.1mm,font=\scriptsize]
-  % facades
-  \fill[pattern=north east lines,pattern color=gray!70] (-40,9.57) rectangle (40,11.2);
-  \fill[pattern=north east lines,pattern color=gray!70] (-40,-8.61) rectangle (40,-10.2);
-  \draw[gray] (-40,9.57)--(40,9.57); \draw[gray] (-40,-8.61)--(40,-8.61);
-  % sidewalks and curbs
-  \fill[gray!12] (-40,4.25) rectangle (40,9.57);
-  \fill[gray!12] (-40,-8.61) rectangle (40,-4.25);
-  \draw[gray!60] (-40,4.25)--(40,4.25); \draw[gray!60] (-40,-4.25)--(40,-4.25);
-  % lane centre lines
-  \draw[densely dashed,gray] (-40,2.5)--(40,2.5); \draw[densely dashed,gray] (-40,-2.5)--(40,-2.5);
-  \draw[gray!70] (-40,0)--(40,0);
-  \node[gray,anchor=south] at (30,-2.5) {eastbound};
-  \node[gray,anchor=south] at (30,2.5) {westbound};
-  % UE track
-  \draw[-{Latex[length=1.2mm]},blue!70!black,densely dotted,thick] (-38,-7)--(38,-7);
-  \node[blue!70!black,anchor=north] at (24,-7.2) {UE track};
-  % bus on eastbound lane crossing the serving link
-  \draw[fill=orange!30,draw=orange!70!black] (-6,-3.75) rectangle (6,-1.25);
-  \node at (0,-2.5) {bus};
-  % links
-  \draw[thick,red!75!black] (12,6.5)--(-6,-7);
-  \draw[thick,green!50!black] (-28,-7)--(-6,-7);
-  \draw[thick,green!50!black,dashed] (-28,-7)--(-17,9.57)--(-6,-7);
-  % UE true and reported
-  \fill[blue!70!black] (-6,-7) circle (1.6pt);
-  \draw[blue!70!black,thick] (-4.4,-6.0) circle (1.6pt);
-  \node[blue!70!black,anchor=north] at (-6,-7.6) {UE};
-  % O-RUs
-  \fill (12,6.5) circle (2pt); \node[anchor=south west] at (12.6,6.5) {O-RU 0 (lamppost)};
-  \draw[thick] (0,9.2) circle (2pt); \node[anchor=south] at (0,9.9) {O-RU 0 (facade)};
-  \fill (-28,-7) circle (2pt); \node[anchor=north] at (-28,-7.6) {O-RU 1};
-  \draw[thick] (-40,-7) circle (2pt);
-  % scale
-  \draw[|-|] (24,-12.0)--(34,-12.0); \node[anchor=west] at (34.5,-12.0) {10 m};
-\end{tikzpicture}\\[1mm]
-{\footnotesize (a) Top view of the periodic street section}\\[2mm]
-\begin{tikzpicture}[x=3.2mm,y=4.5mm,font=\scriptsize]
-  \draw[->] (0,0)--(24,0) node[anchor=north east] {distance from UE along the link [m]};
-  \draw[->] (0,0)--(0,6) node[anchor=south] {$z$ [m]};
-  \foreach \z in {2,4} {\draw (-0.2,\z)--(0.2,\z); \node[anchor=east] at (-0.2,\z) {\z};}
-  \draw[fill=orange!30,draw=orange!70!black] (6.25,0) rectangle (8.75,3.2);
-  \node at (7.5,1.4) {bus};
-  \draw[fill=gray!25] (14.8,0) rectangle (16.8,1.6);
-  \node at (15.8,0.8) {car};
-  \draw[thick,red!75!black] (0,1.5)--(22.5,5);
-  \fill[blue!70!black] (0,1.5) circle (1.6pt); \node[anchor=south west] at (0.2,1.6) {UE};
-  \fill (22.5,5) circle (2pt); \node[anchor=south east] at (22.3,5.1) {O-RU 0};
-\end{tikzpicture}\\[1mm]
-{\footnotesize (b) Side view along the serving link}
-\caption{Scenario. (a) Lamppost deployment (filled) and facade
-deployment (open markers, O-RU~1 then at the left edge); a UE on the
-south sidewalk with its serving link (red), the link to the other cell
-(green), and one facade reflection of it (dashed); the open blue circle
-is a reported UE position with error. (b) The LoS passes through a bus but
-above a car.}
-\label{fig:scenario}
-\end{figure}
+\caption{Single-epoch estimator error at fixed geometries
+(\pValNumDraws{} draws each, main hardware, TDoA, no EKF) versus the
+single-epoch LoS-only PEB (biased model for a blocked LoS); all values in
+cm; RMSE$^2$ = bias$^2$ + centered RMS$^2$
+(Eq.~\eqref{eq:decomp}).}
+\label{tab:val}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llr|rrrr|rrrr@{}}
+\toprule
+ & & & \multicolumn{4}{c|}{\pBwC\,MHz} & \multicolumn{4}{c}{\pBwA\,MHz}\\
+Mount & LoS state & UE $x$ [m] & PEB & bias & centered & RMSE & PEB & bias & centered & RMSE\\
+\midrule
+\csname @@input\endcsname tables/validation.tex
+\bottomrule
+\end{tabular}
+\end{table*}
 
 \subsection{Setup}
 \textit{Scenario.} We use the street canyon of
@@ -374,14 +404,17 @@ the street. Paths are traced with Sionna RT
 most \pMaxPaths{} paths per link).
 
 \textit{Service model.} The SNR of a cell adds, over all traced paths,
-the path power with the full array gain after its model-B loss; the UE
-is in outage below $\gamma_{\mathrm{req}}=\pSNRreq$\,dB, the SNR needed
-for \SI{400}{Mbit/s}. A LoS blockage therefore causes an outage only if
-the remaining paths fall below this level; during \SI{10}{dB} LoS
-events, the best surviving path of the same cell lies a median
-\pSameCellLoss\,dB below the unblocked LoS \cite{natanzi2027companion},
-so the link margin decides whether a beam change within the cell
-suffices or only the other cell can maintain the service.
+the path power with the full array gain after its model-B loss; this is
+an optimistic approximation of the received multipath power, since no
+single beam collects all paths with full gain. The UE is in outage when
+this total remaining power gives an SNR below
+$\gamma_{\mathrm{req}}=\pSNRreq$\,dB, the value needed for
+\SI{400}{Mbit/s}. A LoS blockage thus causes an outage only if the
+remaining paths do not sustain $\gamma_{\mathrm{req}}$: during
+\SI{10}{dB} LoS events, the strongest surviving path of the same cell
+lies a median \pSameCellLoss\,dB below the unblocked LoS
+\cite{natanzi2027companion}, so the link margin determines whether the
+same cell can still serve the UE or the other cell is needed.
 
 \textit{Signals and hardware.} The UE transmits one SRS symbol per
 \pEpoch-s epoch at \pTxPower\,dBm; the O-RU noise figure is
@@ -591,14 +624,15 @@ removing the mirror solutions with the true position reduces the loss
 but leaves it significant, so the largest errors are not its only
 cause. Synthetic bound-level errors are an optimistic model; they show what
 positioning would have to achieve, not that a practical estimator
-achieves it. The absolute gains at stake are small: at \SI{15}{dB}
-margin, A5 has an outage of \pAfiveFifteen~s/UE-min, which exact
-positions reduce by \pRelPerfFifteen{} and bound-level map-aided
-positions by \pRelMapFifteen; at the reference, A5 has
-\pAfiveRef~s/UE-min, reduced by \pRelPerfRef{} with exact positions
-and by \pRelMapRef{} at the map-aided bound. Such gains of tens to about
-a hundred milliseconds per UE-minute matter for interruption-sensitive
-services rather than for average throughput.
+achieves it. The absolute gains at stake are small: at \SI{15}{dB} margin, A5 has an
+outage of \pAfiveFifteen~s/UE-min, and the relative change is
+\mbox{\pRelPerfFifteen} with exact positions and \mbox{\pRelMapFifteen} with
+bound-level map-aided positions; at the reference, A5 has
+\pAfiveRef~s/UE-min, and the changes are \mbox{\pRelPerfRef} and
+\mbox{\pRelMapRef}, respectively. These reductions may benefit
+interruption-sensitive services, although the application-level impact
+depends on the frequency and duration of individual outages, which are
+not evaluated here.
 
 % ---------------------------------------------------------------------
 \section{Discussion and Limitations}

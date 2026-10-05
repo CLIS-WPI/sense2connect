@@ -368,7 +368,7 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
                 v = {m["label"]: m["vs_a5"] for m in src}[lab]
                 a5_src = (bd if C == "Map" else cj)["a5_outage"][lab]
                 rel = 100.0 * v["mean_diff"] / a5_src
-                put(f"pRel{C}{M}", f"{rel:+.1f}\\%" + ("$^\\dagger$" if not v["wilcoxon_p_two_sided"] < 0.05 else ""), script=sc_,
+                put(f"pRel{C}{M}", (f"\\ensuremath{{-}}{-rel:.1f}\\%" if rel < 0 else f"+{rel:.1f}\\%") + ("$^\\dagger$" if not v["wilcoxon_p_two_sided"] < 0.05 else ""), script=sc_,
                     config=f"closing experiment, planner with {cond} positions vs A5, margin {lab}",
                     aggregation="relative change of the outage vs A5 = mean over seeds of (planner - A5) / mean over seeds of A5 [%]; dagger = Wilcoxon p >= 0.05",
                     raw={"mean_diff": v["mean_diff"], "a5_mean": a5_src, "wilcoxon_p": v["wilcoxon_p_two_sided"]})
