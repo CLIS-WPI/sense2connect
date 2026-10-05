@@ -133,10 +133,10 @@ future signal-to-noise ratio, a cost-aware oracle closes
 \numPlanHorizon~s closes \numGeniePlanShareRange, whereas trigger-based
 proactive policies fail to realize this value.
 Harvesting it, however, is highly sensitive to geometry. Most of the
-value lies in abrupt pedestrian blockage near the user, and
-one-error-at-a-time sweeps place the break-even points with A5 at user
-and blocker position errors of only about \numBEUERange~m and
-\numBEPosRange~m, respectively.
+value lies in abrupt pedestrian blockage near the user, and for link
+margins of 15--\SI{30}{dB}, one-error-at-a-time sweeps place the
+break-even points with A5 at user and blocker position errors of only
+about \numBEUERange~m and \numBEPosRange~m, respectively.
 With the errors of our tracker and meter-level user positioning, the
 sensing-driven planner falls behind A5, a calibrated error model
 reproduces this shortfall, and an uncertainty-aware planner learns to
@@ -180,8 +180,8 @@ Sionna~RT~2.2 \cite{hoydis2023sionnart}: every moving body is a 3GPP
 TR~38.901 radar target and, through blockage model~B, an obstacle for
 communication paths. The pipeline is bitwise reproducible and released
 as open source.\footnote{\url{https://github.com/CLIS-WPI/sense2connect}}
-\item A characterization of which blockers matter: cars never obstruct
-the LoS of \SI{5}{m}--\SI{8}{m} radio units, a blocker shadows every
+\item A characterization of which blockers matter: in the studied
+geometry, cars never obstruct the LoS of \SI{5}{m}--\SI{8}{m} radio units, a blocker shadows every
 path of the serving cell, and heavy-vehicle outages rise orders of
 magnitude more slowly than pedestrian ones.
 \item A value-of-foresight analysis with a cost-aware oracle that
@@ -615,10 +615,12 @@ errors up to \SI{1}{m/s} keep the mean outage below that of A5. For
 margins of 15--\SI{30}{dB}, linear interpolation of the seed-mean
 difference places the break-even points at a blocker position error of
 \numBEPosRange~m and a UE position error of \numBEUERange~m
-(\numBEPosRef{} and \numBEUERef~m at the reference). A statistically
-significant advantage persists only up to \numBEPosSigMax~m and
-\numBEUESigMax~m, respectively, and at some margins only with exact
-positions. With a UE position error of
+(\numBEPosRef{} and \numBEUERef~m at the reference). These are
+single-error thresholds, not guarantees under simultaneous errors. As
+supporting, exploratory evidence (pointwise tests without correction for
+the number of sweep points), the advantage remains significant only up
+to \numBEPosSigMax~m and \numBEUESigMax~m, respectively, and at some
+margins only with exact positions. With a UE position error of
 \SI{1}{m}, no blocker accuracy restores the advantage. A pedestrian next to the UE
 is about \SI{0.5}{m} wide, so errors of this size move it in or out of
 the predicted line of sight; in this deployment and error model, the
@@ -631,11 +633,13 @@ samples, no covariance inflation, threshold \numUAThetaTen~s at
 uncertainty-aware planner never intervenes at 10, 15, 20, and
 \SI{30}{dB} and in at most \numUAPlanIntervene{} of the epochs
 otherwise. It is significantly behind A5 (\numUAPlanTen{} and
-\numUAPlanRef~s/UE-min at \SI{10}{dB} and the reference), but not behind
-A5 charged with the same sensing overhead (\numUAvsOHTen{} and
-\numUAvsOHRef): its deficit is the overhead itself
-(\numAfiveOHTen{} and \numAfiveOHRef). With the available accuracy, the
-best use of the predictions is not to act on them.
+\numUAPlanRef~s/UE-min at \SI{10}{dB} and the reference). At
+\SI{10}{dB}, this deficit is entirely the sensing overhead
+(\numAfiveOHTen), since the planner takes the same decisions as A5; at
+the reference, the overhead accounts for \numAfiveOHRef{} and the
+residual difference from overhead-matched A5 (\numUAvsOHRef) is not
+statistically significant. In our experiments, the tuned policy thus
+rarely acts on the predictions.
 
 % ---------------------------------------------------------------------
 \section{Discussion and Limitations}
