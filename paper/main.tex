@@ -6,8 +6,8 @@
 % scripts/make_paper.py generates from results/ (evaluation seeds); the
 % source of every macro is recorded in results/M5/numbers_catalog.json.
 % Fallback defaults below are shown in BLUE only if numbers.tex is absent.
-% FIGURES: paper/figs/fig_onset.pdf, fig_leadtime.pdf,
-% fig_outage_margin.pdf, fig_value.pdf (placeholders if missing).
+% FIGURES: paper/figs/fig_onset2.pdf, fig_leadtime.pdf,
+% fig_outage_value.pdf, fig_error_sweep.pdf (placeholders if missing).
 % RED = text still to be checked.
 % =====================================================================
 \documentclass[conference]{IEEEtran}
@@ -98,6 +98,10 @@
 \providecommand{\numSensePlanPP}{\prelim{0.54}}
 \providecommand{\numAfiveHO}{\prelim{5.9}}
 
+\newcommand{\figorboxw}[4]{%
+  \IfFileExists{figs/#1}{\includegraphics[width=#2]{figs/#1}}%
+  {\fbox{\parbox[c][#3][c]{#2}{\centering
+   \textcolor{red}{Placeholder: \detokenize{figs/#1}. #4}}}}}
 \newcommand{\figorbox}[3]{%
   \IfFileExists{figs/#1}{\includegraphics[width=\columnwidth]{figs/#1}}%
   {\fbox{\parbox[c][#2][c]{0.92\columnwidth}{\centering
@@ -105,8 +109,9 @@
 
 \begin{document}
 
-\title{Revisiting ISAC-Enabled Proactive Handover for\\
-Blockage-Resilient mmWave Open RAN}
+\title{ISAC-Assisted Proactive Handover\\
+in mmWave Networks: Value of Foresight\\
+and Localization Requirements}
 
 \author{
 \IEEEauthorblockN{Seyed Bagher Hashemi Natanzi\IEEEauthorrefmark{1}\textsuperscript{,}\thanks{*Corresponding author: snatanzi@wpi.edu}, Bo Tang\IEEEauthorrefmark{2}}
@@ -139,8 +144,8 @@ break-even points with A5 at user and blocker position errors of only
 about \numBEUERange~m and \numBEPosRange~m, respectively.
 With the errors of our tracker and meter-level user positioning, the
 sensing-driven planner falls behind A5, a calibrated error model
-reproduces this shortfall, and an uncertainty-aware planner learns to
-defer to A5 almost always. These results delimit, for the studied
+reproduces this shortfall, and an uncertainty-aware planner largely
+defers to A5. These results delimit, for the studied
 deployment, when ISAC-driven proactive handover pays off.
 \end{abstract}
 
@@ -198,6 +203,45 @@ the user and blocker localization accuracy that foresight requires.
 % ---------------------------------------------------------------------
 \section{Related Work}
 % ---------------------------------------------------------------------
+\begin{figure*}[t]
+\centering
+\begin{minipage}[c]{0.49\textwidth}
+\centering
+\begin{tikzpicture}[x=0.40cm,y=0.40cm,font=\scriptsize]
+  \fill[gray!15] (-9,0) rectangle (10,-0.4);
+  \draw[thick] (-9,0) -- (10,0);
+  \fill[pattern=north east lines,pattern color=gray] (-9.6,0) rectangle (-8.6,9);
+  \fill[pattern=north east lines,pattern color=gray] (9.6,0) rectangle (10.6,9);
+  \node[below] at (-2.5,-0.4) {near lane};
+  \node[below] at (2.5,-0.4) {far lane};
+  \draw[fill=blue!25] (-3.5,0) rectangle (-1.5,1.6);
+  \draw[dashed,red!70!black,thick] (-3.75,0) rectangle (-1.25,3.5);
+  \node[red!70!black,left] at (-3.75,3.1) {truck};
+  \node at (-2.5,0.8) {car};
+  \draw[fill=blue!25] (1.5,0) rectangle (3.5,1.6);
+  \fill (-7,1.5) circle (3pt); \node[below right] at (-7,1.4) {UE};
+  \fill[black] (9.2,8) circle (3pt); \node[above left] at (9.2,8) {O-RU (facade, \SI{8}{m})};
+  \draw[thick] (6.5,0) -- (6.5,5); \fill (6.5,5) circle (3pt);
+  \node[below right] at (6.6,4.9) {lamppost \SI{5}{m}};
+  \draw[thick,-{Latex}] (9.2,8) -- (-7,1.5);
+  \draw[thick,dashed,-{Latex}] (6.5,5) -- (-7,1.5);
+  \fill (-2.5,3.31) circle (1.6pt); \fill (-2.5,2.67) circle (1.6pt);
+  \draw[-{Latex[length=1.5mm]},thin] (-4.4,6.2) -- (-2.6,3.4);
+  \node[above,align=center] at (-4.4,6.1) {LoS over near lane:\\ \SI{2.7}{m} (lamppost), \SI{3.3}{m} (facade)};
+\end{tikzpicture}
+\\[1mm]{\footnotesize (a) Street cross-section}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.49\textwidth}
+\centering
+\figorboxw{fig_onset2.pdf}{3.45in}{6cm}{Onset panels.}
+\end{minipage}
+\caption{(a) Street cross-section: over the near lane the LoS passes above
+cars but through tall vehicles. (b), (c) Model-B loss of a typical
+bus/truck and pedestrian outage at \SI{1}{ms} resolution, with the
+handover instants of A3 and the genie at \SI{10}{dB} margin.}
+\label{fig:scene}
+\end{figure*}
+
 \textit{mmWave blockage.} Measurements report deep and fast fading
 caused by pedestrians at mmWave frequencies \cite{maccartney2017blockage},
 and 3GPP models blockage with a stochastic model~A and a geometric
@@ -373,9 +417,30 @@ predicted clear, both from tracks and from a perfect predictor (genie).
 % ---------------------------------------------------------------------
 \section{Which Blockers Matter}
 % ---------------------------------------------------------------------
+\begin{figure}[t]
+\centering
+\figorbox{fig_leadtime.pdf}{3.2cm}{Share of 10 dB events with a confirmed track before onset.}
+\caption{Share of outage events whose blocker is tracked a given time
+before onset, map-constrained vs.\ unconstrained tracker (95\% CI).}
+\label{fig:leadtime}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\figorboxw{fig_outage_value.pdf}{\textwidth}{5cm}{Outage and value of foresight.}
+\caption{(a) Outage time at \SI{400}{Mbit/s} versus link margin for A3,
+A5, the sensing-driven planner, the genie-planner
+($H=\numPlanHorizon$~s), and the two oracles (95\% CI). (b) Share of the
+A5-to-oracle gap closed by the cost-aware oracle, split by the class of
+the blocker on the user's cell, with the genie-planner (triangles) and
+the sensing-driven planner (values below the axis, in gap widths); the
+numbers above the bars give the absolute gap in s/UE-min.}
+\label{fig:results}
+\end{figure*}
+
 Users experience about \numEventsPerMin{} LoS outage events
 (\SI{10}{dB} model-B loss) per minute. Table~\ref{tab:classes}
-summarizes the blocker classes; Fig.~\ref{fig:geometry} explains why
+summarizes the blocker classes; Fig.~\ref{fig:scene}(a) explains why
 cars are absent. For a UE at height $h_u$ and an O-RU at height $h_o$
 and horizontal distance $d$, the LoS height at horizontal distance $x$
 from the UE is $z(x)=h_u+(h_o-h_u)x/d$, i.e., \SI{2.7}{m}--\SI{3.3}{m}
@@ -399,34 +464,7 @@ Car        & 0\%          & --           & --               & --          & $\ap
 \end{tabular}
 \end{table}
 
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}[x=0.40cm,y=0.40cm,font=\scriptsize]
-  \fill[gray!15] (-9,0) rectangle (10,-0.4);
-  \draw[thick] (-9,0) -- (10,0);
-  \fill[pattern=north east lines,pattern color=gray] (-9.6,0) rectangle (-8.6,9);
-  \fill[pattern=north east lines,pattern color=gray] (9.6,0) rectangle (10.6,9);
-  \node[below] at (-2.5,-0.4) {near lane};
-  \node[below] at (2.5,-0.4) {far lane};
-  \draw[fill=blue!25] (-3.5,0) rectangle (-1.5,1.6);
-  \draw[dashed,red!70!black,thick] (-3.75,0) rectangle (-1.25,3.5);
-  \node[red!70!black,left] at (-3.75,3.1) {truck};
-  \node at (-2.5,0.8) {car};
-  \draw[fill=blue!25] (1.5,0) rectangle (3.5,1.6);
-  \fill (-7,1.5) circle (3pt); \node[below right] at (-7,1.4) {UE};
-  \fill[black] (9.2,8) circle (3pt); \node[above left] at (9.2,8) {O-RU (facade, \SI{8}{m})};
-  \draw[thick] (6.5,0) -- (6.5,5); \fill (6.5,5) circle (3pt);
-  \node[below right] at (6.6,4.9) {lamppost \SI{5}{m}};
-  \draw[thick,-{Latex}] (9.2,8) -- (-7,1.5);
-  \draw[thick,dashed,-{Latex}] (6.5,5) -- (-7,1.5);
-  \fill (-2.5,3.31) circle (1.6pt); \fill (-2.5,2.67) circle (1.6pt);
-  \draw[-{Latex[length=1.5mm]},thin] (-4.4,6.2) -- (-2.6,3.4);
-  \node[above,align=center] at (-4.4,6.1) {LoS over near lane:\\ \SI{2.7}{m} (lamppost), \SI{3.3}{m} (facade)};
-\end{tikzpicture}
-\caption{Street cross-section. Over the near lane the LoS passes above
-cars but through tall vehicles.}
-\label{fig:geometry}
-\end{figure}
+
 
 A blocker shadows the whole angular sector of the serving O-RU,
 including the ground reflection: the best surviving path lies a median
@@ -434,19 +472,12 @@ including the ground reflection: the best surviving path lies a median
 switching cannot recover the link and only a second cell can. That cell
 is clear in most heavy-vehicle outages but in few pedestrian outages,
 because a pedestrian close to the UE often shadows both cells. The
-outages also differ sharply in dynamics (Fig.~\ref{fig:onset}): the loss
+outages also differ sharply in dynamics (Fig.~\ref{fig:scene}(b), (c)): the loss
 caused by a bus or truck rises over \numOnsetBus\,s, whereas a
 pedestrian next to the UE cuts the link almost at once: \numOnsetPedFast{}
 of pedestrian onsets are shorter than \SI{10}{ms}, and their median is at
 the \SI{1}{ms} resolution of our evaluation.
 
-\begin{figure}[t]
-\centering
-\figorbox{fig_onset.pdf}{3.2cm}{Model-B loss vs.\ time, typical bus/truck and pedestrian event.}
-\caption{Blockage onset of a typical bus/truck and pedestrian event,
-with the handover instants of A3 and of the trigger genie.}
-\label{fig:onset}
-\end{figure}
 
 % ---------------------------------------------------------------------
 \section{Sensing Performance}
@@ -470,18 +501,14 @@ confirmed after a median of \numCalPedAcq~s and then lost for
 \numCalPedOut~s at a time, and along-lane position errors range from
 \numCalPosErr~m and are correlated over about half a second.
 
-\begin{figure}[t]
-\centering
-\figorbox{fig_leadtime.pdf}{3.2cm}{Share of 10 dB events with a confirmed track before onset.}
-\caption{Share of outage events whose blocker is tracked a given time
-before onset, map-constrained vs.\ unconstrained tracker (95\% CI).}
-\label{fig:leadtime}
-\end{figure}
+
+
+
 
 % ---------------------------------------------------------------------
 \section{The Value of Foresight and What ISAC Delivers}
 % ---------------------------------------------------------------------
-\textit{Reactive baseline.} Fig.~\ref{fig:outage} shows the outage
+\textit{Reactive baseline.} Fig.~\ref{fig:results}(a) shows the outage
 versus margin. Service-aware A5, the best reactive policy on the
 tuning seeds, is our reference. On the held-out seeds it is on par with
 the wide-grid A3 at low margins, and its advantage grows with the margin
@@ -489,17 +516,11 @@ the wide-grid A3 at low margins, and its advantage grows with the margin
 because A3 hands over on RSRP differences even when the serving cell
 still meets the service rate.
 
-\begin{figure}[t]
-\centering
-\figorbox{fig_outage_margin.pdf}{3.6cm}{Outage vs.\ link margin.}
-\caption{Outage time versus link margin for A3, A5, the sensing-driven
-planner, the genie-planner, and the two oracles (95\% CI).}
-\label{fig:outage}
-\end{figure}
+
 
 \textit{Value of foresight.} The cost-aware oracle closes
 \numValueRange{} of the improvable gap at every margin from 5\,dB up
-(Fig.~\ref{fig:value}); at \SI{10}{dB} it reaches \numCostOracleTen{}
+(Fig.~\ref{fig:results}(b)); at \SI{10}{dB} it reaches \numCostOracleTen{}
 vs.\ \numAfiveTen{} for A5 and \numOracleTen{} for the instantaneous
 oracle. It does so largely by making fewer, better-timed switches, so it
 avoids interruption as well as blockage. In absolute terms, perfect
@@ -522,21 +543,12 @@ triggers ignore sub-threshold losses that already cause outage and the
 cost of the switches they add. Foresight therefore needs cost-aware
 planning, but little look-ahead.
 
-\begin{figure}[t]
-\centering
-\figorbox{fig_value.pdf}{3.6cm}{Share of the A5-to-oracle gap closable by perfect foresight, by class.}
-\caption{Value of foresight: share of the A5-to-oracle gap closed by the
-cost-aware oracle, split by the class of the blocker on the user's
-cell, with the genie-planner (triangles) and the sensing-driven planner
-(values below the axis, in gap widths).}
-\label{fig:value}
-\end{figure}
 
 \textit{Where the value lies.} Pedestrian blockage accounts for
 \numValuePedRange{} of the improvable gap and heavy vehicles for
 \numValueBusRange{} (Table~\ref{tab:classes}). Cars, which never cause
 \SI{10}{dB} LoS outages, contribute only at margins of 0--\SI{5}{dB},
-where their smaller LoS losses already cause outage (Fig.~\ref{fig:value}). This is the crux: the
+where their smaller LoS losses already cause outage (Fig.~\ref{fig:results}(b)). This is the crux: the
 blockers that sensing observes well, heavy vehicles, cause slow outages
 that A5 follows reactively, while most of the value lies in abrupt
 pedestrian blockage near the UE, which the network-side radar tracks in
@@ -588,8 +600,8 @@ delays and outage durations, persistent false tracks with the measured
 rate, lifetime, and share of fragments next to real targets, position
 and velocity errors along the lane that are correlated over time as in
 the filter, and the class-agnostic size rule of our predictor, which
-gives every vehicle track the size of a bus. Each row of
-Table~\ref{tab:errors} adds one error type to perfect tracks. Missed
+gives every vehicle track the size of a bus. The individual-error rows
+of Table~\ref{tab:errors} each add one error type to perfect tracks. Missed
 tracks are the largest single cause at every margin from \SI{5}{dB}
 up. What matters is their persistence: dropping detections
 independently per frame costs only \numMissPerFrameTen~s/UE-min at
