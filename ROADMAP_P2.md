@@ -108,3 +108,26 @@ P2-M5 Figures (single column, vector PDF, >= 8 pt, IEEE ready):
   paper2/numbers2.tex; a draft paper2/main.tex (IEEE conference, 6
   pages max, IEEEtran) whose every number is a macro; results/P2/
   report.md summarising all milestones, deviations and open issues.
+
+## Addendum A: realism of the bounds
+1. Hardware limits as swept parameters (otherwise the bound is
+   unrealistically small at this SNR):
+   - inter-O-RU time synchronization error sigma_sync in
+     {0, 0.3, 1, 3} ns (Gaussian, per epoch, or constant per run;
+     state which), entering ToA/TDoA as a random bias;
+   - array calibration error: per-element phase error sigma_phi in
+     {0, 2, 5} deg (fixed per O-RU and run), entering AoA as a bias.
+   Treat them in the bound as Gaussian priors on the nuisance biases
+   (Bayesian EFIM), and in the estimator as actual random draws. Report
+   which of bandwidth, SNR, sync or calibration limits the PEB.
+2. Blocked LoS realism: when the LoS of a cell has model-B loss >=
+   10 dB, evaluate two variants: (a) "geometry kept": the attenuated
+   LoS still carries exact delay/angle information (optimistic);
+   (b) "biased": the blocked LoS delay/angle carry an unknown bias
+   (treated as a nuisance parameter, i.e. its geometric information is
+   removed). Report P2 under both; the paper's main claim uses (b),
+   with (a) as the optimistic reference.
+3. Derivatives: use analytic derivatives (image method for specular
+   reflections on the known facades/ground, exact for LoS); keep the
+   +/-1 cm finite differences only as a validation test on a subset
+   (agreement within 1e-3 relative where the path persists).
