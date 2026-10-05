@@ -257,6 +257,34 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
         ex2 = int(math.floor(math.log10(e2)))
         put("pFimJobErr", f"\\ensuremath{{{e2 / 10 ** ex2:.1f}\\times 10^{{{ex2}}}}}", script=sv2, config="job-level GPU PEB vs independent NumPy full-matrix reference (random samples)",
             aggregation="largest relative deviation")
+    # ---- review 4: derivative validation (scripts/p2_diag_derivatives.py) and the reference margin
+    dvf = P2 / "diag_derivatives.json"
+    if dvf.exists():
+        dv = json.loads(dvf.read_text())
+        sdv = "scripts/p2_diag_derivatives.py -> results/P2/diag_derivatives.json"
+        a = dv["a_float64"]
+        e_ = a["max_rel_at_best_step"]
+        ex = int(math.floor(math.log10(e_)))
+        put("pDerivFdMaxRel", f"\\ensuremath{{{e_ / 10 ** ex:.1f}\\times 10^{{{ex}}}}}", script=sdv,
+            config=f"(a) float64 image method, {a['n_ue']} random UE positions, single- and double-bounce specular paths on the facades and ground, "
+                   f"central differences at the best step h = {a['best_step_m']:g} m", aggregation="max over paths and {delay, az, el} x {x, y} of |fd - analytic| / |analytic|",
+            raw={"max_rel_per_step": a["max_rel_per_step"], "n_paths": a["n_paths"]})
+        put("pDerivFdBestStep", f"\\ensuremath{{10^{{{int(round(math.log10(a['best_step_m'])))}}}}}", script=sdv, config="(a) float64 check, steps 1e-4..1e-1 m",
+            aggregation="step [m] with the smallest max relative error")
+        put("pDerivFdNumUe", str(a["n_ue"]), script=sdv, config="(a) float64 check", aggregation="number of random UE positions")
+        st = dv["b_sionna_float32"]["steps"]["1cm"]["counts"]["share_of_disagreements_exclusive"]
+        cfg_b = "(b) Sionna float32 re-trace, +/-1 cm (subset of \\pDerivAgree), disagreeing paths (1e-3 relative), exclusive causes"
+        put("pDerivDisFloat", pct(st["float32_rounding"]), script=sdv, config=cfg_b, aggregation="share explained by float32 rounding (within 3x the single-precision floor)",
+            raw=dv["b_sionna_float32"]["steps"]["1cm"]["counts"])
+        put("pDerivDisNearZero", pct(st["near_zero_derivative"]), script=sdv, config=cfg_b,
+            aggregation="share whose failing values are near-zero derivatives (|an| < 1e-2 |grad|, error <= 1e-3 |grad|)")
+        put("pDerivDisPathChange", pct(st["path_changes_vanish"] + st["path_changes_kink"]), script=sdv, config=cfg_b,
+            aggregation="share where the path appears / vanishes or leaves the fixed-plane image-method model across the step")
+        put("pDerivDisOther", pct(st["unexplained"]), script=sdv, config=cfg_b, aggregation="share unexplained")
+    m3m = json.loads((ROOT / "results" / "M3" / "metrics.json").read_text())
+    put("pRefMargin", f"{m3m['budget']['margin_ref_db']:.1f}", script="scripts/run_m3.py budget (configs/m3.yaml rework.budget) -> results/M3/metrics.json budget.margin_ref_db",
+        config="3GPP short-range reference link (TR 38.802 Table A.2.1-1 budget); the 'Ref.' margin of the closing experiment (scripts/p2_closing.py uses the same run_m3 budget on the tuning seeds)",
+        aggregation="median best-cell unblocked SNR over tuning jobs 101-105 minus SNR_req [dB] (paper-1 \\numRefMargin)")
     vt = P2 / f"validation_table_{tag}.json"
     if vt.exists():
         vtd = json.loads(vt.read_text())
