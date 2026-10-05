@@ -229,8 +229,8 @@ suffice for the planner.
   \draw[gray!60] (-40,4.25)--(40,4.25); \draw[gray!60] (-40,-4.25)--(40,-4.25);
   \draw[densely dashed,gray] (-40,2.5)--(40,2.5); \draw[densely dashed,gray] (-40,-2.5)--(40,-2.5);
   \draw[gray!70] (-40,0)--(40,0);
-  \node[gray,anchor=south east] at (40,2.5) {westbound};
-  \node[gray,anchor=north east] at (40,-2.5) {eastbound};
+  \node[gray!60!black,anchor=south east] at (40,2.5) {westbound};
+  \node[gray!60!black,anchor=north east] at (40,-2.5) {eastbound};
   \node[gray!60!black,anchor=north west] at (-40,9.4) {north sidewalk};
   \node[gray!60!black,anchor=south east] at (40,-8.4) {south sidewalk};
   % bus
@@ -238,7 +238,7 @@ suffice for the planner.
   \node at (7.5,-2.5) {bus};
   % links
   \draw[very thick,red!75!black] (12,6.5)--(-6,-7);
-  \draw[thick,red!75!black,densely dotted] (12,6.5)--(-9,-7);
+  \draw[red!75!black,line width=1.1pt,dash pattern=on 1.6pt off 1.4pt] (12,6.5)--(-9,-7);
   \draw[very thick,green!50!black] (-28,-7)--(-6,-7);
   \draw[thick,green!50!black,dashed] (-28,-7)--(-17,9.57)--(-6,-7);
   % UE track
@@ -261,6 +261,13 @@ suffice for the planner.
   \draw[{Latex[length=1.3mm]}-{Latex[length=1.3mm]}] (43,-8.61)--(43,9.57);
   \draw[gray] (40,-8.61)--(44,-8.61); \draw[gray] (40,9.57)--(44,9.57);
   \node[rotate=90,anchor=south] at (43.3,0.5) {\SI{18.2}{m}};
+  % legend
+  \begin{scope}[shift={(-40,-15.6)}]
+    \draw[very thick,red!75!black] (0,0)--(5,0); \node[anchor=west] at (5.5,0) {Actual link};
+    \draw[red!75!black,line width=1.1pt,dash pattern=on 1.6pt off 1.4pt] (19,0)--(24,0); \node[anchor=west] at (24.5,0) {Predicted link};
+    \draw[very thick,green!50!black] (40,0)--(45,0); \node[anchor=west] at (45.5,0) {Other-cell link};
+    \draw[thick,green!50!black,dashed] (61,0)--(66,0); \node[anchor=west] at (66.5,0) {Reflected path};
+  \end{scope}
 \end{tikzpicture}\\[0.5mm]
 {\footnotesize (a) Top view, lamppost deployment}
 \end{minipage}\hfill
@@ -289,7 +296,7 @@ suffice for the planner.
 \end{tikzpicture}\\[0.5mm]
 {\footnotesize (c) Facade deployment}
 \end{minipage}
-\caption{Scenario (to scale). (a) Two neighboring cells share the
+\caption{Scenario geometry (dimensions indicated; axes scaled independently). (a) Two neighboring cells share the
 street; O-RU~0 and O-RU~1 are on \SI{5}{m} lampposts, \SI{40}{m} apart
 along the street. The
 true serving link (solid red) crosses the bus, whereas the link predicted
