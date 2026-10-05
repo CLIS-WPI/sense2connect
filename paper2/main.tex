@@ -14,13 +14,6 @@
 \usepackage[hidelinks]{hyperref}
 
 \input{numbers2.tex}
-\providecommand{\pPlanH}{\textcolor{red}{??}}
-\providecommand{\pLoopDelay}{\textcolor{red}{??}}
-\providecommand{\pTauHO}{\textcolor{red}{??}}
-\providecommand{\pOverhead}{\textcolor{red}{??}}
-\providecommand{\pDerivAgree}{\textcolor{red}{??}}
-\providecommand{\pFimToyErr}{\textcolor{red}{??}}
-\providecommand{\pValBiasMseFour}{\textcolor{red}{??}}
 
 \begin{document}
 
@@ -67,9 +60,8 @@ Millimeter-wave (mmWave) bands provide the bandwidth that 5G and 6G
 networks need for high data rates, but their links are fragile: a
 pedestrian or vehicle crossing the line of sight (LoS) attenuates the
 signal by tens of decibels within milliseconds
-\cite{rappaport2013mmwave,maccartney2017blockage}. Reactive mobility
-procedures, which hand over after measurements have degraded, cannot
-avoid such outages. Integrated sensing and communication (ISAC) and
+\cite{rappaport2013mmwave,maccartney2017blockage}. Reactive handover
+cannot avoid such outages. Integrated sensing and communication (ISAC) and
 other sensing-aided approaches therefore aim to predict blockage and
 hand the user over in advance
 \cite{liu2022isac,charan2021vision,li2025lookbefore}.
@@ -140,10 +132,9 @@ use.
 
 \textit{Sensing-aided handover.} Vision-, radar-, and ISAC-aided
 handover predicts blockage or user motion
-\cite{charan2021vision,li2025lookbefore}. Our companion study
-\cite{natanzi2027companion} separated the value of foresight from what
-sensing realizes and identified the user position as the binding
-requirement; this paper examines whether the infrastructure can meet it.
+\cite{charan2021vision,li2025lookbefore}; our companion study
+\cite{natanzi2027companion} identified the user position as its binding
+requirement.
 
 % ---------------------------------------------------------------------
 \section{System Model and Problem Formulation}
@@ -259,12 +250,13 @@ O-RU time offsets ($\sigma_{\mathrm{sync}}$) and of the element phases
 arrival, TDoA). In the \emph{map-aided} bound, the reflected paths are
 not nuisance parameters: their geometry is known from the digital twin,
 and their entries of $\mathbf T$ follow analytically from the virtual
-anchors. The analytic derivatives agree with re-tracing at
-$\pm\pFdStep$\,cm to a relative error of $10^{-3}$ for \pDerivAgree{}
-of the paths and otherwise to the single-precision floor of the ray
-tracer; the GPU implementation of \eqref{eq:efim} matches an
-independent NumPy implementation and a brute-force numerical Fisher
-matrix on toy cases (largest relative deviation \pFimToyErr). The position
+anchors. Of the derivative values, \pDerivAgreeValues{} agree with re-tracing
+at $\pm\pFdStep$\,cm to a relative error of $10^{-3}$ (all derivatives
+of a path in \pDerivAgree{} of the paths); the others are limited by the
+single-precision floor of the ray tracer. The GPU implementation of
+\eqref{eq:efim} matches an independent NumPy implementation to a
+relative deviation of \pFimJobErr{} and a brute-force numerical Fisher
+matrix on toy cases to \pFimToyErr. The position
 error bound is $\mathrm{PEB}=\sqrt{\mathrm{tr}(\mathbf J_{\mathbf p}^{-1})}$.
 It bounds the root-mean-square (RMS) error of unbiased single-epoch
 estimates for a given geometry; it is neither a median error nor a
@@ -393,8 +385,8 @@ and decomposed its error as
 i.e., squared bias plus squared centered RMS (Table~\ref{tab:val}). The
 squared bias accounts for most of the mean squared error in five of the
 six geometries at \pBwC\,MHz (\pValBiasMseFour{} of it); in the
-remaining one (lamppost, both LoS, $x=-20$\,m), the random spread is
-larger. The bias is caused by interference of unresolved multipath, and
+remaining one (lamppost, both LoS, $x=-20$\,m), the squared bias is
+\pValBiasMseFourOther{} of it and the random spread is larger. The bias is caused by interference of unresolved multipath, and
 in one geometry by a front/back mirror solution. The centered RMS is
 geometry dependent, between \pValCenToPebFour{} times the PEB at
 \pBwC\,MHz: close to the bound at some geometries and an order of

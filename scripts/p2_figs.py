@@ -5,6 +5,8 @@ fig_p2_sidewalk.pdf median PEB and estimator error along the sidewalk (UE x, 5 m
 fig_p2_cdf.pdf      CDF of PEB (LoS-only, map-aided) and estimator error, main configuration (the shaded paper-1
                     break-even band was removed after the external review; figure-only change)
 fig_p2_closing.pdf  closing experiment: outage vs link margin, A5 and the paper-1 planner fed with positions of increasing quality
+                    (synthetic bound-level curves: full single-epoch covariance e_t ~ N(0, J_p(t)^-1), scripts/p2_diag_boundlevel.py;
+                    switched from the isotropic PEB curves for text v5, figure-only change)
 Main configuration: 400 MHz, TDoA, sigma_sync 1 ns (per run), sigma_phi 2 deg, blocked LoS biased/diffracted.
 Seed-level points (per-seed medians, mean over seeds) with 95 % bootstrap CIs over seeds where shown.
 Run: python scripts/p2_figs.py --set dev|heldout
@@ -182,8 +184,12 @@ def main() -> None:
     # ---------------------------------------------------------------- fig 4: closing experiment
     cf = ROOT / "results" / "P2" / f"closing_{args.set}.json"
     if cf.exists():
-        cl = json.loads(cf.read_text())["conditions"]
+        cl = dict(json.loads(cf.read_text())["conditions"])
         clj = json.loads(cf.read_text())
+        # synthetic bound-level curves: full single-epoch covariance, e_t ~ N(0, J_p(t)^-1) (scripts/p2_diag_boundlevel.py; text v5)
+        bfj = ROOT / "results" / "P2" / f"diag_boundlevel_{args.set}.json"
+        if bfj.exists():
+            cl.update(json.loads(bfj.read_text())["conditions"])
         pl = json.loads((ROOT / "results" / "M5" / "planner.json").read_text())["margins"]
         a5o = clj.get("a5_outage")
         labs = [m["label"] for m in pl if m["label"] != "v1 radio (high margin)"]
@@ -192,9 +198,10 @@ def main() -> None:
         a5 = np.array([a5o[m["label"]] if a5o else m["a5"]["eval"]["outage_req_s_per_min"]["mean"] for m in pl if m["label"] != "v1 radio (high margin)"])
         est_key = "estimator bw400_tdoa_s1_p2_b" if VARIANT == "v1" else f"estimator {VARIANT} bw400_tdoa_s1_p2_b"
         ax.plot(xm, a5, color="black", marker="v", label="A5 (3GPP)")
-        style = {"perfect": ("#2ca02c", "o", "Planner, exact UE position"), "PEB map-aided": ("#17becf", "s", "Planner, map-aided bound error"),
-                 "PEB los-only": ("#1f77b4", "s", "Planner, LoS-only bound error"),
-                 est_key: ("#d62728", "^", "Planner, estimator (400 MHz)"), "white 1 m": ("#7f7f7f", "x", "Planner, white 1 m error")}
+        style = {"perfect": ("#2ca02c", "o", "Exact UE position"),
+                 "bound-level map-aided, full covariance (synthetic)": ("#17becf", "s", "Map-aided bound (synthetic)"),
+                 "bound-level LoS-only, full covariance (synthetic)": ("#1f77b4", "s", "LoS-only bound (synthetic)"),
+                 est_key: ("#d62728", "^", "Estimator (400 MHz)"), "white 1 m": ("#7f7f7f", "x", "White 1 m error")}
         for k, (color, mk, lab) in style.items():
             if k not in cl:
                 continue
@@ -206,6 +213,7 @@ def main() -> None:
         ax.grid(True, which="both", alpha=0.4)
         fig.subplots_adjust(left=0.16, right=0.98, top=0.98, bottom=0.40)
         h, lab = ax.get_legend_handles_labels()
+        # planner curves are labelled by the UE position fed to the planner (the caption names the planner)
         fig.legend(h, lab, loc="lower center", ncol=2, frameon=False, fontsize=8, handlelength=1.8, columnspacing=0.8)
         print("wrote", save(fig, "fig_p2_closing.pdf"))
 
