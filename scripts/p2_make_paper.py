@@ -176,6 +176,57 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
             v = oc[lab]
             put(f"pCloseOracle{M}", f"{v['mean_diff']:+.3f}" + ("$^\\dagger$" if not v["wilcoxon_p_two_sided"] < 0.05 else ""), script=so,
                 config=ocfg + f"; paper-1 planner; margin {lab}", aggregation="planner - A5 outage [s/UE-min], seed level; dagger = Wilcoxon p >= 0.05", raw=v)
+    # ---- external review of the draft (diagnostics; bound-level inputs are SYNTHETIC)
+    bf = P2 / f"diag_boundlevel_{tag}.json"
+    if bf.exists():
+        bd = json.loads(bf.read_text())
+        sb = "scripts/p2_diag_boundlevel.py -> results/P2/diag_boundlevel_%s.json (SYNTHETIC bound-level positions)" % tag
+        for cname, K in (("bound-level LoS-only, full covariance (synthetic)", "FullLos"), ("bound-level map-aided, full covariance (synthetic)", "FullMap")):
+            bl = {m["label"]: m["vs_a5"] for m in bd["conditions"][cname]["margins"]}
+            for lab, M in (("15 dB", "Fifteen"), ("20 dB", "Twenty"), ("25 dB", "TwentyFive"), ("30 dB", "Thirty"), ("3GPP short-range reference", "Ref")):
+                v = bl[lab]
+                put(f"pClose{K}{M}", f"{v['mean_diff']:+.3f}" + ("$^\\dagger$" if not v["wilcoxon_p_two_sided"] < 0.05 else ""), script=sb,
+                    config=f"{cname}: error ~ N(0, J_p(t)^-1) of the single-epoch position EFIM, independent per epoch; main configuration; margin {lab}",
+                    aggregation="planner - A5 outage [s/UE-min], seed level; dagger = Wilcoxon p >= 0.05", raw=v)
+        put("pAniso", f"{bd['tails']['anisotropy_sqrt_eig_ratio_los']['median']:.1f}", script=sb, config="LoS-only, main configuration",
+            aggregation="median over epochs of sqrt(largest / smallest eigenvalue) of J_p(t)^-1 (anisotropy of the bound-level error)")
+    vf = P2 / f"diag_rmse_vs_peb_{tag}.json"
+    if vf.exists():
+        vd = json.loads(vf.read_text())["cells"]
+        sv = "scripts/p2_diag_rmse_vs_peb.py -> results/P2/diag_rmse_vs_peb_%s.json" % tag
+        los = [c for c in vd if c["geometry"].startswith("both LoS") and c["bw"] == "400" and c["hardware"] == "main"]
+        blk = [c for c in vd if c["geometry"] == "blocked"]
+        rng_ = lambda vals, f: f.format(min(vals)) + "--" + f.format(max(vals))  # noqa: E731
+        put("pValNumGeom", str(len({(c['mount'], c['geometry']) for c in vd})), script=sv, config="fixed geometries", aggregation="count")
+        put("pValNumDraws", str(json.loads(vf.read_text())["n_draws"]), script=sv, config="independent noise + hardware draws per cell", aggregation="count")
+        put("pValSpreadToPeb", rng_([c["spread_rms_m"] / c["peb_los_m"] for c in los], "{:.1f}"), script=sv, config="both-LoS geometries, 400 MHz, main hardware",
+            aggregation="min-max over geometries of (rms spread of the single-epoch fix around its mean) / single-epoch LoS-only PEB", raw=los)
+        put("pValBiasLos", rng_([c["bias_m"] for c in los], "{:.2f}"), script=sv, config="both-LoS geometries, 400 MHz, main hardware",
+            aggregation="min-max over geometries of the bias |mean fix - true UE| [m]")
+        put("pValRmseToPeb", rng_([c["rmse_to_peb"] for c in los], "{:.0f}"), script=sv, config="both-LoS geometries, 400 MHz, main hardware",
+            aggregation="min-max over geometries of RMSE / single-epoch LoS-only PEB")
+        put("pValBiasBlk", rng_([c["bias_m"] for c in blk], "{:.1f}"), script=sv, config="blocked geometries, all bandwidths and hardware",
+            aggregation="min-max of the bias [m]")
+    of2 = P2 / f"diag_onset_{tag}.json"
+    if of2.exists():
+        od2 = json.loads(of2.read_text())["variants"]["A"]
+        so2 = "scripts/p2_diag_onset.py -> results/P2/diag_onset_%s.json" % tag
+        for w, W in (("[-1,-0.5) s", "PreOne"), ("[-0.5,0) s", "PreHalf"), ("during", "During"), ("elsewhere", "Else")):
+            r = od2[w]
+            put(f"pOnset{W}Med", f"{100 * r['median_m']['mean']:.0f}", script=so2, config=f"estimator A, main configuration; window {w} of the serving-cell 10 dB events",
+                aggregation="median error [cm]: per-seed median, mean over seeds", raw=r)
+            put(f"pOnset{W}Pninety", f"{r['p90_m']['mean']:.2f}", script=so2, config=f"estimator A; window {w}", aggregation="p90 error [m]; per-seed p90, mean over seeds")
+            put(f"pOnset{W}ShTen", pct(r["share_gt_0.1"]["mean"]), script=so2, config=f"estimator A; window {w}", aggregation="share of epochs with error > 0.1 m; mean over seeds")
+            put(f"pOnset{W}ShQuarter", pct(r["share_gt_0.25"]["mean"]), script=so2, config=f"estimator A; window {w}", aggregation="share of epochs with error > 0.25 m; mean over seeds")
+    for vv, V in (("A", "A"), ("AB", "B")):
+        df_ = P2 / f"est_dev_{vv}.json"
+        if df_.exists():
+            r = json.loads(df_.read_text())["configs"]["bw400_tdoa_s1_p2_b"]
+            sd = "scripts/p2_est_report.py --set dev --variant %s -> results/P2/est_dev_%s.json (development seeds)" % (vv, vv)
+            put(f"pDev{V}Med", f"{100 * r['median_m']:.1f}", script=sd, config=f"variant {vv}, main configuration, DEVELOPMENT seeds 1001-1010",
+                aggregation="median EKF error [cm]; per-seed, mean over seeds", raw={k: r[k] for k in r if k != "cfg"})
+            put(f"pDev{V}Pninety", f"{r['p90_m']:.2f}", script=sd, config=f"variant {vv}, development seeds", aggregation="p90 [m]; per-seed, mean over seeds")
+            put(f"pDev{V}Rmse", f"{r['rmse_m']:.1f}", script=sd, config=f"variant {vv}, development seeds", aggregation="RMSE [m]; per-seed, mean over seeds")
     if "P4_part1" in est:
         put("pPartOneRatio", f"{est['P4_part1']['median']:.1f}", script=se, config="P4 part 1, main configuration", aggregation="median over seeds of median error/PEB")
     return out

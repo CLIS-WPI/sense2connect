@@ -2,7 +2,8 @@
 
 fig_p2_bw.pdf       median PEB (LoS-only, map-aided) and median estimator error vs bandwidth, LoS to both vs blocked
 fig_p2_sidewalk.pdf median PEB and estimator error along the sidewalk (UE x, 5 m bins)
-fig_p2_cdf.pdf      CDF of PEB (LoS-only, map-aided) and estimator error, main configuration
+fig_p2_cdf.pdf      CDF of PEB (LoS-only, map-aided) and estimator error, main configuration (the shaded paper-1
+                    break-even band was removed after the external review; figure-only change)
 fig_p2_closing.pdf  closing experiment: outage vs link margin, A5 and the paper-1 planner fed with positions of increasing quality
 Main configuration: 400 MHz, TDoA, sigma_sync 1 ns (per run), sigma_phi 2 deg, blocked LoS biased/diffracted.
 Seed-level points (per-seed medians, mean over seeds) with 95 % bootstrap CIs over seeds where shown.
@@ -170,7 +171,6 @@ def main() -> None:
                            ("Estimator (EKF)", "#d62728", pool(er, lambda r: r["err"]) if er else np.array([np.nan]))):
         v = np.sort(v[np.isfinite(v)])
         ax.plot(v, np.arange(1, v.size + 1) / v.size, color=color, label=name)
-    ax.axvspan(0.08, 0.13, color="#fde0dd", lw=0, label="Paper-1 break-even")
     ax.set_xscale("log")
     ax.set_xlim(1e-4, 30)
     ax.set_xlabel("Position error [m]")
