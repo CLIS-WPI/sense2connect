@@ -223,6 +223,24 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
             aggregation="min-max over geometries of RMSE / single-epoch LoS-only PEB")
         put("pValBiasBlk", rng_([c["bias_m"] for c in blk], "{:.1f}"), script=sv, config="blocked geometries, all bandwidths and hardware",
             aggregation="min-max of the bias [m]")
+    vt = P2 / f"validation_table_{tag}.json"
+    if vt.exists():
+        vtd = json.loads(vt.read_text())
+        svt = "scripts/p2_validation_table.py -> paper2/tables/validation.tex, results/P2/validation_table_%s.json" % tag
+        for bw, B in (("400", "Four"), ("100", "Hundred")):
+            cen = [r["bandwidths"][bw]["centred_to_peb"] for r in vtd["rows"]]
+            bia = [r["bandwidths"][bw]["bias_to_rmse"] for r in vtd["rows"]]
+            put(f"pValCenToPeb{B}", f"{min(cen):.2g}--{max(cen):.2g}", script=svt, config=f"6 fixed geometries, {bw} MHz, main hardware, 500 single-epoch draws",
+                aggregation="min-max over geometries of centred RMS sqrt(E||p_hat - E p_hat||^2) / single-epoch LoS-only PEB", raw=cen)
+            put(f"pValBiasToRmse{B}", f"{min(bia):.2f}--{max(bia):.2f}", script=svt, config=f"6 fixed geometries, {bw} MHz, main hardware",
+                aggregation="min-max over geometries of bias magnitude ||E p_hat - p|| / RMSE", raw=bia)
+        put("pValIdentity", f"{vtd['identity_max_rel_dev']:.0e}", script=svt, config="all table cells",
+            aggregation="max relative deviation of RMSE^2 from bias^2 + centred^2 (sample moments)")
+    odf = P2 / f"onset_definitions_{tag}.json"
+    if odf.exists():
+        odd = json.loads(odf.read_text())
+        put("pOnsetNumEvents", str(odd["n_events"]), script="scripts/p2_onset_definitions.py", config="serving-cell 10 dB LoS events, held-out runs",
+            aggregation="number of events", raw=odd["epochs_per_window_total"])
     of2 = P2 / f"diag_onset_{tag}.json"
     if of2.exists():
         od2 = json.loads(of2.read_text())["variants"]["A"]
