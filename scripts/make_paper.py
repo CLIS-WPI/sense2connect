@@ -52,7 +52,7 @@ EXTRA_MACROS = [
     "numCalPedAcq", "numCalPedOut", "numCalPosErr",
     "numBEPosSigRange", "numBEUESigRange", "numUAK", "numUAAlpha", "numUATheta", "numUAKTen", "numUAKRef", "numUAAlphaTen", "numUAAlphaRef",
     "numUAThetaTen", "numUAThetaRef", "numAfiveOHTen", "numAfiveOHRef", "numUAvsOHTen", "numUAvsOHRef", "numGeniePlanShareRange",
-    "numGeniePlanShareTen", "numMissPerFrameTen",
+    "numGeniePlanShareTen", "numMissPerFrameTen", "numTrueLossSigFrom", "numTrueLossSigMaxP", "numBEPosSigMax", "numBEUESigMax",
     "numRobustTen", "numRobustRef", "numDensLowTen", "numDensHighTen", "numRelRedRefLow", "numRelRedRefHigh", "numValueRange", "numValuePedRange",
     "numValueBusRange", "numValuePedTen", "numValueBusTen", "numPlanHorizon", "numSensePlanHO", "numSensePlanPP", "numAfiveHO",
 ]
@@ -598,6 +598,28 @@ def _review3_macros(put, R5: Path, M3_CFG: str, true_loss_from: str | None) -> N
             raw={"seed_p": ps, "p_max": pmax, "n_margins": len(ps), "bonferroni_p_max_times_n": bonf, "means": {lab: tl[lab]["seed"]["mean_diff"] for lab in sel},
                  "seeds_lower": {lab: tl[lab]["seed"]["n_seeds_lower"] for lab in sel}, "run_level_p": {lab: tl[lab]["run"]["wilcoxon_p_two_sided"] for lab in sel}},
             note=f"Bonferroni: p_max x {len(ps)} = {bonf:.3g} " + ("< 0.05 (holds)" if bonf < 0.05 else ">= 0.05 (does NOT hold)"))
+    # true-LoS-loss planner: smallest margin from which it is significantly better than A5 at every higher margin and the reference
+    tl = comp["true-LoS-loss planner - A5"]
+    db = sorted((float(lab.split()[0]), lab) for lab in tl if lab.endswith(" dB"))
+    ok = lambda lab: tl[lab]["seed"]["mean_diff"] < 0 and tl[lab]["seed"]["wilcoxon_p_two_sided"] < 0.05  # noqa: E731
+    sig_from = None
+    for i, (m_db, _lab) in enumerate(db):
+        if all(ok(lab) for _, lab in db[i:]) and ok("3GPP short-range reference"):
+            sig_from = (m_db, [lab for _, lab in db[i:]] + ["3GPP short-range reference"])
+            break
+    rawtl = {lab: {"mean": tl[lab]["seed"]["mean_diff"], "p": tl[lab]["seed"]["wilcoxon_p_two_sided"]} for lab in tl}
+    tagg = ("smallest margin m [dB] such that at every margin >= m up to 30 dB and at the 3GPP reference the true-LoS-loss planner's seed-level mean "
+            "is below A5's and the exact two-sided Wilcoxon p on the 10 seed differences is < 0.05")
+    put("numTrueLossSigFrom", "--" if sig_from is None else f"{sig_from[0]:.0f}", script=ss, config=cfg + "; true-LoS-loss planner minus A5",
+        aggregation=tagg, raw=rawtl)
+    if sig_from is not None:
+        ps = {lab: tl[lab]["seed"]["wilcoxon_p_two_sided"] for lab in sig_from[1]}
+        pmax = max(ps.values())
+        e = math.floor(math.log10(pmax))
+        shown = math.ceil(pmax * 10 ** (1 - e)) / 10 ** (1 - e)
+        put("numTrueLossSigMaxP", f"{shown:.2g}", script=ss, config=cfg + f"; true-LoS-loss planner minus A5; margins {', '.join(sig_from[1])}",
+            aggregation="max over those margins of the seed-level exact two-sided Wilcoxon p; rounded UP to 2 significant digits",
+            raw={"p": ps, "p_max": pmax, "bonferroni_p_max_times_n": pmax * len(ps)})
     # break-even on the dense grids
     mid = ["15 dB", "20 dB", "25 dB", "30 dB"]
 
@@ -627,6 +649,11 @@ def _review3_macros(put, R5: Path, M3_CFG: str, true_loss_from: str | None) -> N
         put(name, rng_text(vals, exact=(kind == "sig")), script=ss, config=cfg + f"; {key}; sigma = standard deviation per horizontal axis (realistic blocker model: along-line axis); "
             f"{'min-max over 15-30 dB' if len(labs) > 1 else '3GPP reference'}", aggregation=(bagg if kind == "mean" else sagg2) + " [m]",
             raw={"sigmas": be[key]["sigmas"], **{lab: m[lab] for lab in labs}})
+    for name, key in (("numBEPosSigMax", "blocker position (realistic), UE exact"), ("numBEUESigMax", "UE position (perfect tracks)")):
+        lims = {lab: be[key]["margins"][lab]["significant_advantage_limit"] for lab in mid}
+        got = [v for v in lims.values() if v is not None]
+        put(name, "--" if not got else f"{max(got):g}", script=ss, config=cfg + f"; {key}; margins 15-30 dB (as the SigRange macro)",
+            aggregation="largest significant-advantage limit over those margins [m] (" + sagg2 + ")", raw=lims)
     # uncertainty-aware planner: tuned values, A5 + overhead
     uaf = R5 / "review2" / "uaplanner.json"
     if uaf.exists():
