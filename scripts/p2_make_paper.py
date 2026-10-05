@@ -285,6 +285,93 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
     put("pRefMargin", f"{m3m['budget']['margin_ref_db']:.1f}", script="scripts/run_m3.py budget (configs/m3.yaml rework.budget) -> results/M3/metrics.json budget.margin_ref_db",
         config="3GPP short-range reference link (TR 38.802 Table A.2.1-1 budget); the 'Ref.' margin of the closing experiment (scripts/p2_closing.py uses the same run_m3 budget on the tuning seeds)",
         aggregation="median best-cell unblocked SNR over tuning jobs 101-105 minus SNR_req [dB] (paper-1 \\numRefMargin)")
+    # ---- review 5: scenario geometry (paper2/tables/geometry.json), communication model, practical significance
+    put("pSNRreq", f"{m3m['budget']['snr_req_db']:.1f}", script="scripts/run_m3.py budget -> results/M3/metrics.json budget.snr_req_db",
+        config="400 Mbit/s on the 1024-subcarrier, 120 kHz carrier (122.88 MHz), sim/comm/linkbudget.snr_req_db", aggregation="Shannon SNR [dB] = 10 log10(2^(R/B) - 1)")
+    char = json.loads((ROOT / "results" / "M5" / "characterization.json").read_text())
+    sp = {m: -float(char["same_cell_surviving_path"][m]["all"]["p10_p50_p90_db"]["0.5"]) for m in ("lamppost", "facade")}
+    lo_, hi_ = f"{min(sp.values()):.0f}", f"{max(sp.values()):.0f}"
+    put("pSameCellLoss", lo_ if lo_ == hi_ else f"{lo_}--{hi_}", script="scripts/fig_blockage_table.py -> results/M5/characterization.json (paper 1, = \\numSameCellLoss)",
+        config="paper-1 held-out jobs; serving cell = strongest unblocked; 10 dB LoS events; best surviving path (model B on every path) vs the unblocked LoS",
+        aggregation="min-max over mounts of the per-mount median over events of the loss [dB] of the best surviving path below the unblocked LoS", raw=sp)
+    gj = PAPER2 / "tables" / "geometry.json"
+    if gj.exists():
+        geo = json.loads(gj.read_text())
+        sg = "scripts/p2_geometry.py -> paper2/tables/geometry.json (configs/m2_scenario.yaml, scene mesh bounding boxes, walk_map)"
+
+        def num(v: float, nd: int = 2) -> str:
+            t = f"{round(float(v), nd):.{nd}f}"
+            t = t.rstrip("0").rstrip(".") if "." in t else t
+            return f"\\ensuremath{{{t}}}" if t.startswith("-") else t
+
+        def gput(name, v, cfg, agg="value [m]", nd=2):
+            put(name, num(v, nd) if not isinstance(v, str) else v, script=sg, config=cfg, aggregation=agg)
+
+        st = geo["street"]
+        gput("pStreetLen", st["length_m"], "x extent of the continuous south building row (scene meshes)", nd=0)
+        gput("pStreetPeriod", st["period_m"], "lanes/sidewalks length_m: actors and UEs wrap on this period", nd=0)
+        gput("pStreetWidth", st["width_m"], "facade-to-facade width (south facade to the near north facade)", nd=1)
+        gput("pStreetWidthSetback", st["width_setback_m"], "facade-to-facade width at the set-back north block (x > 32.4 m)", nd=1)
+        gput("pFacadeYSouth", st["facade_y_m"]["south"], "south facade plane y")
+        gput("pFacadeYNorth", st["facade_y_m"]["north"], "north facade plane y")
+        gput("pLaneWidth", st["lane_width_m"], "configs/p2.yaml lane_width_m (walkable map)")
+        gput("pCurbY", st["curb_abs_y_m"], "|y| of the curb = |lane centre| + lane width / 2 (walkable map)")
+        for ln in geo["lanes"]:
+            gput("pLaneY" + ("East" if ln["direction_x"] > 0 else "West"), ln["y_m"], f"centre line of the {ln['name']} lane")
+        for sw in geo["sidewalks"]:
+            S = sw["name"].capitalize()
+            gput(f"pSidewalkY{S}", sw["centre_y_m"], f"{sw['name']} sidewalk centre line (walker and UE track)")
+            gput(f"pSidewalk{S}Lo", sw["band_y_m"][0], f"{sw['name']} sidewalk band, lower y (walkable map)")
+            gput(f"pSidewalk{S}Hi", sw["band_y_m"][1], f"{sw['name']} sidewalk band, upper y (walkable map)")
+        for mount, M in (("lamppost", "Lamp"), ("facade", "Fac")):
+            for o, O in zip(geo["orus"][mount], ("Zero", "One")):
+                for k, ax in enumerate("XYZ"):
+                    gput(f"pOru{O}{M}{ax}", o["position_m"][k], f"{o['name']} ({o['mount']}) position {ax.lower()}, {mount} deployment")
+        offs = sorted(set(geo["oru_offset_x_m"].values()))
+        gput("pOruOffset", num(offs[0], 1) if len(offs) == 1 else f"{num(offs[0], 1)}--{num(offs[-1], 1)}", "|x(O-RU 0) - x(O-RU 1)| (second_oru.x_offset_m, wrapped on the period)")
+        ue = geo["ues"]
+        gput("pUeY", ue[0]["y_m"], "UE track y (both UEs, south sidewalk centre)")
+        gput("pUeHeight", ue[0]["height_m"], "UE height [m]")
+        gput("pUeXMin", ue[0]["x_range_m"][0], "UE track x range (wraps on the period)")
+        gput("pUeXMax", ue[0]["x_range_m"][1], "UE track x range (wraps on the period)")
+        spd = sorted(u["speed_mps"] for u in ue)
+        gput("pUeSpeed", f"{spd[0]:.1f}--{spd[-1]:.1f}", "UE walking speeds", "min-max [m/s]")
+        gput("pRunDuration", geo["run"]["duration_s"], "run duration", "[s]", nd=0)
+        gput("pEpoch", geo["run"]["epoch_s"], "positioning / sensing epoch", "[s]")
+        gput("pCommStep", 1e3 * geo["run"]["comm_step_s"], "communication timeline step", "[ms]", nd=0)
+        for dens, D in (("low", "Low"), ("high", "High")):
+            tr = geo["traffic"][dens]
+            for kind, K in (("all", "Veh"), ("car", "Car"), ("bus", "Bus"), ("truck", "Truck")):
+                v = tr["vehicles"][kind]
+                gput(f"p{K}LaneKm{D}", v["per_lane_per_km"], f"{dens} density, {kind} vehicles", "expected vehicles per lane per km = count / 2 lanes / period", nd=2)
+                gput(f"p{K}LaneMin{D}", v["per_lane_per_min"], f"{dens} density, {kind} vehicles", "expected flow per lane per minute = density x mean class speed x 60 s", nd=1)
+                gput(f"p{K}Count{D}", str(v["count_per_period"]), f"{dens} density, {kind} vehicles", "count per period (whole street, both lanes)")
+            pe = tr["pedestrians"]
+            gput(f"pPedWalkers{D}", str(pe["sidewalk_walkers"]), f"{dens} density", "sidewalk walkers per period (both sidewalks, both directions)")
+            gput(f"pPedSidewalkKm{D}", pe["per_sidewalk_per_km"], f"{dens} density", "expected sidewalk walkers per sidewalk per km", nd=1)
+            gput(f"pPedCrossing{D}", str(pe["crossing_walkers"]), f"{dens} density", "street-crossing walkers (each crosses repeatedly)")
+        bk = load_yaml(ROOT / "configs" / "m2_scenario.yaml")["blocker_kinds"]
+        rng_s = lambda k: f"{bk[k]['speed_mps'][0]:g}--{bk[k]['speed_mps'][1]:g}"  # noqa: E731
+        gput("pVehSpeed", f"{geo['vehicle_speed_mps'][0]:g}--{geo['vehicle_speed_mps'][1]:g}", "all vehicle classes", "min-max [m/s]")
+        gput("pCarSpeed", rng_s("car"), "cars", "uniform range [m/s]")
+        gput("pHeavySpeed", rng_s("bus"), "buses and trucks", "uniform range [m/s]")
+        gput("pPedSpeed", f"{bk['pedestrian']['speed_mps'][0]:.1f}--{bk['pedestrian']['speed_mps'][1]:.1f}", "pedestrians (blockers)", "uniform range [m/s]")
+    if cfj.exists() and bf.exists():
+        cj = json.loads(cfj.read_text())
+        a5 = cj["a5_outage"]
+        sc_ = "scripts/p2_closing.py -> results/P2/closing_%s.json; scripts/p2_diag_boundlevel.py -> results/P2/diag_boundlevel_%s.json" % (tag, tag)
+        for lab, M in (("15 dB", "Fifteen"), ("3GPP short-range reference", "Ref")):
+            put(f"pAfive{M}", f"{a5[lab]:.2f}" if a5[lab] >= 0.1 else f"{a5[lab]:.3f}", script=sc_, config=f"closing experiment, A5 (paper-1 parameters), margin {lab}",
+                aggregation="mean over seeds of the A5 outage [s/UE-min]")
+            for cond, src, C in (("perfect", cj["conditions"]["perfect"]["margins"], "Perf"),
+                                 ("bound-level map-aided, full covariance (synthetic)", bd["conditions"]["bound-level map-aided, full covariance (synthetic)"]["margins"], "Map")):
+                v = {m["label"]: m["vs_a5"] for m in src}[lab]
+                a5_src = (bd if C == "Map" else cj)["a5_outage"][lab]
+                rel = 100.0 * v["mean_diff"] / a5_src
+                put(f"pRel{C}{M}", f"{rel:+.1f}\\%" + ("$^\\dagger$" if not v["wilcoxon_p_two_sided"] < 0.05 else ""), script=sc_,
+                    config=f"closing experiment, planner with {cond} positions vs A5, margin {lab}",
+                    aggregation="relative change of the outage vs A5 = mean over seeds of (planner - A5) / mean over seeds of A5 [%]; dagger = Wilcoxon p >= 0.05",
+                    raw={"mean_diff": v["mean_diff"], "a5_mean": a5_src, "wilcoxon_p": v["wilcoxon_p_two_sided"]})
     vt = P2 / f"validation_table_{tag}.json"
     if vt.exists():
         vtd = json.loads(vt.read_text())
