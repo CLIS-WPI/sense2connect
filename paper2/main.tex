@@ -172,43 +172,34 @@ A specular reflection on a known surface is an LoS path from the virtual
 anchor $\tilde{\mathbf p}_{c,\ell}$, the image of $\mathbf p_c$ in that
 surface, so that $\tau_{c,\ell}=\|\mathbf p-\tilde{\mathbf p}_{c,\ell}\|/c_0$
 \cite{leitinger2015evaluation}. Moving bodies attenuate every path
-segment according to 3GPP blockage model~B \cite{3gpp38901}. An O-RU is
-\emph{blocked} for a UE at an epoch when the model-B loss of its LoS path
-is at least \pBlockedDb\,dB. Model~B reduces the power of a blocked LoS
+segment according to 3GPP blockage model~B \cite{3gpp38901}. An O-RU is \emph{blocked} for a UE when the loss of its LoS path exceeds
+a threshold. Model~B reduces the power of a blocked LoS
 but keeps its geometry, whereas the field that actually arrives
 diffracts around the blocker. We therefore consider two models of a
 blocked LoS: \emph{kept}, in which its delay and angles still follow
 $\mathbf p$ (optimistic), and \emph{biased}, in which they carry an
-unknown bias. In the biased model, the bound treats them as free
-parameters, and the signal fed to the estimator replaces the blocked LoS
-by a detour around its dominant blocker (the blocker with the largest
-model-B loss): with $\mathbf q$ the shorter of the detour points over the
-top and past either side of the blocker box, next to the point of the
-LoS closest to the blocker, the path keeps the attenuated complex gain
-of the LoS but has delay $(\|\mathbf q-\mathbf p_c\|+\|\mathbf p-\mathbf q\|)/c_0$
-and arrival direction along $\mathbf q-\mathbf p_c$. Reflected paths
-are only attenuated.
+unknown bias. In the biased model, a bound treats them as free parameters, and an
+estimator observes a blocked LoS whose delay and direction deviate from
+the geometry of $\mathbf p$.
 
 \subsection{Positioning Requirement of Blockage-Aware Handover}
-The handover planner of \cite{natanzi2027companion} receives tracks of
-the blockers and the reported UE position every \pEpoch\,s, predicts the
-signal-to-noise ratio (SNR) of each cell by applying model~B on the line
-between each O-RU and the reported position, and chooses the serving
-cell sequence that minimizes the predicted outage over a horizon of
-\pPlanH\,s, accounting for an interruption of \pTauHO\,ms per handover;
-decisions take effect after a control-loop delay of \pLoopDelay\,ms,
-and the sensing overhead of \pOverhead{} of the resources is charged to
-the planner. Its performance is measured by the
-outage time at a service rate, compared with the 3GPP A5 event. With
-perfect blocker tracks and a white Gaussian UE position error, the
-planner beats A5 only up to a per-axis standard deviation of about
-\pBreakEven\,cm, i.e., an RMS distance error of about \pBreakEvenRms\,cm or a
-median distance error of about \pBreakEvenMedDist\,cm. The positioning problem is
-thus to estimate $\mathbf p$ at every decision epoch such that the
-resulting handover outage stays below that of A5; we examine (i) what
-limits the bound, (ii) how blockage and map knowledge change it, (iii)
-how a practical estimator compares, and (iv) whether its positions
-suffice for the planner.
+A blockage-aware handover policy $\pi$ predicts the SNR of each cell
+from the tracked blockers and the reported UE position
+$\hat{\mathbf p}_t=\mathbf p_t+\mathbf e_t$, and selects the serving cell
+accordingly. Its outage time $J(\pi;\{\hat{\mathbf p}_t\})$ counts the
+time below the SNR required for the service rate, including the
+interruptions of its handovers. Since the policy aims to outperform
+reactive handover such as the 3GPP A5 event, the positioning
+requirement is that the error process $\{\mathbf e_t\}$ keeps
+\begin{equation}
+J\bigl(\pi;\{\hat{\mathbf p}_t\}\bigr)\le J(\mathrm{A5}).
+\label{eq:req}
+\end{equation}
+This requirement depends on the error at the times the policy acts, not
+only on its overall statistics. We therefore examine (i) what limits
+the position error bound, (ii) how blockage and map knowledge change it,
+(iii) how a practical estimator compares, and (iv) whether its errors
+satisfy \eqref{eq:req}.
 
 % ---------------------------------------------------------------------
 \section{Position Error Bound and Estimator}
@@ -426,6 +417,32 @@ remaining paths do not sustain $\gamma_{\mathrm{req}}$: during
 lies a median \pSameCellLoss\,dB below the unblocked LoS
 \cite{natanzi2027companion}, so the link margin determines whether the
 same cell can still serve the UE or the other cell is needed.
+
+\textit{Handover model.} The policy is the planner of
+\cite{natanzi2027companion}: every \pEpoch\,s it receives the blocker
+tracks and the reported UE position, predicts the SNR of each cell by
+applying model~B on the line between each O-RU and the reported
+position, and chooses the cell sequence that minimizes the predicted
+outage over a horizon of \pPlanH\,s, with an interruption of \pTauHO\,ms
+per handover; decisions take effect after a control-loop delay of
+\pLoopDelay\,ms, and the sensing overhead of \pOverhead{} of the
+resources is charged to it. With perfect blocker tracks and a white
+Gaussian UE position error, it satisfies \eqref{eq:req} only up to a
+per-axis standard deviation of about \pBreakEven\,cm, i.e., an RMS
+distance error of about \pBreakEvenRms\,cm or a median distance error of
+about \pBreakEvenMedDist\,cm \cite{natanzi2027companion}.
+
+\textit{Blocked LoS.} An O-RU is blocked for a UE at an epoch when the
+model-B loss of its LoS path is at least \pBlockedDb\,dB. In the biased
+model, the signal fed to the estimator replaces the blocked LoS by a
+detour around its dominant blocker (the blocker with the largest model-B
+loss): with $\mathbf q$ the shorter of the detour points over the top
+and past either side of the blocker box, next to the point of the LoS
+closest to the blocker, the path keeps the attenuated complex gain of
+the LoS but has delay
+$(\|\mathbf q-\mathbf p_c\|+\|\mathbf p-\mathbf q\|)/c_0$ and arrival
+direction along $\mathbf q-\mathbf p_c$; reflected paths are only
+attenuated.
 
 \textit{Signals and hardware.} The UE transmits one SRS symbol per
 \pEpoch-s epoch at \pTxPower\,dBm; the O-RU noise figure is
