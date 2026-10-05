@@ -14,14 +14,18 @@
 \usepackage[hidelinks]{hyperref}
 
 \input{numbers2.tex}
-\providecommand{\pBreakEvenRms}{11--18}
-\providecommand{\pBreakEvenMedDist}{9--15}
+\providecommand{\pPlanH}{\textcolor{red}{??}}
+\providecommand{\pLoopDelay}{\textcolor{red}{??}}
+\providecommand{\pTauHO}{\textcolor{red}{??}}
+\providecommand{\pOverhead}{\textcolor{red}{??}}
+\providecommand{\pDerivAgree}{\textcolor{red}{??}}
+\providecommand{\pFimToyErr}{\textcolor{red}{??}}
+\providecommand{\pValBiasMseFour}{\textcolor{red}{??}}
 
 \begin{document}
 
-\title{Infrastructure-Based mmWave Positioning\\
-for Blockage-Aware Handover:\\
-Bounds and Practical Limits}
+\title{mmWave UE Positioning Under Blockage:\\
+Error Bounds and Implications for Handover}
 
 \author{
 \IEEEauthorblockN{Seyed Bagher Hashemi Natanzi\IEEEauthorrefmark{1}\textsuperscript{,}\thanks{*Corresponding author: snatanzi@wpi.edu}, Bo Tang\IEEEauthorrefmark{2}}
@@ -44,10 +48,9 @@ information from a digital twin, and evaluate a practical estimator
 with an extended Kalman filter. In ray-traced experiments in a street
 canyon, reported on held-out scenarios, the bound is limited by array
 calibration rather than bandwidth and degrades during blockage unless
-reflected paths are exploited through the digital twin. The practical
-estimator is close to the bound in its random error but suffers from
-systematic multipath errors, which grow by an order of magnitude during
-blockage events. Fed into a blockage-aware handover planner, its
+reflected paths are exploited through the digital twin. Fixed-geometry experiments reveal substantial systematic errors in a
+practical estimator, alongside geometry-dependent random error, and its
+errors grow sharply around blockage events. Fed into a blockage-aware handover planner, its
 positions do not let foresight outperform 3GPP event-triggered handover,
 whereas synthetic errors at the level of the map-aided bound do.
 \end{abstract}
@@ -102,15 +105,15 @@ synchronization and array calibration errors as Bayesian priors, two
 models of a blocked LoS, and map-aided information from reflected paths
 with known geometry.
 \item A practical uplink estimator with an extended Kalman filter (EKF),
-validated against the bound at fixed geometries, which separates its
-random error from systematic multipath errors.
+compared with the bound at fixed geometries by decomposing its error
+into bias and random spread.
 \item An analysis of positioning errors around blockage onsets and a
 closing experiment that feeds estimated and synthetic bound-level
 positions into a blockage-aware handover planner.
 \item Findings on held-out scenarios: calibration rather than bandwidth
 limits the bound; blockage degrades it unless the digital twin is used;
-and practical errors are largest exactly when handover decisions are
-made.
+practical errors are mostly systematic at the tested geometries; and they
+worsen in the time windows relevant to proactive handover.
 \end{itemize}
 
 % ---------------------------------------------------------------------
@@ -179,17 +182,25 @@ diffracts around the blocker. We therefore consider two models of a
 blocked LoS: \emph{kept}, in which its delay and angles still follow
 $\mathbf p$ (optimistic), and \emph{biased}, in which they carry an
 unknown bias. In the biased model, the bound treats them as free
-parameters, and the signal fed to the estimator routes the blocked LoS
-over or around its dominant blocker, so that the estimator also sees a
-biased path.
+parameters, and the signal fed to the estimator replaces the blocked LoS
+by a detour around its dominant blocker (the blocker with the largest
+model-B loss): with $\mathbf q$ the shorter of the detour points over the
+top and past either side of the blocker box, next to the point of the
+LoS closest to the blocker, the path keeps the attenuated complex gain
+of the LoS but has delay $(\|\mathbf q-\mathbf p_c\|+\|\mathbf p-\mathbf q\|)/c_0$
+and arrival direction along $\mathbf q-\mathbf p_c$. Reflected paths
+are only attenuated.
 
 \subsection{Positioning Requirement of Blockage-Aware Handover}
 The handover planner of \cite{natanzi2027companion} receives tracks of
 the blockers and the reported UE position every \pEpoch\,s, predicts the
 signal-to-noise ratio (SNR) of each cell by applying model~B on the line
 between each O-RU and the reported position, and chooses the serving
-cell sequence that minimizes the predicted outage, accounting for the
-interruption of every handover. Its performance is measured by the
+cell sequence that minimizes the predicted outage over a horizon of
+\pPlanH\,s, accounting for an interruption of \pTauHO\,ms per handover;
+decisions take effect after a control-loop delay of \pLoopDelay\,ms,
+and the sensing overhead of \pOverhead{} of the resources is charged to
+the planner. Its performance is measured by the
 outage time at a service rate, compared with the 3GPP A5 event. With
 perfect blocker tracks and a white Gaussian UE position error, the
 planner beats A5 only up to a per-axis standard deviation of about
@@ -204,6 +215,25 @@ suffice for the planner.
 % ---------------------------------------------------------------------
 \section{Position Error Bound and Estimator}
 % ---------------------------------------------------------------------
+\begin{table*}[t]
+\centering
+\caption{Single-epoch estimator error at fixed geometries
+(\pValNumDraws{} draws each, main hardware, TDoA, no EKF) versus the
+single-epoch LoS-only PEB (biased model for a blocked LoS); all values in
+cm; RMSE$^2$ = bias$^2$ + centered RMS$^2$
+(Eq.~\eqref{eq:decomp}).}
+\label{tab:val}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llr|rrrr|rrrr@{}}
+\toprule
+ & & & \multicolumn{4}{c|}{\pBwC\,MHz} & \multicolumn{4}{c}{\pBwA\,MHz}\\
+Mount & LoS state & UE $x$ [m] & PEB & bias & centered & RMSE & PEB & bias & centered & RMSE\\
+\midrule
+\csname @@input\endcsname tables/validation.tex
+\bottomrule
+\end{tabular}
+\end{table*}
+
 \subsection{Single-Epoch Position Error Bound}
 Collect the channel parameters of all O-RUs at one epoch in
 $\boldsymbol\eta$ (delays, angles, complex gains) and the hardware and
@@ -229,12 +259,18 @@ O-RU time offsets ($\sigma_{\mathrm{sync}}$) and of the element phases
 arrival, TDoA). In the \emph{map-aided} bound, the reflected paths are
 not nuisance parameters: their geometry is known from the digital twin,
 and their entries of $\mathbf T$ follow analytically from the virtual
-anchors, validated by re-tracing at $\pm\pFdStep$\,cm. The position
+anchors. The analytic derivatives agree with re-tracing at
+$\pm\pFdStep$\,cm to a relative error of $10^{-3}$ for \pDerivAgree{}
+of the paths and otherwise to the single-precision floor of the ray
+tracer; the GPU implementation of \eqref{eq:efim} matches an
+independent NumPy implementation and a brute-force numerical Fisher
+matrix on toy cases (largest relative deviation \pFimToyErr). The position
 error bound is $\mathrm{PEB}=\sqrt{\mathrm{tr}(\mathbf J_{\mathbf p}^{-1})}$.
 It bounds the root-mean-square (RMS) error of unbiased single-epoch
 estimates for a given geometry; it is neither a median error nor a
-guarantee that an estimator attains it, and it excludes the temporal
-information that a tracking filter accumulates.
+guarantee that an estimator attains it, a biased estimator can have a
+smaller spread, and it excludes the temporal information that a
+tracking filter accumulates.
 
 \subsection{Practical Estimator}
 Per O-RU and epoch, a zero-padded two-dimensional DFT over the array
@@ -252,6 +288,8 @@ over time.
 % ---------------------------------------------------------------------
 \section{Experiments and Results}
 % ---------------------------------------------------------------------
+
+
 \subsection{Setup}
 \textit{Scenario.} We use the street canyon of
 \cite{natanzi2027companion}: two O-RUs with \pArray{} half-wavelength
@@ -291,6 +329,14 @@ and the error are different quantities (Section~IV).}
 \label{fig:bw}
 \end{figure}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig_p2_sidewalk.pdf}
+\caption{Median bound and estimator error along the sidewalk
+(\pBinM-m bins of the UE position); main configuration.}
+\label{fig:sidewalk}
+\end{figure}
+
 \subsection{What Limits the Bound}
 Fig.~\ref{fig:bw} shows the median bounds versus bandwidth. With LoS to
 both O-RUs, the LoS-only PEB is below \pDecThr\,cm in
@@ -308,13 +354,7 @@ map-aided PEB is far less sensitive (\pHwMapIdeal{} and \pHwMapWorst),
 because reflections from known surfaces add independent geometric
 information.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figs/fig_p2_sidewalk.pdf}
-\caption{Median bound and estimator error along the sidewalk
-(\pBinM-m bins of the UE position); main configuration.}
-\label{fig:sidewalk}
-\end{figure}
+
 
 \subsection{Blockage and the Digital Twin}
 In the biased model, the median LoS-only PEB rises by a factor of
@@ -331,41 +371,53 @@ the millimeter range. A low map-aided PEB indicates that the
 information is present in the signal; whether an estimator can extract
 it is a separate question.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figs/fig_p2_cdf.pdf}
-\caption{Distributions over all epochs of the LoS-only and map-aided
-PEB (i.e., of the geometry) and of the estimator error (main
-configuration). The curves describe different quantities and are shown
-for scale only.}
-\label{fig:cdf}
-\end{figure}
+
 
 \subsection{Practical Estimator and the Bound}
 At \pBwC\,MHz, the estimator reaches a median error of
 \pEstMedFourHundred\,cm (\pEstLosFourHundred\,cm with LoS to both O-RUs,
 \pEstBlkFourHundred\,cm during blockage); \pEstDecFourHundred{} of its
 errors are below \pDecThr\,cm, and its 90th percentile is
-\pEstPninetyFourHundred\,m (Fig.~\ref{fig:cdf}). At \pBwA\,MHz, the
+\pEstPninetyFourHundred\,m. At \pBwA\,MHz, the
 median grows to \pEstMedHundred\,cm.
 
 To compare the estimator with the bound on equal terms, we ran
 \pValNumDraws{} independent noise and hardware draws through the
-single-epoch estimator (without EKF) at \pValNumGeom{} fixed geometries.
-With LoS to both O-RUs, the random spread of the estimates around their
-mean is \pValSpreadToPeb{} times the PEB, i.e., close to the bound, but
-the mean itself is offset from the true position by
-\pValBiasLos\,m, caused by interference of unresolved multipath; the
-largest offset is a front/back mirror solution. The RMS error is
-therefore \pValRmseToPeb{} times the PEB. In blocked geometries, the
-offset is \pValBiasBlk\,m. The gap to the bound is thus a systematic
-error, not a lack of precision. Over the held-out runs, front/back
+single-epoch estimator (without EKF) at \pValNumGeom{} fixed geometries
+and decomposed its error as
+\begin{equation}
+\mathrm{RMSE}^2=\|\mathbb E[\hat{\mathbf p}]-\mathbf p\|^2
++\mathbb E\bigl[\|\hat{\mathbf p}-\mathbb E[\hat{\mathbf p}]\|^2\bigr],
+\label{eq:decomp}
+\end{equation}
+i.e., squared bias plus squared centered RMS (Table~\ref{tab:val}). The
+squared bias accounts for most of the mean squared error in five of the
+six geometries at \pBwC\,MHz (\pValBiasMseFour{} of it); in the
+remaining one (lamppost, both LoS, $x=-20$\,m), the random spread is
+larger. The bias is caused by interference of unresolved multipath, and
+in one geometry by a front/back mirror solution. The centered RMS is
+geometry dependent, between \pValCenToPebFour{} times the PEB at
+\pBwC\,MHz: close to the bound at some geometries and an order of
+magnitude above it at others. In blocked geometries it falls below the
+PEB, which is possible because the estimator is biased: it uses the
+detoured LoS precisely but in the wrong place. Over the held-out runs, front/back
 mirror solutions remain in \pMirrorShareEpochs{} of the epochs and
 dominate the squared error (RMS \pMirrorARmse\,m), while reflected
 dominant paths set the 90th percentile. A variant that used reflections
 as virtual anchors did not reduce the tail on the development seeds
 (90th percentile \pDevBPninety{} vs.\ \pDevAPninety\,m) and was not
 pursued.
+
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig_p2_closing.pdf}
+\caption{Outage at \SI{400}{Mbit/s} versus link margin: 3GPP A5 and the
+blockage-aware planner with perfect blocker tracks, fed with UE
+positions of different quality (bound-level errors are synthetic).}
+\label{fig:closing}
+\end{figure}
 
 \begin{table}[t]
 \centering
@@ -384,26 +436,6 @@ Elsewhere                & \pOnsetElseMed\,cm & \pOnsetElsePninety\,m & \pOnsetE
 \bottomrule
 \end{tabular}
 \end{table}
-
-\subsection{Errors When Handover Decisions Are Made}
-Table~\ref{tab:onset} shows the estimator error around the blockage
-events of the serving cell. In the second before onset, when a
-blockage-aware planner must decide, the median error is as small as
-elsewhere, but the 90th percentile is almost three times larger
-(\pOnsetPreHalfPninety{} vs.\ \pOnsetElsePninety\,m), and about half of
-the errors exceed \SI{0.1}{m}. During the event, the median grows by an
-order of magnitude to \pOnsetDuringMed\,cm. The error is therefore
-largest exactly when the planner needs the position, which the overall
-median hides.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figs/fig_p2_closing.pdf}
-\caption{Outage at \SI{400}{Mbit/s} versus link margin: 3GPP A5 and the
-blockage-aware planner with perfect blocker tracks, fed with UE
-positions of different quality (bound-level errors are synthetic).}
-\label{fig:closing}
-\end{figure}
 
 \begin{table}[t]
 \centering
@@ -431,24 +463,48 @@ White \SI{1}{m} error     & \pCloseWhiteFifteen & \pCloseWhiteTwenty & \pCloseWh
 \end{tabular}
 \end{table}
 
+\subsection{Errors When Handover Decisions Are Made}
+Table~\ref{tab:onset} shows the estimator error around the
+\pOnsetNumEvents{} blockage events of the serving cell, defined per UE
+as the cell with the larger unblocked received power; an event is an
+interval with LoS loss of at least \SI{10}{dB}, with gaps below
+\SI{0.5}{s} merged. Each epoch is counted in exactly one window, with
+priority to the event, then to the last half second before onset, then
+to the half second before that; the first \SI{2}{s} of each run are
+excluded. In the second before onset, a window relevant to proactive
+handover, the median error and the share of errors above
+\SI{0.25}{m} are about as elsewhere, but the large errors become larger:
+the 90th percentile rises from \pOnsetElsePninety{} to
+\pOnsetPreHalfPninety\,m. During the event, most of the distribution
+deteriorates, with the median growing to \pOnsetDuringMed\,cm. Errors thus
+worsen in the time windows relevant to proactive handover: before a
+blockage, the extreme errors grow; during it, the bulk of the errors
+does, which the overall median hides. The windows refer to the blockage
+events of a reference cell, not to the decision times of a particular
+planner.
+
+
+
+
+
 \subsection{Implications for Handover}
 Fig.~\ref{fig:closing} and Table~\ref{tab:closing} feed positions into
 the planner, with perfect blocker tracks so that the user position is
 the only source of error. With exact positions, the planner has a lower
 outage than A5 from \pMarginFifteen\,dB margin upward (significantly at
 15 and \SI{25}{dB} and at the reference). As a sensitivity test, we feed
-synthetic errors drawn independently per epoch from the full inverse of
-the single-epoch $\mathbf J_{\mathbf p}$, which is anisotropic (median
-ratio of principal standard deviations \pAniso). Errors at the
-map-aided bound keep the planner at or below A5 (significantly below at
-15 and \SI{25}{dB}); errors at the LoS-only bound, which grow during
+synthetic errors $\mathbf e_t\sim\mathcal N\bigl(\mathbf 0,\mathbf
+J_{\mathbf p}(t)^{-1}\bigr)$, drawn independently per epoch from the
+single-epoch bound of the respective model, which is anisotropic
+(median ratio of principal standard deviations \pAniso). Errors at the
+map-aided bound preserve a lower mean outage than A5 at most tested
+margins, with significant improvements at 15 and \SI{25}{dB}; errors at the LoS-only bound, which grow during
 blockage, make it worse than A5 at every margin. With the estimator's
 positions, the planner is significantly worse than A5 at every margin,
 also with ideal hardware. Capping the errors at their 90th percentile or
 removing the mirror solutions with the true position reduces the loss
-but leaves it significant: removing the largest errors is not enough,
-because errors of a few decimeters around blockage onsets already
-mislead the planner. Synthetic bound-level errors are an optimistic
+but leaves it significant, so the largest errors are not its only
+cause. Synthetic bound-level errors are an optimistic
 model; they show what positioning would have to achieve, not that a
 practical estimator achieves it.
 
@@ -456,8 +512,8 @@ practical estimator achieves it.
 \section{Discussion and Limitations}
 % ---------------------------------------------------------------------
 For blockage-aware handover, the relevant accuracy is the error around
-blockage onsets, not the overall median, and the gap between the bound
-and our estimator is systematic multipath error rather than noise. The
+blockage onsets, not the overall median, and at most tested geometries the gap between the bound and our
+estimator is mainly systematic multipath error. The
 information to close this gap is present in the reflected paths, as the
 map-aided bound shows, but our simple virtual-anchor variant did not
 extract it; map-aided estimators that reliably associate reflections
@@ -479,10 +535,9 @@ localize it accurately enough for blockage-aware handover. The
 single-epoch bound shows that decimeter accuracy is limited by array
 calibration rather than bandwidth and is lost during blockage unless
 reflected paths are exploited through the digital twin. A practical
-estimator is close to the bound in its random error but suffers from
-systematic multipath errors that peak around blockage onsets, exactly
-when handover decisions are made, and its positions do not let
-foresight outperform reactive handover. Map-aided estimation that turns
+estimator shows substantial systematic multipath errors, and its errors
+worsen in the time windows relevant to proactive handover; its positions
+do not let foresight outperform reactive handover. Map-aided estimation that turns
 reflections into reliable position information is therefore the next
 step toward ISAC-assisted mobility.
 

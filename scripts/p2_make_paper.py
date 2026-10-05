@@ -223,6 +223,40 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
             aggregation="min-max over geometries of RMSE / single-epoch LoS-only PEB")
         put("pValBiasBlk", rng_([c["bias_m"] for c in blk], "{:.1f}"), script=sv, config="blocked geometries, all bandwidths and hardware",
             aggregation="min-max of the bias [m]")
+    # ---- review 3: closing-experiment settings and verification statistics (from configs / results)
+    cfj = P2 / f"closing_{tag}.json"
+    if cfj.exists():
+        hs = sorted(set(float(v) for v in json.loads(cfj.read_text())["H_fixed"].values()))
+        put("pPlanH", f"{hs[0]:g}" if len(hs) == 1 else f"{hs[0]:g}--{hs[-1]:g}", script="scripts/p2_closing.py -> results/P2/closing_%s.json" % tag,
+            config="planner horizon per margin (perfect-track H tuned on the tuning seeds, results/M5/review_b5.json)", aggregation="min-max over margins [s]",
+            raw=json.loads(cfj.read_text())["H_fixed"])
+    m3 = load_yaml(ROOT / "configs" / "m3.yaml")["rework"]
+    put("pLoopDelay", f"{1e3 * float(m3['e2']['loop_delay_s']):g}", script="configs/m3.yaml rework.e2.loop_delay_s", config="paper-1 planner (closing experiment)",
+        aggregation="E2 control-loop delay [ms]")
+    put("pTauHO", f"{1e3 * float(m3['e2']['tau_ho_s']):g}", script="configs/m3.yaml rework.e2.tau_ho_s", config="paper-1 planner and A5 (closing experiment)",
+        aggregation="handover interruption [ms]")
+    ovh = float(m3["sensing"]["symbols_fraction"]) * float(m3["sensing"]["duty_cycle"])
+    put("pOverhead", f"{100 * ovh:.1f}\\%", script="sim/comm/linkbudget.sensing_overhead with configs/m3.yaml rework.sensing",
+        config="sensing overhead charged to the planner in the closing experiment (plan and rate; A5 pays none)",
+        aggregation="(sensing symbols per slot / 14) x CPI duty cycle", raw={"symbols_fraction": m3["sensing"]["symbols_fraction"], "duty_cycle": m3["sensing"]["duty_cycle"]})
+    vsf = P2 / "verification_stats.json"
+    if vsf.exists():
+        vs = json.loads(vsf.read_text())
+        sv2 = "scripts/p2_verification_stats.py -> results/P2/verification_stats.json"
+        put("pDerivAgree", pct(vs["derivatives"]["share_paths"]), script=sv2, config="+/-1 cm re-trace subset (2 jobs x 20 snapshots)",
+            aggregation="share of paths whose six analytic derivatives (delay, azimuth, elevation x x, y) agree with the re-trace to 1e-3 relative", raw=vs["derivatives"])
+        put("pDerivAgreeValues", pct(vs["derivatives"]["share_values"]), script=sv2, config="+/-1 cm re-trace subset",
+            aggregation="share of individual derivative values agreeing to 1e-3 relative")
+        e_ = vs["fim"]["largest_test_deviation"]
+        ex = int(math.floor(math.log10(e_)))
+        put("pFimToyErr", f"\\ensuremath{{{e_ / 10 ** ex:.1f}\\times 10^{{{ex}}}}}", script=sv2,
+            config="unit tests: GPU Gram vs NumPy synthesis; GPU PEB pipeline vs brute-force numerical FIM (toy case with sync and calibration priors)",
+            aggregation="largest relative deviation", raw=vs["fim"])
+        jk = f"job_gpu_vs_numpy_{tag}" if f"job_gpu_vs_numpy_{tag}" in vs["fim"] else "job_gpu_vs_numpy_heldout2"
+        e2 = vs["fim"][jk]
+        ex2 = int(math.floor(math.log10(e2)))
+        put("pFimJobErr", f"\\ensuremath{{{e2 / 10 ** ex2:.1f}\\times 10^{{{ex2}}}}}", script=sv2, config="job-level GPU PEB vs independent NumPy full-matrix reference (random samples)",
+            aggregation="largest relative deviation")
     vt = P2 / f"validation_table_{tag}.json"
     if vt.exists():
         vtd = json.loads(vt.read_text())
@@ -234,6 +268,15 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
                 aggregation="min-max over geometries of centred RMS sqrt(E||p_hat - E p_hat||^2) / single-epoch LoS-only PEB", raw=cen)
             put(f"pValBiasToRmse{B}", f"{min(bia):.2f}--{max(bia):.2f}", script=svt, config=f"6 fixed geometries, {bw} MHz, main hardware",
                 aggregation="min-max over geometries of bias magnitude ||E p_hat - p|| / RMSE", raw=bia)
+        bm = [(r["bandwidths"]["400"]["bias_to_rmse"] ** 2, r) for r in vtd["rows"]]
+        big = [v for v, _ in bm if v > 0.5]
+        small = [(v, r) for v, r in bm if v <= 0.5]
+        put("pValBiasMseFour", f"{100 * min(big):.0f}--{100 * max(big):.0f}\\%", script=svt, config="400 MHz, main hardware; geometries where bias^2/MSE > 50 %",
+            aggregation="min-max of squared bias / MSE (MSE = RMSE^2)", raw=[v for v, _ in bm])
+        if small:
+            put("pValBiasMseFourOther", ", ".join(f"{100 * v:.0f}\\%" for v, _ in small), script=svt,
+                config="400 MHz, main hardware; the remaining geometry: " + "; ".join(f"{r['mount']} {r['state']} x={r['ue_x_m']:.1f} m" for _, r in small),
+                aggregation="squared bias / MSE")
         put("pValIdentity", f"{vtd['identity_max_rel_dev']:.0e}", script=svt, config="all table cells",
             aggregation="max relative deviation of RMSE^2 from bias^2 + centred^2 (sample moments)")
     odf = P2 / f"onset_definitions_{tag}.json"
