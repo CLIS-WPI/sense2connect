@@ -3290,24 +3290,45 @@
   }
  },
  "numPairedMaxP": {
-  "value": "0.0013",
-  "script": "scripts/run_m5_paired.py -> results/M5/paired.json (per-job outages from results/M5/planner.json)",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; true-LoS-loss planner (sensing-planner's tuned H) vs A5, 40 evaluation jobs; margins 15-30 dB plus the 3GPP reference (5 margins)",
+  "value": "0.084",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; true-LoS-loss planner minus A5; margins 15-30 dB plus the 3GPP reference (5 margins)",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "max over those margins of the two-sided Wilcoxon signed-rank p (zero differences dropped); rounded UP to 2 significant digits so that p <= value holds",
+  "aggregation": "max over those margins of the exact two-sided Wilcoxon p on the 10 seed differences; rounded UP to 2 significant digits",
   "raw": {
-   "p_per_margin": {
+   "seed_p": {
+    "15 dB": 0.083984375,
+    "20 dB": 0.02734375,
+    "25 dB": 0.048828125,
+    "30 dB": 0.009765625,
+    "3GPP short-range reference": 0.009765625
+   },
+   "p_max": 0.083984375,
+   "n_margins": 5,
+   "bonferroni_p_max_times_n": 0.419921875,
+   "means": {
+    "15 dB": -0.08062093139709561,
+    "20 dB": -0.07310966449674508,
+    "25 dB": -0.055583375062593886,
+    "30 dB": -0.030045067601402103,
+    "3GPP short-range reference": -0.042188282423635454
+   },
+   "seeds_lower": {
+    "15 dB": 8,
+    "20 dB": 8,
+    "25 dB": 8,
+    "30 dB": 9,
+    "3GPP short-range reference": 9
+   },
+   "run_level_p": {
     "15 dB": 0.0010897347284321546,
     "20 dB": 0.00127758492094995,
     "25 dB": 0.0004984812269642085,
     "30 dB": 0.0002274309462955084,
     "3GPP short-range reference": 8.937146891704653e-05
-   },
-   "p_max": 0.00127758492094995,
-   "n_margins": 5,
-   "bonferroni_p_max_times_n": 0.00638792460474975
+   }
   },
-  "note": "Bonferroni: p_max x 5 = 0.00639 < 0.05 (holds)",
+  "note": "Bonferroni: p_max x 5 = 0.42 >= 0.05 (does NOT hold)",
   "seed_set": "held-out 2001-2010",
   "dev_value": "0.0053",
   "dev_raw": {
@@ -3475,24 +3496,106 @@
    "share_of_a5": 0.6856617647058825
   }
  },
- "numErrPerfTen": {
-  "value": "+0.33$^\\dagger$",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'perfect | ue 0.0' (perfect tracks); margin 10 dB",
-  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+ "numCalPedAcq": {
+  "value": "1.2",
+  "script": "scripts/review2_calibrate.py -> results/M5/review2/calibration.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; tracker-error calibration on the DEVELOPMENT seeds 1001-1010 (used unchanged by the frozen pipeline on every seed set): final map tracker, detector budget 4, image-method ghost handling; one CPI = 0.1 s; pedestrians",
+  "seeds": "development seeds 1001-1010",
+  "aggregation": "median over pedestrian range visits of the CPIs from entering the 40 m range to the first matched track, x 0.1 s [s]",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 40,
-   "mean_diff": 0.326489734601903,
-   "ci95_half_t": 0.2416917108782726,
-   "ci95": [
-    0.0847980237236304,
-    0.5681814454801756
-   ],
-   "wilcoxon_p_two_sided": 0.07472652908654709,
-   "n_scheme_lower": 20,
-   "n_scheme_higher": 20
+   "median_cpi": 12.0,
+   "mean_cpi": 38.6231884057971
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010",
+  "dev_value": "1.2",
+  "dev_raw": {
+   "median_cpi": 12.0,
+   "mean_cpi": 38.6231884057971
+  }
+ },
+ "numCalPedOut": {
+  "value": "0.9",
+  "script": "scripts/review2_calibrate.py -> results/M5/review2/calibration.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; tracker-error calibration on the DEVELOPMENT seeds 1001-1010 (used unchanged by the frozen pipeline on every seed set): final map tracker, detector budget 4, image-method ghost handling; one CPI = 0.1 s; pedestrians",
+  "seeds": "development seeds 1001-1010",
+  "aggregation": "median over pedestrian track outages (unmatched runs after a match, inside the range) of their length, x 0.1 s [s]",
+  "raw": {
+   "median_cpi": 9.0,
+   "mean_cpi": 15.932082216264522
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010",
+  "dev_value": "0.9",
+  "dev_raw": {
+   "median_cpi": 9.0,
+   "mean_cpi": 15.932082216264522
+  }
+ },
+ "numCalPosErr": {
+  "value": "0.53--1.84",
+  "script": "scripts/review2_calibrate.py -> results/M5/review2/calibration.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; tracker-error calibration on the DEVELOPMENT seeds 1001-1010 (used unchanged by the frozen pipeline on every seed set): final map tracker, detector budget 4, image-method ghost handling; one CPI = 0.1 s; classes bus/truck, pedestrian, car",
+  "seeds": "development seeds 1001-1010",
+  "aggregation": "min-max over classes of the standard deviation of the along-lane (x) position error of matched tracks on the predictor's state [m]",
+  "raw": {
+   "bus/truck": 1.8436485034435006,
+   "pedestrian": 0.531562390690473,
+   "car": 1.250987331205739
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010",
+  "dev_value": "0.53--1.84",
+  "dev_raw": {
+   "bus/truck": 1.8436485034435006,
+   "pedestrian": 0.531562390690473,
+   "car": 1.250987331205739
+  }
+ },
+ "numErrPerfTen": {
+  "value": "+0.33",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'perfect | ue 0.0', margin 10 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
+  "raw": {
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.326489734601903,
+    "ci95_boot": [
+     0.1258105908863296,
+     0.550325488232349
+    ],
+    "wilcoxon_p_two_sided": 0.005859375,
+    "n_seeds_lower": 1,
+    "n_seeds_higher": 9,
+    "per_seed": {
+     "2001": 0.15898848272408617,
+     "2002": 0.05257886830245398,
+     "2003": 0.5996494742113168,
+     "2004": 0.0212819228843264,
+     "2005": -0.05132699048572871,
+     "2006": 0.11517275913870823,
+     "2007": 0.8087130696044069,
+     "2008": 0.08012018027040563,
+     "2009": 0.9088632949424142,
+     "2010": 0.5708562844266404
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 0.326489734601903,
+    "ci95_half_t": 0.2416917108782726,
+    "ci95": [
+     0.0847980237236304,
+     0.5681814454801756
+    ],
+    "wilcoxon_p_two_sided": 0.07472652908654709,
+    "n_scheme_lower": 20,
+    "n_scheme_higher": 20
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3513,22 +3616,48 @@
  },
  "numErrPerfRef": {
   "value": "-0.042",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'perfect | ue 0.0' (perfect tracks); margin 3GPP short-range reference",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'perfect | ue 0.0', margin 3GPP short-range reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 28,
-   "mean_diff": -0.04181271907861793,
-   "ci95_half_t": 0.0337482937617508,
-   "ci95": [
-    -0.07556101284036873,
-    -0.00806442531686713
-   ],
-   "wilcoxon_p_two_sided": 6.0857732937811155e-05,
-   "n_scheme_lower": 25,
-   "n_scheme_higher": 3
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": -0.04181271907861793,
+    "ci95_boot": [
+     -0.09752128192288434,
+     -0.009389083625438156
+    ],
+    "wilcoxon_p_two_sided": 0.009765625,
+    "n_seeds_lower": 9,
+    "n_seeds_higher": 1,
+    "per_seed": {
+     "2001": 0.0062593890836254475,
+     "2002": -0.013770655983975963,
+     "2003": -0.022533800701051574,
+     "2004": -0.018778167250876315,
+     "2005": -0.015022533800701059,
+     "2006": -0.0025037556334501724,
+     "2007": -0.003755633450175263,
+     "2008": -0.038808212318477704,
+     "2009": -0.030045067601402103,
+     "2010": -0.2791687531296946
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 28,
+    "mean_diff": -0.04181271907861793,
+    "ci95_half_t": 0.0337482937617508,
+    "ci95": [
+     -0.07556101284036873,
+     -0.00806442531686713
+    ],
+    "wilcoxon_p_two_sided": 6.0857732937811155e-05,
+    "n_scheme_lower": 25,
+    "n_scheme_higher": 3
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3549,22 +3678,48 @@
  },
  "numErrMissTen": {
   "value": "+2.71",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table miss' (misses (coverage + measured outages)); margin 10 dB",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table miss', margin 10 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 40,
-   "mean_diff": 2.706434651977967,
-   "ci95_half_t": 0.6717873077431256,
-   "ci95": [
-    2.034647344234841,
-    3.3782219597210927
-   ],
-   "wilcoxon_p_two_sided": 9.094947017729282e-12,
-   "n_scheme_lower": 2,
-   "n_scheme_higher": 38
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 2.706434651977967,
+    "ci95_boot": [
+     2.1104031046569856,
+     3.3252409864797197
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 2.8517776664997494,
+     "2002": 2.3372558838257387,
+     "2003": 4.425388082123185,
+     "2004": 1.8615423134702054,
+     "2005": 2.8918377566349522,
+     "2006": 2.4136204306459694,
+     "2007": 4.35277916875313,
+     "2008": 0.9439158738107158,
+     "2009": 2.4374061091637453,
+     "2010": 2.5488232348522786
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 2.706434651977967,
+    "ci95_half_t": 0.6717873077431256,
+    "ci95": [
+     2.034647344234841,
+     3.3782219597210927
+    ],
+    "wilcoxon_p_two_sided": 9.094947017729282e-12,
+    "n_scheme_lower": 2,
+    "n_scheme_higher": 38
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3584,23 +3739,49 @@
   }
  },
  "numErrMissRef": {
-  "value": "+0.108",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table miss' (misses (coverage + measured outages)); margin 3GPP short-range reference",
+  "value": "+0.108$^\\dagger$",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table miss', margin 3GPP short-range reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 28,
-   "mean_diff": 0.10766149223835753,
-   "ci95_half_t": 0.111472952536709,
-   "ci95": [
-    -0.003811460298351471,
-    0.21913444477506652
-   ],
-   "wilcoxon_p_two_sided": 0.029623078520554406,
-   "n_scheme_lower": 11,
-   "n_scheme_higher": 17
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.10766149223835755,
+    "ci95_boot": [
+     0.004631947921882819,
+     0.26614922383575357
+    ],
+    "wilcoxon_p_two_sided": 0.322265625,
+    "n_seeds_lower": 5,
+    "n_seeds_higher": 5,
+    "per_seed": {
+     "2001": 0.19278918377566348,
+     "2002": -0.013770655983975963,
+     "2003": 0.16649974962443667,
+     "2004": 0.022533800701051574,
+     "2005": 0.7235853780671005,
+     "2006": -0.0025037556334501724,
+     "2007": -0.003755633450175263,
+     "2008": 0.04631947921882825,
+     "2009": -0.008763144717075615,
+     "2010": -0.04631947921882827
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 28,
+    "mean_diff": 0.10766149223835753,
+    "ci95_half_t": 0.111472952536709,
+    "ci95": [
+     -0.003811460298351471,
+     0.21913444477506652
+    ],
+    "wilcoxon_p_two_sided": 0.029623078520554406,
+    "n_scheme_lower": 11,
+    "n_scheme_higher": 17
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3621,22 +3802,48 @@
  },
  "numErrFalseTen": {
   "value": "+0.70",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table false' (false tracks); margin 10 dB",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table false', margin 10 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 40,
-   "mean_diff": 0.6965448172258388,
-   "ci95_half_t": 0.24826653494460785,
-   "ci95": [
-    0.448278282281231,
-    0.9448113521704466
-   ],
-   "wilcoxon_p_two_sided": 1.2744014762693833e-07,
-   "n_scheme_lower": 3,
-   "n_scheme_higher": 37
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.6965448172258388,
+    "ci95_boot": [
+     0.4928549073610416,
+     0.9397940660991488
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 0.6084126189283925,
+     "2002": 0.3129694541812721,
+     "2003": 0.314221331997997,
+     "2004": 0.9914872308462693,
+     "2005": 0.7486229344016022,
+     "2006": 0.3192288432648973,
+     "2007": 0.9326489734601903,
+     "2008": 0.5095142714071106,
+     "2009": 0.7235853780671011,
+     "2010": 1.5047571357035556
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 0.6965448172258388,
+    "ci95_half_t": 0.24826653494460785,
+    "ci95": [
+     0.448278282281231,
+     0.9448113521704466
+    ],
+    "wilcoxon_p_two_sided": 1.2744014762693833e-07,
+    "n_scheme_lower": 3,
+    "n_scheme_higher": 37
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3657,22 +3864,48 @@
  },
  "numErrFalseRef": {
   "value": "+0.006$^\\dagger$",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table false' (false tracks); margin 3GPP short-range reference",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table false', margin 3GPP short-range reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 36,
-   "mean_diff": 0.0057586379569354,
-   "ci95_half_t": 0.03233112324592068,
-   "ci95": [
-    -0.026572485288985283,
-    0.038089761202856086
-   ],
-   "wilcoxon_p_two_sided": 0.0823664201961497,
-   "n_scheme_lower": 12,
-   "n_scheme_higher": 24
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.005758637956935398,
+    "ci95_boot": [
+     -0.043440160240360556,
+     0.04056084126189284
+    ],
+    "wilcoxon_p_two_sided": 0.080078125,
+    "n_seeds_lower": 1,
+    "n_seeds_higher": 9,
+    "per_seed": {
+     "2001": 0.042563845768653,
+     "2002": 0.003755633450175262,
+     "2003": 0.10390585878818229,
+     "2004": 0.0200300450676014,
+     "2005": 0.005007511266900339,
+     "2006": 0.0075112669003505285,
+     "2007": 0.016274411617426137,
+     "2008": 0.021281922884326503,
+     "2009": 0.0200300450676014,
+     "2010": -0.18277416124186285
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 36,
+    "mean_diff": 0.0057586379569354,
+    "ci95_half_t": 0.03233112324592068,
+    "ci95": [
+     -0.026572485288985283,
+     0.038089761202856086
+    ],
+    "wilcoxon_p_two_sided": 0.0823664201961497,
+    "n_scheme_lower": 12,
+    "n_scheme_higher": 24
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3693,22 +3926,48 @@
  },
  "numErrNoiseTen": {
   "value": "+1.30",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table noise' (position/velocity error); margin 10 dB",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table noise', margin 10 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 40,
-   "mean_diff": 1.300701051577366,
-   "ci95_half_t": 0.35091607497161414,
-   "ci95": [
-    0.9497849766057519,
-    1.65161712654898
-   ],
-   "wilcoxon_p_two_sided": 3.637978807091713e-12,
-   "n_scheme_lower": 1,
-   "n_scheme_higher": 39
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 1.300701051577366,
+    "ci95_boot": [
+     0.9939878567851779,
+     1.6260640961442163
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 1.2055583375062593,
+     "2002": 0.610916374561843,
+     "2003": 1.6675012518778163,
+     "2004": 1.716324486730095,
+     "2005": 0.9376564847270908,
+     "2006": 0.7461191787681523,
+     "2007": 2.20706059088633,
+     "2008": 0.8087130696044067,
+     "2009": 1.3107160741111668,
+     "2010": 1.7964446670005012
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 1.300701051577366,
+    "ci95_half_t": 0.35091607497161414,
+    "ci95": [
+     0.9497849766057519,
+     1.65161712654898
+    ],
+    "wilcoxon_p_two_sided": 3.637978807091713e-12,
+    "n_scheme_lower": 1,
+    "n_scheme_higher": 39
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3729,22 +3988,48 @@
  },
  "numErrNoiseRef": {
   "value": "+0.049",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table noise' (position/velocity error); margin 3GPP short-range reference",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table noise', margin 3GPP short-range reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 28,
-   "mean_diff": 0.04857285928893339,
-   "ci95_half_t": 0.041561330072791516,
-   "ci95": [
-    0.007011529216141871,
-    0.0901341893617249
-   ],
-   "wilcoxon_p_two_sided": 0.011842155701262558,
-   "n_scheme_lower": 8,
-   "n_scheme_higher": 20
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.04857285928893339,
+    "ci95_boot": [
+     0.01702553830746118,
+     0.08537806710065096
+    ],
+    "wilcoxon_p_two_sided": 0.009765625,
+    "n_seeds_lower": 1,
+    "n_seeds_higher": 9,
+    "per_seed": {
+     "2001": 0.10891337005508261,
+     "2002": 0.008763144717075613,
+     "2003": 0.11892839258888332,
+     "2004": -0.005007511266900351,
+     "2005": 0.022533800701051564,
+     "2006": 0.03505257886830246,
+     "2007": 0.003755633450175262,
+     "2008": 2.42861286636753e-17,
+     "2009": 0.1614922383575363,
+     "2010": 0.03129694541812711
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 28,
+    "mean_diff": 0.04857285928893339,
+    "ci95_half_t": 0.041561330072791516,
+    "ci95": [
+     0.007011529216141871,
+     0.0901341893617249
+    ],
+    "wilcoxon_p_two_sided": 0.011842155701262558,
+    "n_scheme_lower": 8,
+    "n_scheme_higher": 20
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3765,22 +4050,48 @@
  },
  "numErrSizeTen": {
   "value": "+0.89",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table size' (predictor size rule); margin 10 dB",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table size', margin 10 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 40,
-   "mean_diff": 0.889959939909865,
-   "ci95_half_t": 0.3399210069855889,
-   "ci95": [
-    0.5500389329242761,
-    1.229880946895454
-   ],
-   "wilcoxon_p_two_sided": 1.1018074420268163e-06,
-   "n_scheme_lower": 7,
-   "n_scheme_higher": 33
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.889959939909865,
+    "ci95_boot": [
+     0.6301859038557839,
+     1.1339571857786679
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 0.9777165748622934,
+     "2002": 0.9013520280420635,
+     "2003": 0.3380070105157736,
+     "2004": 1.4559339008512766,
+     "2005": 1.1905358037055584,
+     "2006": 0.5746119178768152,
+     "2007": 0.8487731597396095,
+     "2008": 0.13144717075613455,
+     "2009": 1.1930395593390088,
+     "2010": 1.2881822734101158
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 0.889959939909865,
+    "ci95_half_t": 0.3399210069855889,
+    "ci95": [
+     0.5500389329242761,
+     1.229880946895454
+    ],
+    "wilcoxon_p_two_sided": 1.1018074420268163e-06,
+    "n_scheme_lower": 7,
+    "n_scheme_higher": 33
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3801,22 +4112,48 @@
  },
  "numErrSizeRef": {
   "value": "-0.018$^\\dagger$",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table size' (predictor size rule); margin 3GPP short-range reference",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table size', margin 3GPP short-range reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 31,
-   "mean_diff": -0.017526289434151233,
-   "ci95_half_t": 0.029364569019272733,
-   "ci95": [
-    -0.046890858453423966,
-    0.0118382795851215
-   ],
-   "wilcoxon_p_two_sided": 0.4270380627567434,
-   "n_scheme_lower": 17,
-   "n_scheme_higher": 14
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": -0.01752628943415123,
+    "ci95_boot": [
+     -0.06747621432148224,
+     0.013144717075613422
+    ],
+    "wilcoxon_p_two_sided": 0.82421875,
+    "n_seeds_lower": 4,
+    "n_seeds_higher": 6,
+    "per_seed": {
+     "2001": 0.03505257886830246,
+     "2002": -0.013770655983975963,
+     "2003": -0.003755633450175261,
+     "2004": -0.013770655983975963,
+     "2005": 0.0025037556334501637,
+     "2006": 2.6020852139652106e-18,
+     "2007": 0.001251877816725087,
+     "2008": 0.016274411617426147,
+     "2009": 0.02754131196795193,
+     "2010": -0.2265898848272409
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 31,
+    "mean_diff": -0.017526289434151233,
+    "ci95_half_t": 0.029364569019272733,
+    "ci95": [
+     -0.046890858453423966,
+     0.0118382795851215
+    ],
+    "wilcoxon_p_two_sided": 0.4270380627567434,
+    "n_scheme_lower": 17,
+    "n_scheme_higher": 14
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3837,22 +4174,48 @@
  },
  "numErrAllTen": {
   "value": "+4.92",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table all' (all four); margin 10 dB",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table all', margin 10 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 40,
-   "mean_diff": 4.922008012018027,
-   "ci95_half_t": 1.0081881203554026,
-   "ci95": [
-    3.913819891662625,
-    5.93019613237343
-   ],
-   "wilcoxon_p_two_sided": 3.568126323893353e-08,
-   "n_scheme_lower": 0,
-   "n_scheme_higher": 40
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 4.922008012018027,
+    "ci95_boot": [
+     3.9815942663995987,
+     5.853436404606909
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 4.898597896845267,
+     "2002": 4.0110165247871805,
+     "2003": 7.343515272909364,
+     "2004": 5.503254882323485,
+     "2005": 3.8307461191787677,
+     "2006": 3.3688032048072105,
+     "2007": 7.149474211316974,
+     "2008": 2.2621432148222334,
+     "2009": 5.3355032548823225,
+     "2010": 5.517025538307461
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 4.922008012018027,
+    "ci95_half_t": 1.0081881203554026,
+    "ci95": [
+     3.913819891662625,
+     5.93019613237343
+    ],
+    "wilcoxon_p_two_sided": 3.568126323893353e-08,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3873,22 +4236,48 @@
  },
  "numErrAllRef": {
   "value": "+0.099",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table all' (all four); margin 3GPP short-range reference",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table all', margin 3GPP short-range reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 38,
-   "mean_diff": 0.09914872308462692,
-   "ci95_half_t": 0.058148697824402205,
-   "ci95": [
-    0.04100002526022472,
-    0.15729742090902912
-   ],
-   "wilcoxon_p_two_sided": 8.900647104369704e-05,
-   "n_scheme_lower": 6,
-   "n_scheme_higher": 32
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.09914872308462694,
+    "ci95_boot": [
+     0.04256384576865297,
+     0.1603655483224837
+    ],
+    "wilcoxon_p_two_sided": 0.00390625,
+    "n_seeds_lower": 1,
+    "n_seeds_higher": 9,
+    "per_seed": {
+     "2001": 0.18778167250876315,
+     "2002": -0.006259389083625438,
+     "2003": 0.1477215823735603,
+     "2004": 0.013770655983975961,
+     "2005": 0.040060090135202786,
+     "2006": 0.007511266900350528,
+     "2007": 0.07135703555332999,
+     "2008": 0.26039058587881825,
+     "2009": 0.24536805207811718,
+     "2010": 0.023785678517776594
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 38,
+    "mean_diff": 0.09914872308462692,
+    "ci95_half_t": 0.058148697824402205,
+    "ci95": [
+     0.04100002526022472,
+     0.15729742090902912
+    ],
+    "wilcoxon_p_two_sided": 8.900647104369704e-05,
+    "n_scheme_lower": 6,
+    "n_scheme_higher": 32
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3909,22 +4298,48 @@
  },
  "numErrAllUETen": {
   "value": "+6.91",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table all + ue 1' (all four + UE position error sigma 1 m); margin 10 dB",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table all + ue 1', margin 10 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 40,
-   "mean_diff": 6.905983975963946,
-   "ci95_half_t": 1.4728915705077281,
-   "ci95": [
-    5.433092405456218,
-    8.378875546471674
-   ],
-   "wilcoxon_p_two_sided": 3.568126323893353e-08,
-   "n_scheme_lower": 0,
-   "n_scheme_higher": 40
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 6.905983975963946,
+    "ci95_boot": [
+     5.5185246619929895,
+     8.250300450676011
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 8.117175763645468,
+     "2002": 4.882323485227841,
+     "2003": 10.229093640460693,
+     "2004": 7.543815723585379,
+     "2005": 5.08637956935403,
+     "2006": 3.2561342013019527,
+     "2007": 9.73460190285428,
+     "2008": 4.446670005007511,
+     "2009": 7.692789183775664,
+     "2010": 8.07085628442664
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 6.905983975963946,
+    "ci95_half_t": 1.4728915705077281,
+    "ci95": [
+     5.433092405456218,
+     8.378875546471674
+    ],
+    "wilcoxon_p_two_sided": 3.568126323893353e-08,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3945,22 +4360,48 @@
  },
  "numErrAllUERef": {
   "value": "+0.101",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; planner on ground-truth tracks with the REALISTIC injected tracker error (calibrated on the development seeds by scripts/review2_calibrate.py: per-visit miss patterns, AR(1) state errors, measured false-track episodes, predictor size rule); H fixed per margin (perfect-track H tuned on tuning seeds, results/M5/review_b5.json); sensing overhead charged; condition 'R table all + ue 1' (all four + UE position error sigma 1 m); margin 3GPP short-range reference",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; Table II realistic error model, condition 'R table all + ue 1', margin 3GPP short-range reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (planner - A5) per-job outage [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05 (not significant); t-based 95 % CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 39,
-   "mean_diff": 0.10102653980971454,
-   "ci95_half_t": 0.0507611221245098,
-   "ci95": [
-    0.05026541768520475,
-    0.15178766193422433
-   ],
-   "wilcoxon_p_two_sided": 1.5065377714789059e-06,
-   "n_scheme_lower": 4,
-   "n_scheme_higher": 35
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.10102653980971457,
+    "ci95_boot": [
+     0.049446044066099135,
+     0.1598647971957937
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 0.18903355032548824,
+     "2002": 0.001251877816725087,
+     "2003": 0.10140210315473208,
+     "2004": 0.02503755633450175,
+     "2005": 0.05508262393590385,
+     "2006": 0.06259389083625437,
+     "2007": 0.0200300450676014,
+     "2008": 0.2528793189784677,
+     "2009": 0.25538307461191784,
+     "2010": 0.04757135703555328
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 39,
+    "mean_diff": 0.10102653980971454,
+    "ci95_half_t": 0.0507611221245098,
+    "ci95": [
+     0.05026541768520475,
+     0.15178766193422433
+    ],
+    "wilcoxon_p_two_sided": 1.5065377714789059e-06,
+    "n_scheme_lower": 4,
+    "n_scheme_higher": 35
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -3980,16 +4421,304 @@
   }
  },
  "numBEPosRange": {
-  "value": "0.12--0.18",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; blocker position (realistic: along-line AR(1)), UE exact; min-max over 15-30 dB",
+  "value": "0.12--0.17",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; blocker position (realistic), UE exact; sigma = standard deviation per horizontal axis (realistic blocker model: along-line axis); min-max over 15-30 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "break-even sigma = the sigma at which the mean paired difference planner - A5 first reaches 0 (linear interpolation over the grid 0, 0.1, 0.25, 0.5, 1); margins where perfect tracks are not below A5 are left out; '$>$max' = still below A5 at the largest sigma [m]",
+  "aggregation": "mean break-even: sigma at which the seed-level mean paired difference planner - A5 first reaches 0, linear interpolation between the evaluated sigmas (dense grid, scripts/review3_eval.py, plus scripts/review2_sweeps.py); margins where perfect tracks are not below A5 are left out [m]",
   "raw": {
-   "15 dB": 0.11900785854616885,
-   "20 dB": 0.1391459074733096,
-   "25 dB": 0.17782426778242677,
-   "30 dB": 0.18333333333333338
+   "sigmas": [
+    0.0,
+    0.05,
+    0.1,
+    0.125,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.5,
+    1.0
+   ],
+   "15 dB": {
+    "mean_diff": [
+     -0.07623935903855776,
+     -0.049449173760640855,
+     -0.016149223835753533,
+     -0.0015022533800700733,
+     0.006760140210315531,
+     0.10728592889334006,
+     0.11129193790686039,
+     0.13632949424136206,
+     0.2869303955933901,
+     0.5076364546820231
+    ],
+    "p": [
+     0.130859375,
+     0.375,
+     0.76953125,
+     1.0,
+     0.845703125,
+     0.064453125,
+     0.00390625,
+     0.00390625,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.14371870305458176,
+      0.003508387581372115
+     ],
+     [
+      -0.11116675012518765,
+      0.025287931897846904
+     ],
+     [
+      -0.07911867801702546,
+      0.049201927891837874
+     ],
+     [
+      -0.05508262393590384,
+      0.05683838257386081
+     ],
+     [
+      -0.0444416624937406,
+      0.06397095643465205
+     ],
+     [
+      0.02315973960941416,
+      0.19454494241362044
+     ],
+     [
+      0.051574236354531816,
+      0.17551326990485724
+     ],
+     [
+      0.06735102653980973,
+      0.2099399098647973
+     ],
+     [
+      0.17400788683024537,
+      0.40949236354531793
+     ],
+     [
+      0.3761892839258889,
+      0.6503536554832249
+     ]
+    ],
+    "mean_break_even": 0.12954545454545444,
+    "significant_advantage_limit": null
+   },
+   "20 dB": {
+    "mean_diff": [
+     -0.06384576865297945,
+     -0.0403104656985478,
+     -0.027541311967951936,
+     0.004631947921882819,
+     0.013520280420630961,
+     0.06509764646970455,
+     0.077991987981973,
+     0.07886830245368055,
+     0.16324486730095145,
+     0.32448673009514273
+    ],
+    "p": [
+     0.037109375,
+     0.16015625,
+     0.275390625,
+     0.625,
+     0.76953125,
+     0.083984375,
+     0.048828125,
+     0.009765625,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.10753943415122683,
+      -0.017025538307461223
+     ],
+     [
+      -0.08963445167751624,
+      0.012518778167250869
+     ],
+     [
+      -0.06710378067100652,
+      0.014146219328993464
+     ],
+     [
+      -0.03480533299949924,
+      0.041437155733600364
+     ],
+     [
+      -0.04118990986479712,
+      0.07198610415623433
+     ],
+     [
+      0.011639334001001513,
+      0.1190535803705558
+     ],
+     [
+      0.022530671006509802,
+      0.13507761642463698
+     ],
+     [
+      0.03880821231847774,
+      0.12243678017025536
+     ],
+     [
+      0.12255883825738609,
+      0.21207123184777166
+     ],
+     [
+      0.2565097646469705,
+      0.3955933900851276
+     ]
+    ],
+    "mean_break_even": 0.12140077821011673,
+    "significant_advantage_limit": 0.0
+   },
+   "25 dB": {
+    "mean_diff": [
+     -0.04594391587381073,
+     -0.0513269904857286,
+     -0.01552328492739109,
+     -0.02265898848272408,
+     -0.015272909364046067,
+     0.01690035052578869,
+     0.014396594892338504,
+     0.03642964446670005,
+     0.03355032548823234,
+     0.18740610916374562
+    ],
+    "p": [
+     0.083984375,
+     0.013671875,
+     0.275390625,
+     0.232421875,
+     0.4921875,
+     0.375,
+     0.16015625,
+     0.048828125,
+     0.02734375,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.08988795693540311,
+      -0.002628943415122688
+     ],
+     [
+      -0.08788182273410115,
+      -0.019153730595893842
+     ],
+     [
+      -0.048823234852278415,
+      0.01927891837756634
+     ],
+     [
+      -0.05683525287931897,
+      0.009263895843765647
+     ],
+     [
+      -0.04581872809213822,
+      0.012643965948923391
+     ],
+     [
+      -0.025663495242864265,
+      0.05570856284426638
+     ],
+     [
+      -0.0041311967951928,
+      0.034426639959939914
+     ],
+     [
+      0.007386079118678018,
+      0.07148535302954427
+     ],
+     [
+      0.011013395092638946,
+      0.0555833750625939
+     ],
+     [
+      0.14559339008512767,
+      0.2302234601902854
+     ]
+    ],
+    "mean_break_even": 0.17373540856031128,
+    "significant_advantage_limit": 0.05
+   },
+   "30 dB": {
+    "mean_diff": [
+     -0.0242864296444667,
+     -0.018402603905858787,
+     -0.018152228342513777,
+     -0.015147721582373565,
+     0.0062593890836254345,
+     0.0057586379569353995,
+     0.014521782674011014,
+     0.011266900350525782,
+     0.03192288432648972,
+     0.07736604907361042
+    ],
+    "p": [
+     0.009765625,
+     0.037109375,
+     0.048828125,
+     0.037109375,
+     0.921875,
+     0.921875,
+     0.232421875,
+     0.322265625,
+     0.10546875,
+     0.009765625
+    ],
+    "ci95_boot": [
+     [
+      -0.03943728092138207,
+      -0.010515773660490743
+     ],
+     [
+      -0.03204807210816224,
+      -0.005379944917376108
+     ],
+     [
+      -0.03355032548823235,
+      -0.0038808212318477767
+     ],
+     [
+      -0.026164246369554344,
+      -0.0035052578868302493
+     ],
+     [
+      -0.024787180771156735,
+      0.038310590886329446
+     ],
+     [
+      -0.013395092638958439,
+      0.026915373059589364
+     ],
+     [
+      -0.0027541311967951986,
+      0.034176264396594894
+     ],
+     [
+      -0.006509764646970453,
+      0.028793189784677008
+     ],
+     [
+      0.004882323485227841,
+      0.06672508763144716
+     ],
+     [
+      0.03192288432648973,
+      0.13595706059088628
+     ]
+    ],
+    "mean_break_even": 0.14269005847953217,
+    "significant_advantage_limit": 0.125
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -4003,12 +4732,93 @@
  },
  "numBEPosRef": {
   "value": "0.64",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; blocker position (realistic), UE exact; 3GPP reference",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; blocker position (realistic), UE exact; sigma = standard deviation per horizontal axis (realistic blocker model: along-line axis); 3GPP reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "break-even sigma = the sigma at which the mean paired difference planner - A5 first reaches 0 (linear interpolation over the grid 0, 0.1, 0.25, 0.5, 1); margins where perfect tracks are not below A5 are left out; '$>$max' = still below A5 at the largest sigma [m]",
+  "aggregation": "mean break-even: sigma at which the seed-level mean paired difference planner - A5 first reaches 0, linear interpolation between the evaluated sigmas (dense grid, scripts/review3_eval.py, plus scripts/review2_sweeps.py); margins where perfect tracks are not below A5 are left out [m]",
   "raw": {
-   "3GPP short-range reference": 0.6404494382022472
+   "sigmas": [
+    0.0,
+    0.05,
+    0.1,
+    0.125,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.5,
+    1.0
+   ],
+   "3GPP short-range reference": {
+    "mean_diff": [
+     -0.04181271907861793,
+     -0.03793189784677016,
+     -0.02553830746119179,
+     -0.029919879819729593,
+     -0.02979469203805709,
+     -0.02203304957436155,
+     -0.009514271407110668,
+     -0.01652478718077116,
+     -0.009389083625438163,
+     0.024036054081121666
+    ],
+    "p": [
+     0.009765625,
+     0.0234375,
+     0.02734375,
+     0.130859375,
+     0.232421875,
+     0.4921875,
+     0.6953125,
+     1.0,
+     1.0,
+     0.375
+    ],
+    "ci95_boot": [
+     [
+      -0.09752128192288434,
+      -0.009389083625438156
+     ],
+     [
+      -0.09263895843765649,
+      -0.005883825738607911
+     ],
+     [
+      -0.059213820731096656,
+      -0.004757135703555333
+     ],
+     [
+      -0.08450175262894341,
+      0.003755633450175263
+     ],
+     [
+      -0.08775663495242866,
+      0.002754131196795192
+     ],
+     [
+      -0.07536617426139211,
+      0.012643965948923377
+     ],
+     [
+      -0.052954431647471226,
+      0.023410115172759136
+     ],
+     [
+      -0.06609914872308464,
+      0.014646970455683523
+     ],
+     [
+      -0.048823234852278435,
+      0.01740110165247872
+     ],
+     [
+      -0.002879318978467718,
+      0.05408112168252377
+     ]
+    ],
+    "mean_break_even": 0.6404494382022473,
+    "significant_advantage_limit": 0.1
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -4018,16 +4828,329 @@
   }
  },
  "numBEUERange": {
-  "value": "0.07--0.11",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; UE position (white, as the main runs), perfect tracks; min-max over 15-30 dB",
+  "value": "0.08--0.13",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; UE position (perfect tracks); sigma = standard deviation per horizontal axis (realistic blocker model: along-line axis); min-max over 15-30 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "break-even sigma = the sigma at which the mean paired difference planner - A5 first reaches 0 (linear interpolation over the grid 0, 0.1, 0.25, 0.5, 1); margins where perfect tracks are not below A5 are left out; '$>$max' = still below A5 at the largest sigma [m]",
+  "aggregation": "mean break-even: sigma at which the seed-level mean paired difference planner - A5 first reaches 0, linear interpolation between the evaluated sigmas (dense grid, scripts/review3_eval.py, plus scripts/review2_sweeps.py); margins where perfect tracks are not below A5 are left out [m]",
   "raw": {
-   "15 dB": 0.10056692913385824,
-   "20 dB": 0.06781914893617019,
-   "25 dB": 0.10403996524761078,
-   "30 dB": 0.10531496062992128
+   "sigmas": [
+    0.0,
+    0.02,
+    0.05,
+    0.075,
+    0.1,
+    0.125,
+    0.15,
+    0.2,
+    0.25,
+    0.5,
+    1.0
+   ],
+   "15 dB": {
+    "mean_diff": [
+     -0.07623935903855776,
+     -0.06547320981472207,
+     -0.05858788182273404,
+     -0.027916875312969408,
+     -0.0015022533800700122,
+     0.07511266900350534,
+     0.1402103154732099,
+     0.2744116174261392,
+     0.3959689534301454,
+     0.9474211316975463,
+     1.4917376064096144
+    ],
+    "p": [
+     0.130859375,
+     0.16015625,
+     0.232421875,
+     0.556640625,
+     1.0,
+     0.02734375,
+     0.001953125,
+     0.001953125,
+     0.001953125,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.14371870305458176,
+      0.003508387581372115
+     ],
+     [
+      -0.13119679519278912,
+      0.010891337005508225
+     ],
+     [
+      -0.11930395593390082,
+      0.012393590385578435
+     ],
+     [
+      -0.08112168252378563,
+      0.03329994992488737
+     ],
+     [
+      -0.06046569854782167,
+      0.06447170756134213
+     ],
+     [
+      0.021904732098147264,
+      0.13470205307961952
+     ],
+     [
+      0.07961942914371563,
+      0.2079369053580371
+     ],
+     [
+      0.1800200300450676,
+      0.3780671006509765
+     ],
+     [
+      0.27703743114672014,
+      0.5187781672508764
+     ],
+     [
+      0.7213288683024538,
+      1.1989390335503252
+     ],
+     [
+      1.108785052578868,
+      1.888216700050075
+     ]
+    ],
+    "mean_break_even": 0.10049019607843135,
+    "significant_advantage_limit": null
+   },
+   "20 dB": {
+    "mean_diff": [
+     -0.06384576865297945,
+     -0.0574611917876815,
+     -0.04769654481722581,
+     -0.0112669003505258,
+     0.030295443164747148,
+     0.043189784677015536,
+     0.08087130696044072,
+     0.12318477716574863,
+     0.23159739609414123,
+     0.6099148723084628,
+     0.8739359038557837
+    ],
+    "p": [
+     0.037109375,
+     0.064453125,
+     0.064453125,
+     0.625,
+     0.193359375,
+     0.037109375,
+     0.00390625,
+     0.00390625,
+     0.001953125,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.10753943415122683,
+      -0.017025538307461223
+     ],
+     [
+      -0.10077929394091133,
+      -0.010766149223835748
+     ],
+     [
+      -0.08800701051577366,
+      -0.0022533800701050916
+     ],
+     [
+      -0.05082623935903857,
+      0.02941912869303953
+     ],
+     [
+      -0.008763144717075604,
+      0.06873122183274914
+     ],
+     [
+      0.009260766149223842,
+      0.0742363545317977
+     ],
+     [
+      0.045443164747120714,
+      0.11554832248372562
+     ],
+     [
+      0.06647471206810222,
+      0.18177578868302455
+     ],
+     [
+      0.17425826239359038,
+      0.2806710065097647
+     ],
+     [
+      0.47809213820731095,
+      0.7636454682023033
+     ],
+     [
+      0.70417814221332,
+      1.0446951677516274
+     ]
+    ],
+    "mean_break_even": 0.08177710843373494,
+    "significant_advantage_limit": 0.0
+   },
+   "25 dB": {
+    "mean_diff": [
+     -0.04594391587381073,
+     -0.037180771156735105,
+     -0.03793189784677015,
+     -0.023535302954431646,
+     -0.003880821231847774,
+     0.01852779168753128,
+     0.023535302954431646,
+     0.07260891337005507,
+     0.14021031547320978,
+     0.3318728092138207,
+     0.3992238357536304
+    ],
+    "p": [
+     0.083984375,
+     0.16015625,
+     0.048828125,
+     0.193359375,
+     0.921875,
+     0.6953125,
+     0.4921875,
+     0.02734375,
+     0.001953125,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.08988795693540311,
+      -0.002628943415122688
+     ],
+     [
+      -0.0801201802704056,
+      0.005636579869804661
+     ],
+     [
+      -0.0742394842263395,
+      -0.007761642463695551
+     ],
+     [
+      -0.053705558337506266,
+      0.00550826239359038
+     ],
+     [
+      -0.03342513770655984,
+      0.02341011517275913
+     ],
+     [
+      -0.017529419128693085,
+      0.05783988482724082
+     ],
+     [
+      -0.014021031547320992,
+      0.06960440660991485
+     ],
+     [
+      0.023156609914872298,
+      0.12781672508763145
+     ],
+     [
+      0.08412305958938407,
+      0.1976715072608913
+     ],
+     [
+      0.25388082123184774,
+      0.40924198798197287
+     ],
+     [
+      0.3094610665998998,
+      0.48447671507260887
+     ]
+    ],
+    "mean_break_even": 0.1043296089385475,
+    "significant_advantage_limit": 0.05
+   },
+   "30 dB": {
+    "mean_diff": [
+     -0.0242864296444667,
+     -0.026164246369554327,
+     -0.017526289434151222,
+     -0.012643965948923386,
+     -0.0011266900350525798,
+     -0.0013770655983976043,
+     0.015022533800701043,
+     0.025037556334501748,
+     0.030671006509764648,
+     0.1303204807210816,
+     0.19091136705057588
+    ],
+    "p": [
+     0.009765625,
+     0.00390625,
+     0.037109375,
+     0.048828125,
+     0.76953125,
+     0.625,
+     0.625,
+     0.083984375,
+     0.02734375,
+     0.009765625,
+     0.013671875
+    ],
+    "ci95_boot": [
+     [
+      -0.03943728092138207,
+      -0.010515773660490743
+     ],
+     [
+      -0.042689033550325474,
+      -0.013144717075613427
+     ],
+     [
+      -0.033425137706559825,
+      -0.00463194792188283
+     ],
+     [
+      -0.024036054081121687,
+      -0.0026289434151226844
+     ],
+     [
+      -0.024286429644466697,
+      0.02165748622934401
+     ],
+     [
+      -0.01790185277916876,
+      0.01815222834251376
+     ],
+     [
+      -0.012894341512268412,
+      0.047195793690535795
+     ],
+     [
+      0.0035021281922884215,
+      0.048075237856785136
+     ],
+     [
+      0.008763144717075618,
+      0.05307961942914371
+     ],
+     [
+      0.0674730846269404,
+      0.19003818227341007
+     ],
+     [
+      0.08174449173760642,
+      0.3083468953430144
+     ]
+    ],
+    "mean_break_even": 0.12709923664122139,
+    "significant_advantage_limit": 0.075
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -4040,13 +5163,101 @@
   }
  },
  "numBEUERef": {
-  "value": "0.18",
-  "script": "scripts/review2_sweeps.py -> results/M5/review2/sweeps.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; UE position, perfect tracks; 3GPP reference",
+  "value": "0.19",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; UE position (perfect tracks); sigma = standard deviation per horizontal axis (realistic blocker model: along-line axis); 3GPP reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "break-even sigma = the sigma at which the mean paired difference planner - A5 first reaches 0 (linear interpolation over the grid 0, 0.1, 0.25, 0.5, 1); margins where perfect tracks are not below A5 are left out; '$>$max' = still below A5 at the largest sigma [m]",
+  "aggregation": "mean break-even: sigma at which the seed-level mean paired difference planner - A5 first reaches 0, linear interpolation between the evaluated sigmas (dense grid, scripts/review3_eval.py, plus scripts/review2_sweeps.py); margins where perfect tracks are not below A5 are left out [m]",
   "raw": {
-   "3GPP short-range reference": 0.17727272727272728
+   "sigmas": [
+    0.0,
+    0.02,
+    0.05,
+    0.075,
+    0.1,
+    0.125,
+    0.15,
+    0.2,
+    0.25,
+    0.5,
+    1.0
+   ],
+   "3GPP short-range reference": {
+    "mean_diff": [
+     -0.04181271907861793,
+     -0.03868302453680521,
+     -0.035553329994992486,
+     -0.027541311967951933,
+     -0.02553830746119179,
+     -0.017401101652478726,
+     -0.014521782674011025,
+     0.0016274411617426044,
+     0.024036054081121673,
+     0.06497245868803203,
+     0.09789684526790184
+    ],
+    "p": [
+     0.009765625,
+     0.009765625,
+     0.083984375,
+     0.4921875,
+     0.556640625,
+     0.845703125,
+     0.845703125,
+     0.845703125,
+     0.375,
+     0.10546875,
+     0.02734375
+    ],
+    "ci95_boot": [
+     [
+      -0.09752128192288434,
+      -0.009389083625438156
+     ],
+     [
+      -0.09376564847270907,
+      -0.007511266900350526
+     ],
+     [
+      -0.09251377065598398,
+      -0.0018778167250876302
+     ],
+     [
+      -0.0870055082623936,
+      0.007761642463695542
+     ],
+     [
+      -0.08312781672508764,
+      0.009764646970455685
+     ],
+     [
+      -0.07386079118678018,
+      0.01990485728592889
+     ],
+     [
+      -0.07223335002503757,
+      0.02516274411617426
+     ],
+     [
+      -0.04356534802203306,
+      0.03955933900851276
+     ],
+     [
+      -0.015648472709063607,
+      0.07123497746619925
+     ],
+     [
+      0.01464071106659988,
+      0.12243365047571356
+     ],
+     [
+      0.03480220330495742,
+      0.1662525037556334
+     ]
+    ],
+    "mean_break_even": 0.19496124031007755,
+    "significant_advantage_limit": 0.02
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -4079,22 +5290,48 @@
  },
  "numErrRealTen": {
   "value": "+6.83",
-  "script": "scripts/run_m5_paired.py -> results/M5/paired.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; real sensing-planner (its own tuned H and budget) minus A5; margin 10 dB",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; real sensing-planner (own tuned H and budget) minus A5, margin 10 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of the per-job outage difference [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 40,
-   "mean_diff": 6.829494241362044,
-   "ci95_half_t": 1.4707963464404685,
-   "ci95": [
-    5.358697894921575,
-    8.300290587802513
-   ],
-   "wilcoxon_p_two_sided": 1.8189894035458565e-12,
-   "n_scheme_lower": 0,
-   "n_scheme_higher": 40
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 6.829494241362044,
+    "ci95_boot": [
+     5.543524661992989,
+     8.09944917376064
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 7.0330495743615415,
+     "2002": 4.846019028542815,
+     "2003": 9.208813219829747,
+     "2004": 7.359789684526788,
+     "2005": 5.336755132699048,
+     "2006": 4.198798197295944,
+     "2007": 10.145217826740112,
+     "2008": 3.7694041061592385,
+     "2009": 8.167250876314473,
+     "2010": 8.229844767150725
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 6.829494241362044,
+    "ci95_half_t": 1.4707963464404685,
+    "ci95": [
+     5.358697894921575,
+     8.300290587802513
+    ],
+    "wilcoxon_p_two_sided": 1.8189894035458565e-12,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 40
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -4115,22 +5352,48 @@
  },
  "numErrRealRef": {
   "value": "+0.099",
-  "script": "scripts/run_m5_paired.py -> results/M5/paired.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; real sensing-planner (its own tuned H and budget) minus A5; margin 3GPP short-range reference",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: results/M5/planner.json)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; real sensing-planner (own tuned H and budget) minus A5, margin 3GPP short-range reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of the per-job outage difference [s/UE-min]; dagger = two-sided Wilcoxon p >= 0.05",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 38,
-   "mean_diff": 0.0985227841762644,
-   "ci95_half_t": 0.05494970826917997,
-   "ci95": [
-    0.043573075907084424,
-    0.15347249244544436
-   ],
-   "wilcoxon_p_two_sided": 4.547034418758935e-05,
-   "n_scheme_lower": 7,
-   "n_scheme_higher": 31
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.0985227841762644,
+    "ci95_boot": [
+     0.04369053580370555,
+     0.16087568853279907
+    ],
+    "wilcoxon_p_two_sided": 0.00390625,
+    "n_seeds_lower": 1,
+    "n_seeds_higher": 9,
+    "per_seed": {
+     "2001": 0.12894341512268404,
+     "2002": -0.006259389083625439,
+     "2003": 0.16649974962443664,
+     "2004": 0.020030045067601403,
+     "2005": 0.060090135202804186,
+     "2006": 0.0400600901352028,
+     "2007": 0.011266900350525785,
+     "2008": 0.2653980971457186,
+     "2009": 0.26164246369554334,
+     "2010": 0.03755633450175258
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 38,
+    "mean_diff": 0.0985227841762644,
+    "ci95_half_t": 0.05494970826917997,
+    "ci95": [
+     0.043573075907084424,
+     0.15347249244544436
+    ],
+    "wilcoxon_p_two_sided": 4.547034418758935e-05,
+    "n_scheme_lower": 7,
+    "n_scheme_higher": 31
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -4151,22 +5414,48 @@
  },
  "numUAPlanTen": {
   "value": "+0.37",
-  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; uncertainty-aware planner, tuned on tuning seeds {'K': 8, 'alpha': 1.0, 'theta_s': 0.3, 'H_s': 0.5, 'budget': 4}; margin 10 dB",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner minus A5, margin 10 dB",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (UA planner - A5) per-job outage [s/UE-min]; Wilcoxon p and t-based CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 38,
-   "mean_diff": 0.373059589384076,
-   "ci95_half_t": 0.14532231421991645,
-   "ci95": [
-    0.22773727516415956,
-    0.5183819036039925
-   ],
-   "wilcoxon_p_two_sided": 7.739732463297963e-08,
-   "n_scheme_lower": 0,
-   "n_scheme_higher": 38
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.373059589384076,
+    "ci95_boot": [
+     0.21695042563845762,
+     0.5429519278918374
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 0.29419128693039515,
+     "2002": 0.3004506760140212,
+     "2003": 0.6296945418127189,
+     "2004": 0.12268402603905826,
+     "2005": 0.05633450175262886,
+     "2006": 0.09013520280420628,
+     "2007": 0.8625438157235853,
+     "2008": 0.2391086629944918,
+     "2009": 0.4394091136705057,
+     "2010": 0.6960440660991488
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 38,
+    "mean_diff": 0.373059589384076,
+    "ci95_half_t": 0.14532231421991645,
+    "ci95": [
+     0.22773727516415956,
+     0.5183819036039925
+    ],
+    "wilcoxon_p_two_sided": 7.739732463297963e-08,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 38
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -4187,22 +5476,48 @@
  },
  "numUAPlanRef": {
   "value": "+0.008",
-  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
-  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE SECOND EXTERNAL REVIEW; uncertainty-aware planner, tuned on tuning seeds {'K': 8, 'alpha': 1.0, 'theta_s': 0.1, 'H_s': 2.0, 'budget': 4}; margin 3GPP short-range reference",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner minus A5, margin 3GPP short-range reference",
   "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
-  "aggregation": "paired: mean over the 40 jobs of (UA planner - A5) per-job outage [s/UE-min]; Wilcoxon p and t-based CI in raw",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
   "raw": {
-   "n_jobs": 40,
-   "n_nonzero": 11,
-   "mean_diff": 0.007511266900350523,
-   "ci95_half_t": 0.006794503347031228,
-   "ci95": [
-    0.0007167635533192954,
-    0.014305770247381751
-   ],
-   "wilcoxon_p_two_sided": 0.003314452996697005,
-   "n_scheme_lower": 0,
-   "n_scheme_higher": 11
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.007511266900350523,
+    "ci95_boot": [
+     0.0015022533800701063,
+     0.017025538307461185
+    ],
+    "wilcoxon_p_two_sided": 0.03125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 6,
+    "per_seed": {
+     "2001": 0.0025037556334501776,
+     "2002": 0.0,
+     "2003": 0.007511266900350529,
+     "2004": 0.0,
+     "2005": 0.005007511266900341,
+     "2006": 0.0025037556334501776,
+     "2007": 0.0,
+     "2008": 0.04631947921882823,
+     "2009": 0.0,
+     "2010": 0.011266900350525771
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 11,
+    "mean_diff": 0.007511266900350523,
+    "ci95_half_t": 0.006794503347031228,
+    "ci95": [
+     0.0007167635533192954,
+     0.014305770247381751
+    ],
+    "wilcoxon_p_two_sided": 0.003314452996697005,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 11
+   }
   },
   "note": "",
   "seed_set": "held-out 2001-2010",
@@ -4246,6 +5561,1125 @@
    "30 dB": 0.0,
    "3GPP short-range reference": 0.04677083333333333
   }
+ },
+ "numBEPosSigRange": {
+  "value": "0--0.125",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; blocker position (realistic), UE exact; sigma = standard deviation per horizontal axis (realistic blocker model: along-line axis); min-max over 15-30 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "significant-advantage limit: largest evaluated sigma at which the planner is still significantly better than A5 at seed level (mean < 0 and exact Wilcoxon p < 0.05 on 10 seeds; sigma = 0 = perfect tracks); min-max over the margins that have one, margins without one are listed in raw; '--' if none [m]",
+  "raw": {
+   "sigmas": [
+    0.0,
+    0.05,
+    0.1,
+    0.125,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.5,
+    1.0
+   ],
+   "15 dB": {
+    "mean_diff": [
+     -0.07623935903855776,
+     -0.049449173760640855,
+     -0.016149223835753533,
+     -0.0015022533800700733,
+     0.006760140210315531,
+     0.10728592889334006,
+     0.11129193790686039,
+     0.13632949424136206,
+     0.2869303955933901,
+     0.5076364546820231
+    ],
+    "p": [
+     0.130859375,
+     0.375,
+     0.76953125,
+     1.0,
+     0.845703125,
+     0.064453125,
+     0.00390625,
+     0.00390625,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.14371870305458176,
+      0.003508387581372115
+     ],
+     [
+      -0.11116675012518765,
+      0.025287931897846904
+     ],
+     [
+      -0.07911867801702546,
+      0.049201927891837874
+     ],
+     [
+      -0.05508262393590384,
+      0.05683838257386081
+     ],
+     [
+      -0.0444416624937406,
+      0.06397095643465205
+     ],
+     [
+      0.02315973960941416,
+      0.19454494241362044
+     ],
+     [
+      0.051574236354531816,
+      0.17551326990485724
+     ],
+     [
+      0.06735102653980973,
+      0.2099399098647973
+     ],
+     [
+      0.17400788683024537,
+      0.40949236354531793
+     ],
+     [
+      0.3761892839258889,
+      0.6503536554832249
+     ]
+    ],
+    "mean_break_even": 0.12954545454545444,
+    "significant_advantage_limit": null
+   },
+   "20 dB": {
+    "mean_diff": [
+     -0.06384576865297945,
+     -0.0403104656985478,
+     -0.027541311967951936,
+     0.004631947921882819,
+     0.013520280420630961,
+     0.06509764646970455,
+     0.077991987981973,
+     0.07886830245368055,
+     0.16324486730095145,
+     0.32448673009514273
+    ],
+    "p": [
+     0.037109375,
+     0.16015625,
+     0.275390625,
+     0.625,
+     0.76953125,
+     0.083984375,
+     0.048828125,
+     0.009765625,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.10753943415122683,
+      -0.017025538307461223
+     ],
+     [
+      -0.08963445167751624,
+      0.012518778167250869
+     ],
+     [
+      -0.06710378067100652,
+      0.014146219328993464
+     ],
+     [
+      -0.03480533299949924,
+      0.041437155733600364
+     ],
+     [
+      -0.04118990986479712,
+      0.07198610415623433
+     ],
+     [
+      0.011639334001001513,
+      0.1190535803705558
+     ],
+     [
+      0.022530671006509802,
+      0.13507761642463698
+     ],
+     [
+      0.03880821231847774,
+      0.12243678017025536
+     ],
+     [
+      0.12255883825738609,
+      0.21207123184777166
+     ],
+     [
+      0.2565097646469705,
+      0.3955933900851276
+     ]
+    ],
+    "mean_break_even": 0.12140077821011673,
+    "significant_advantage_limit": 0.0
+   },
+   "25 dB": {
+    "mean_diff": [
+     -0.04594391587381073,
+     -0.0513269904857286,
+     -0.01552328492739109,
+     -0.02265898848272408,
+     -0.015272909364046067,
+     0.01690035052578869,
+     0.014396594892338504,
+     0.03642964446670005,
+     0.03355032548823234,
+     0.18740610916374562
+    ],
+    "p": [
+     0.083984375,
+     0.013671875,
+     0.275390625,
+     0.232421875,
+     0.4921875,
+     0.375,
+     0.16015625,
+     0.048828125,
+     0.02734375,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.08988795693540311,
+      -0.002628943415122688
+     ],
+     [
+      -0.08788182273410115,
+      -0.019153730595893842
+     ],
+     [
+      -0.048823234852278415,
+      0.01927891837756634
+     ],
+     [
+      -0.05683525287931897,
+      0.009263895843765647
+     ],
+     [
+      -0.04581872809213822,
+      0.012643965948923391
+     ],
+     [
+      -0.025663495242864265,
+      0.05570856284426638
+     ],
+     [
+      -0.0041311967951928,
+      0.034426639959939914
+     ],
+     [
+      0.007386079118678018,
+      0.07148535302954427
+     ],
+     [
+      0.011013395092638946,
+      0.0555833750625939
+     ],
+     [
+      0.14559339008512767,
+      0.2302234601902854
+     ]
+    ],
+    "mean_break_even": 0.17373540856031128,
+    "significant_advantage_limit": 0.05
+   },
+   "30 dB": {
+    "mean_diff": [
+     -0.0242864296444667,
+     -0.018402603905858787,
+     -0.018152228342513777,
+     -0.015147721582373565,
+     0.0062593890836254345,
+     0.0057586379569353995,
+     0.014521782674011014,
+     0.011266900350525782,
+     0.03192288432648972,
+     0.07736604907361042
+    ],
+    "p": [
+     0.009765625,
+     0.037109375,
+     0.048828125,
+     0.037109375,
+     0.921875,
+     0.921875,
+     0.232421875,
+     0.322265625,
+     0.10546875,
+     0.009765625
+    ],
+    "ci95_boot": [
+     [
+      -0.03943728092138207,
+      -0.010515773660490743
+     ],
+     [
+      -0.03204807210816224,
+      -0.005379944917376108
+     ],
+     [
+      -0.03355032548823235,
+      -0.0038808212318477767
+     ],
+     [
+      -0.026164246369554344,
+      -0.0035052578868302493
+     ],
+     [
+      -0.024787180771156735,
+      0.038310590886329446
+     ],
+     [
+      -0.013395092638958439,
+      0.026915373059589364
+     ],
+     [
+      -0.0027541311967951986,
+      0.034176264396594894
+     ],
+     [
+      -0.006509764646970453,
+      0.028793189784677008
+     ],
+     [
+      0.004882323485227841,
+      0.06672508763144716
+     ],
+     [
+      0.03192288432648973,
+      0.13595706059088628
+     ]
+    ],
+    "mean_break_even": 0.14269005847953217,
+    "significant_advantage_limit": 0.125
+   }
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numBEUESigRange": {
+  "value": "0--0.075",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; UE position (perfect tracks); sigma = standard deviation per horizontal axis (realistic blocker model: along-line axis); min-max over 15-30 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "significant-advantage limit: largest evaluated sigma at which the planner is still significantly better than A5 at seed level (mean < 0 and exact Wilcoxon p < 0.05 on 10 seeds; sigma = 0 = perfect tracks); min-max over the margins that have one, margins without one are listed in raw; '--' if none [m]",
+  "raw": {
+   "sigmas": [
+    0.0,
+    0.02,
+    0.05,
+    0.075,
+    0.1,
+    0.125,
+    0.15,
+    0.2,
+    0.25,
+    0.5,
+    1.0
+   ],
+   "15 dB": {
+    "mean_diff": [
+     -0.07623935903855776,
+     -0.06547320981472207,
+     -0.05858788182273404,
+     -0.027916875312969408,
+     -0.0015022533800700122,
+     0.07511266900350534,
+     0.1402103154732099,
+     0.2744116174261392,
+     0.3959689534301454,
+     0.9474211316975463,
+     1.4917376064096144
+    ],
+    "p": [
+     0.130859375,
+     0.16015625,
+     0.232421875,
+     0.556640625,
+     1.0,
+     0.02734375,
+     0.001953125,
+     0.001953125,
+     0.001953125,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.14371870305458176,
+      0.003508387581372115
+     ],
+     [
+      -0.13119679519278912,
+      0.010891337005508225
+     ],
+     [
+      -0.11930395593390082,
+      0.012393590385578435
+     ],
+     [
+      -0.08112168252378563,
+      0.03329994992488737
+     ],
+     [
+      -0.06046569854782167,
+      0.06447170756134213
+     ],
+     [
+      0.021904732098147264,
+      0.13470205307961952
+     ],
+     [
+      0.07961942914371563,
+      0.2079369053580371
+     ],
+     [
+      0.1800200300450676,
+      0.3780671006509765
+     ],
+     [
+      0.27703743114672014,
+      0.5187781672508764
+     ],
+     [
+      0.7213288683024538,
+      1.1989390335503252
+     ],
+     [
+      1.108785052578868,
+      1.888216700050075
+     ]
+    ],
+    "mean_break_even": 0.10049019607843135,
+    "significant_advantage_limit": null
+   },
+   "20 dB": {
+    "mean_diff": [
+     -0.06384576865297945,
+     -0.0574611917876815,
+     -0.04769654481722581,
+     -0.0112669003505258,
+     0.030295443164747148,
+     0.043189784677015536,
+     0.08087130696044072,
+     0.12318477716574863,
+     0.23159739609414123,
+     0.6099148723084628,
+     0.8739359038557837
+    ],
+    "p": [
+     0.037109375,
+     0.064453125,
+     0.064453125,
+     0.625,
+     0.193359375,
+     0.037109375,
+     0.00390625,
+     0.00390625,
+     0.001953125,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.10753943415122683,
+      -0.017025538307461223
+     ],
+     [
+      -0.10077929394091133,
+      -0.010766149223835748
+     ],
+     [
+      -0.08800701051577366,
+      -0.0022533800701050916
+     ],
+     [
+      -0.05082623935903857,
+      0.02941912869303953
+     ],
+     [
+      -0.008763144717075604,
+      0.06873122183274914
+     ],
+     [
+      0.009260766149223842,
+      0.0742363545317977
+     ],
+     [
+      0.045443164747120714,
+      0.11554832248372562
+     ],
+     [
+      0.06647471206810222,
+      0.18177578868302455
+     ],
+     [
+      0.17425826239359038,
+      0.2806710065097647
+     ],
+     [
+      0.47809213820731095,
+      0.7636454682023033
+     ],
+     [
+      0.70417814221332,
+      1.0446951677516274
+     ]
+    ],
+    "mean_break_even": 0.08177710843373494,
+    "significant_advantage_limit": 0.0
+   },
+   "25 dB": {
+    "mean_diff": [
+     -0.04594391587381073,
+     -0.037180771156735105,
+     -0.03793189784677015,
+     -0.023535302954431646,
+     -0.003880821231847774,
+     0.01852779168753128,
+     0.023535302954431646,
+     0.07260891337005507,
+     0.14021031547320978,
+     0.3318728092138207,
+     0.3992238357536304
+    ],
+    "p": [
+     0.083984375,
+     0.16015625,
+     0.048828125,
+     0.193359375,
+     0.921875,
+     0.6953125,
+     0.4921875,
+     0.02734375,
+     0.001953125,
+     0.001953125,
+     0.001953125
+    ],
+    "ci95_boot": [
+     [
+      -0.08988795693540311,
+      -0.002628943415122688
+     ],
+     [
+      -0.0801201802704056,
+      0.005636579869804661
+     ],
+     [
+      -0.0742394842263395,
+      -0.007761642463695551
+     ],
+     [
+      -0.053705558337506266,
+      0.00550826239359038
+     ],
+     [
+      -0.03342513770655984,
+      0.02341011517275913
+     ],
+     [
+      -0.017529419128693085,
+      0.05783988482724082
+     ],
+     [
+      -0.014021031547320992,
+      0.06960440660991485
+     ],
+     [
+      0.023156609914872298,
+      0.12781672508763145
+     ],
+     [
+      0.08412305958938407,
+      0.1976715072608913
+     ],
+     [
+      0.25388082123184774,
+      0.40924198798197287
+     ],
+     [
+      0.3094610665998998,
+      0.48447671507260887
+     ]
+    ],
+    "mean_break_even": 0.1043296089385475,
+    "significant_advantage_limit": 0.05
+   },
+   "30 dB": {
+    "mean_diff": [
+     -0.0242864296444667,
+     -0.026164246369554327,
+     -0.017526289434151222,
+     -0.012643965948923386,
+     -0.0011266900350525798,
+     -0.0013770655983976043,
+     0.015022533800701043,
+     0.025037556334501748,
+     0.030671006509764648,
+     0.1303204807210816,
+     0.19091136705057588
+    ],
+    "p": [
+     0.009765625,
+     0.00390625,
+     0.037109375,
+     0.048828125,
+     0.76953125,
+     0.625,
+     0.625,
+     0.083984375,
+     0.02734375,
+     0.009765625,
+     0.013671875
+    ],
+    "ci95_boot": [
+     [
+      -0.03943728092138207,
+      -0.010515773660490743
+     ],
+     [
+      -0.042689033550325474,
+      -0.013144717075613427
+     ],
+     [
+      -0.033425137706559825,
+      -0.00463194792188283
+     ],
+     [
+      -0.024036054081121687,
+      -0.0026289434151226844
+     ],
+     [
+      -0.024286429644466697,
+      0.02165748622934401
+     ],
+     [
+      -0.01790185277916876,
+      0.01815222834251376
+     ],
+     [
+      -0.012894341512268412,
+      0.047195793690535795
+     ],
+     [
+      0.0035021281922884215,
+      0.048075237856785136
+     ],
+     [
+      0.008763144717075618,
+      0.05307961942914371
+     ],
+     [
+      0.0674730846269404,
+      0.19003818227341007
+     ],
+     [
+      0.08174449173760642,
+      0.3083468953430144
+     ]
+    ],
+    "mean_break_even": 0.12709923664122139,
+    "significant_advantage_limit": 0.075
+   }
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAKTen": {
+  "value": "8",
+  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner tuned on tuning seeds 101-105; K at 10 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "tuned value",
+  "raw": {
+   "0 dB": 8,
+   "5 dB": 8,
+   "10 dB": 8,
+   "15 dB": 8,
+   "20 dB": 8,
+   "25 dB": 8,
+   "30 dB": 8,
+   "3GPP short-range reference": 8,
+   "v1 radio (high margin)": 32
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAKRef": {
+  "value": "8",
+  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner tuned on tuning seeds 101-105; K at the 3GPP reference",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "tuned value",
+  "raw": {
+   "0 dB": 8,
+   "5 dB": 8,
+   "10 dB": 8,
+   "15 dB": 8,
+   "20 dB": 8,
+   "25 dB": 8,
+   "30 dB": 8,
+   "3GPP short-range reference": 8,
+   "v1 radio (high margin)": 32
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAK": {
+  "value": "8",
+  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner; K tuned per margin",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "tuned value at 10 dB and at the 3GPP reference ('a/b' = 10 dB / reference if they differ)",
+  "raw": {
+   "0 dB": 8,
+   "5 dB": 8,
+   "10 dB": 8,
+   "15 dB": 8,
+   "20 dB": 8,
+   "25 dB": 8,
+   "30 dB": 8,
+   "3GPP short-range reference": 8,
+   "v1 radio (high margin)": 32
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAAlphaTen": {
+  "value": "1",
+  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner tuned on tuning seeds 101-105; alpha at 10 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "tuned value",
+  "raw": {
+   "0 dB": 1.0,
+   "5 dB": 1.0,
+   "10 dB": 1.0,
+   "15 dB": 1.0,
+   "20 dB": 1.0,
+   "25 dB": 4.0,
+   "30 dB": 1.0,
+   "3GPP short-range reference": 1.0,
+   "v1 radio (high margin)": 16.0
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAAlphaRef": {
+  "value": "1",
+  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner tuned on tuning seeds 101-105; alpha at the 3GPP reference",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "tuned value",
+  "raw": {
+   "0 dB": 1.0,
+   "5 dB": 1.0,
+   "10 dB": 1.0,
+   "15 dB": 1.0,
+   "20 dB": 1.0,
+   "25 dB": 4.0,
+   "30 dB": 1.0,
+   "3GPP short-range reference": 1.0,
+   "v1 radio (high margin)": 16.0
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAAlpha": {
+  "value": "1",
+  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner; alpha tuned per margin",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "tuned value at 10 dB and at the 3GPP reference ('a/b' = 10 dB / reference if they differ)",
+  "raw": {
+   "0 dB": 1.0,
+   "5 dB": 1.0,
+   "10 dB": 1.0,
+   "15 dB": 1.0,
+   "20 dB": 1.0,
+   "25 dB": 4.0,
+   "30 dB": 1.0,
+   "3GPP short-range reference": 1.0,
+   "v1 radio (high margin)": 16.0
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAThetaTen": {
+  "value": "0.3",
+  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner tuned on tuning seeds 101-105; theta_s at 10 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "tuned value",
+  "raw": {
+   "0 dB": 0.01,
+   "5 dB": 0.3,
+   "10 dB": 0.3,
+   "15 dB": 0.3,
+   "20 dB": 0.3,
+   "25 dB": 0.1,
+   "30 dB": 0.3,
+   "3GPP short-range reference": 0.1,
+   "v1 radio (high margin)": 0.03
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAThetaRef": {
+  "value": "0.1",
+  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner tuned on tuning seeds 101-105; theta_s at the 3GPP reference",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "tuned value",
+  "raw": {
+   "0 dB": 0.01,
+   "5 dB": 0.3,
+   "10 dB": 0.3,
+   "15 dB": 0.3,
+   "20 dB": 0.3,
+   "25 dB": 0.1,
+   "30 dB": 0.3,
+   "3GPP short-range reference": 0.1,
+   "v1 radio (high margin)": 0.03
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUATheta": {
+  "value": "0.3/0.1",
+  "script": "scripts/review2_uaplanner.py -> results/M5/review2/uaplanner.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner; theta_s tuned per margin",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "tuned value at 10 dB and at the 3GPP reference ('a/b' = 10 dB / reference if they differ)",
+  "raw": {
+   "0 dB": 0.01,
+   "5 dB": 0.3,
+   "10 dB": 0.3,
+   "15 dB": 0.3,
+   "20 dB": 0.3,
+   "25 dB": 0.1,
+   "30 dB": 0.3,
+   "3GPP short-range reference": 0.1,
+   "v1 radio (high margin)": 0.03
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numAfiveOHTen": {
+  "value": "+0.37",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review3_eval.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; A5 + sensing overhead (A5 decisions, overhead charged, no planner) minus A5, margin 10 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
+  "raw": {
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.373059589384076,
+    "ci95_boot": [
+     0.21695042563845762,
+     0.5429519278918374
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 0.29419128693039515,
+     "2002": 0.3004506760140212,
+     "2003": 0.6296945418127189,
+     "2004": 0.12268402603905826,
+     "2005": 0.05633450175262886,
+     "2006": 0.09013520280420628,
+     "2007": 0.8625438157235853,
+     "2008": 0.2391086629944918,
+     "2009": 0.4394091136705057,
+     "2010": 0.6960440660991488
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 38,
+    "mean_diff": 0.373059589384076,
+    "ci95_half_t": 0.14532231421991645,
+    "ci95": [
+     0.22773727516415956,
+     0.5183819036039925
+    ],
+    "wilcoxon_p_two_sided": 7.739732463297963e-08,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 38
+   }
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAvsOHTen": {
+  "value": "+0.00$^\\dagger$",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner minus (A5 + sensing overhead), margin 10 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
+  "raw": {
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.0,
+    "ci95_boot": [
+     0.0,
+     0.0
+    ],
+    "wilcoxon_p_two_sided": NaN,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 0,
+    "per_seed": {
+     "2001": 0.0,
+     "2002": 0.0,
+     "2003": 0.0,
+     "2004": 0.0,
+     "2005": 0.0,
+     "2006": 0.0,
+     "2007": 0.0,
+     "2008": 0.0,
+     "2009": 0.0,
+     "2010": 0.0
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 0,
+    "mean_diff": 0.0,
+    "ci95_half_t": 0.0,
+    "ci95": [
+     0.0,
+     0.0
+    ],
+    "wilcoxon_p_two_sided": NaN,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 0
+   }
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numAfiveOHRef": {
+  "value": "+0.002",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review3_eval.py)",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; A5 + sensing overhead (A5 decisions, overhead charged, no planner) minus A5, margin 3GPP short-range reference",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
+  "raw": {
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.0015022533800701048,
+    "ci95_boot": [
+     0.0006259389083625441,
+     0.0025037556334501746
+    ],
+    "wilcoxon_p_two_sided": 0.03125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 6,
+    "per_seed": {
+     "2001": 0.0025037556334501776,
+     "2002": 0.0,
+     "2003": 0.0012518778167250853,
+     "2004": 0.0,
+     "2005": 0.005007511266900341,
+     "2006": 0.0025037556334501776,
+     "2007": 0.0,
+     "2008": 0.0012518778167250888,
+     "2009": 0.0,
+     "2010": 0.0025037556334501776
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 9,
+    "mean_diff": 0.0015022533800701048,
+    "ci95_half_t": 0.0010385109614828223,
+    "ci95": [
+     0.0004637424185872825,
+     0.002540764341552927
+    ],
+    "wilcoxon_p_two_sided": 0.007109552693052261,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 9
+   }
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numUAvsOHRef": {
+  "value": "+0.006$^\\dagger$",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; uncertainty-aware planner minus (A5 + sensing overhead), margin 3GPP short-range reference",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
+  "raw": {
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.006009013520280418,
+    "ci95_boot": [
+     0.0,
+     0.015272909364046062
+    ],
+    "wilcoxon_p_two_sided": 0.25,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 3,
+    "per_seed": {
+     "2001": 0.0,
+     "2002": 0.0,
+     "2003": 0.006259389083625444,
+     "2004": 0.0,
+     "2005": 0.0,
+     "2006": 0.0,
+     "2007": 0.0,
+     "2008": 0.04506760140210314,
+     "2009": 0.0,
+     "2010": 0.008763144717075594
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 4,
+    "mean_diff": 0.006009013520280418,
+    "ci95_half_t": 0.006619979659761477,
+    "ci95": [
+     -0.0006109661394810588,
+     0.012628993180041896
+    ],
+    "wilcoxon_p_two_sided": 0.06788915486182899,
+    "n_scheme_lower": 0,
+    "n_scheme_higher": 4
+   }
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numGeniePlanShareRange": {
+  "value": "62--79\\%",
+  "script": "results/M5/planner.json, results/M5/grid_oracle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; margins 5-30 dB and the 3GPP reference",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "share of the A5-to-instantaneous-oracle gap closed by the genie-planner (H = 0.5 s): (A5 - genie-planner) / (A5 - instantaneous oracle), means over the 40 runs; min-max over margins",
+  "raw": {
+   "5 dB": {
+    "a5": 8.792563845768653,
+    "genie_planner": 8.620681021532297,
+    "inst_oracle": 8.528042063094642,
+    "share": 0.6497870326549969
+   },
+   "10 dB": {
+    "a5": 3.5113920881321983,
+    "genie_planner": 3.171006509764647,
+    "inst_oracle": 3.0443164747120677,
+    "share": 0.7287590458322155
+   },
+   "15 dB": {
+    "a5": 1.9705808713069604,
+    "genie_planner": 1.7203304957436152,
+    "inst_oracle": 1.5980220330495742,
+    "share": 0.6717069892473122
+   },
+   "20 dB": {
+    "a5": 1.2299699549323986,
+    "genie_planner": 1.0419379068602903,
+    "inst_oracle": 0.9386579869804708,
+    "share": 0.6454662655779979
+   },
+   "25 dB": {
+    "a5": 0.429894842263395,
+    "genie_planner": 0.3099649474211317,
+    "inst_oracle": 0.2583875813720581,
+    "share": 0.6992700729927007
+   },
+   "30 dB": {
+    "a5": 0.15097646469704556,
+    "genie_planner": 0.1059088632949424,
+    "inst_oracle": 0.07786680020030044,
+    "share": 0.6164383561643837
+   },
+   "3GPP short-range reference": {
+    "a5": 0.0915122684026039,
+    "genie_planner": 0.04106159238858288,
+    "inst_oracle": 0.027416124186279416,
+    "share": 0.7871093749999999
+   }
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numGeniePlanShareTen": {
+  "value": "73\\%",
+  "script": "results/M5/planner.json, results/M5/grid_oracle.json",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; margin 10 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "share of the A5-to-instantaneous-oracle gap closed by the genie-planner (H = 0.5 s): (A5 - genie-planner) / (A5 - instantaneous oracle), means over the 40 runs",
+  "raw": {
+   "a5": 3.5113920881321983,
+   "genie_planner": 3.171006509764647,
+   "inst_oracle": 3.0443164747120677,
+   "share": 0.7287590458322155
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
+ },
+ "numMissPerFrameTen": {
+  "value": "+0.87",
+  "script": "scripts/review3_seedlevel.py -> results/M5/review3/seedlevel.json (per-job outages: scripts/review2_sweeps.py, condition 'M table miss')",
+  "config": "M3 rework: 3GPP TR 38.802 budget, 400 Mbit/s service rate, model B every 10 ms, tau_HO 20 ms, E2 delay 20 ms; per-margin tuning on tuning seeds 101-105; ADDED AFTER THE THIRD EXTERNAL REVIEW; statistics at SEED level; MEMORYLESS model (first-review B5 injection, scripts/review_b5_ablation.inject): each blocker dropped independently per report with probability 1 - track Pd (per class, measured); perfect-track planner, H fixed; margin 10 dB",
+  "seeds": "held-out test seeds 2001-2010 (configs/seeds_heldout.yaml), 40 jobs (2 mounts x 2 densities x 10 seeds), 2 UEs each",
+  "aggregation": "seed level: per-seed mean over its 4 runs of the per-run difference [s/UE-min]; mean over 10 seeds; dagger = exact two-sided Wilcoxon signed-rank p >= 0.05 on the 10 seed differences; 95 % CI = cluster bootstrap over seeds (10,000 resamples) in raw; run-level test in raw['run']",
+  "raw": {
+   "seed": {
+    "n_seeds": 10,
+    "runs_per_seed": 4,
+    "mean_diff": 0.8725588382573861,
+    "ci95_boot": [
+     0.5782298447671508,
+     1.1990548322483725
+    ],
+    "wilcoxon_p_two_sided": 0.001953125,
+    "n_seeds_lower": 0,
+    "n_seeds_higher": 10,
+    "per_seed": {
+     "2001": 0.7548823234852275,
+     "2002": 0.41437155733600417,
+     "2003": 1.2143214822233346,
+     "2004": 0.5595893840761141,
+     "2005": 0.3179769654481722,
+     "2006": 0.40560841261892855,
+     "2007": 1.7663995993990986,
+     "2008": 0.4819729594391588,
+     "2009": 1.5197796695042567,
+     "2010": 1.2906860290435658
+    }
+   },
+   "run": {
+    "n_jobs": 40,
+    "n_nonzero": 40,
+    "mean_diff": 0.8725588382573861,
+    "ci95_half_t": 0.3221903181607973,
+    "ci95": [
+     0.5503685200965889,
+     1.1947491564181834
+    ],
+    "wilcoxon_p_two_sided": 7.59141307809735e-08,
+    "n_scheme_lower": 4,
+    "n_scheme_higher": 36
+   }
+  },
+  "note": "",
+  "seed_set": "held-out 2001-2010"
  },
  "numTauZeroRef": {
   "value": "97\\%",
