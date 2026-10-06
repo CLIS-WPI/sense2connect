@@ -40,7 +40,7 @@ case "$stage" in
     ;;
   si)  # residual radar self-interference: visibility and handover with the tracks from the recomputed detections
     run "python scripts/tvt_t6_si_eval.py" "si_visibility"
-    for i in 0 10 20; do run "python scripts/tvt_t5_handover.py --fixed $FIX --si-inr $i --schemes trigger_tvt planner_tvt risk_tvt riskneutral_tvt A5 --out handover_si_$i.json" "si_handover_$i"; done
+    for i in 0 10 20 30 40; do run "python scripts/tvt_t5_handover.py --fixed $FIX --si-inr $i --schemes trigger_tvt planner_tvt risk_tvt riskneutral_tvt A5 --out handover_si_$i.json" "si_handover_$i"; done
     ;;
   *) echo "unknown stage $stage"; exit 1 ;;
 esac

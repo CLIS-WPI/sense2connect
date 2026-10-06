@@ -119,7 +119,7 @@ def main() -> None:
     # --- E2 delay / overhead / SI handover
     handover_table([(f"E2 {e} ms", T5 / f"handover_e2_{e}ms.json") for e in (0, 10, 50, 100)] + [("E2 20 ms (main)", T5 / "handover.json")], "E2 loop delay", out)
     handover_table([(f"overhead x{o}", T5 / f"handover_ovh_{o}.json") for o in ("0", "0.5", "2")] + [("overhead x1 (main)", T5 / "handover.json")], "Sensing overhead", out)
-    handover_table([(f"INR {i} dB", T5 / f"handover_si_{i}.json") for i in (0, 10, 20)], "Residual radar self-interference (handover)", out)
+    handover_table([(f"INR {i} dB", T5 / f"handover_si_{i}.json") for i in (0, 10, 20, 30, 40)], "Residual radar self-interference (handover)", out)
 
     # --- SI visibility
     sv = ROOT / "results" / "TVT" / "T6" / "si_visibility.json"

@@ -10,7 +10,7 @@ setting of the trackers (configs/m3.yaml sensing budgets: train 4, pfa 1e-3, gua
 directory lookup is redirected to results/TVT/T6/si/inr<k>/<mount>/<density>/seed_<s>, which holds
 symbolic links to the read-only sensing caches, so results/cache is never written.
 The sensing-trace caches carry whole-tree provenance (commit + hash of uncommitted changes), so this
-script runs from a frozen clone of the repository (scripts/tvt_frozen.sh); --ensure first re-traces the
+script runs from a frozen clone of the repository (scripts/tvt_frozen_at.sh); --ensure first re-traces the
 sensing caches of the requested seeds there with the unchanged paper-1 trace function (same scene,
 radios, solver settings and seeds; deterministic). INR 0 reproduces the nominal detections and is the
 regression against the paper-1 detection caches.
