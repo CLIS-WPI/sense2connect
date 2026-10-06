@@ -9,8 +9,8 @@ sim/tvt/seeds.py; no tvt-freeze tag). Detailed reports: results/TVT/<T>/report.m
 | T1 bound | DONE (acceptance as written NOT met, see report) | ~0.1 h | PEB map-aided 3.4 mm -> 5.9 mm for any sigma_map >= 0.1 m (LoS-only 48 mm); element position errors 0.1 mm double the LoS-only PEB |
 | T2 extraction | DONE | ~0.1 h | isolated paths at the CRB (RMS err/CRB 1.0); 87-90 % of strong paths unresolvable (err 20-100x CRB); 1.7 ms/snapshot |
 | T3 visibility | DONE | ~0.2 h | perfect tracks AUC 1.00 (0 s) / 0.98 (1 s); real tracks AUC 0.74, pedestrians ~0.5; recalibrated Brier 0.19 (raw 0.29, climatology 0.22) |
-| T4 tracker | IN PROGRESS (final runs after a face-merge fix; pre-fix results archived, results/TVT/T4/v2) | ~3 h | pre-fix: tracker median 3.8 cm vs paper-2 estimator 12.8 cm (p 0.002), during blockage 6.7 cm vs 1.01 m; visibility prediction from real tracks: no effect (J1 not supported); ~11x above the map-aided PEB |
-| T5 planner, baselines | IN PROGRESS (rerun with the fixed tracker; learned baseline waits for the training-seed traces) | ~0.5 h | pre-fix: A5 best practical scheme at every margin; real-track planners 2-3x A5 outage |
+| T4 tracker | DONE | ~5 h | tracker median 3.7 cm vs paper-2 estimator 12.8 cm, during blockage 6.4 cm vs 1.01 m (p 0.002); ~11x above the map-aided PEB; predicted visibility (real tracks) slightly WORSE than none (+1.4 mm, p 0.02): J1 not supported; oracle visibility -3.2 mm during blockage (p 0.049) |
+| T5 planner, baselines | DONE except the learned baseline (training-seed traces running) | ~1 h | A5 best practical scheme at every margin; real-track planners +0.19..+3.7 s/UE-min vs A5 (p 0.002); TVT positions + perfect tracks never beat A5; exact positions + perfect tracks beat A5 only at 25 dB; risk-aware = risk-neutral with real inputs (worse at ref.) |
 | T6 sensitivity | IN PROGRESS (scene design committed bb1f60f before tracing; traces running in frozen clones) | ~4 h so far | blockage-model check done: Sionna first-order diffraction vs model B, 10 dB agreement 88-98 %, Sionna up to 10-14 dB more loss |
 
 ## Notes on process

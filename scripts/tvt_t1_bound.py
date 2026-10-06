@@ -61,6 +61,9 @@ def run_job(job, raw, p2cfg, tcfg) -> dict:
                    sigma_r_m=float(sr), pattern=str(pat), sigma_maps=[0.0], timing=str(b["timing"]), blocked_db=float(b["blocked_db"]))
         for k, v in res.items():
             out[f"array|{pat}|g{float(sg):g}|r{float(sr):g}|{k}"] = v
+    if not tcfg["array"]["sweep"]:  # second deployment: LoS-only and map-aided only
+        blocked = (inp["los_loss"] >= float(b["blocked_db"])).any(-1)
+        return {"peb": out, "blocked": blocked, "ue": inp["ue"]}
     # all known planes uncertain (facades and ground), offsets free
     inp_xyz = job_setup(job, raw, p2cfg, axes="xyz")
     res = pebs(inp_xyz, f, scale, sync_ns=float(b["sigma_sync_ns"]), sigma_phi_deg=float(tcfg["array"]["sigma_phi_deg"]), sigma_g_db=0.0, sigma_r_m=0.0,
@@ -121,14 +124,22 @@ def main() -> None:
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--scenario", default="configs/m2_scenario.yaml")
+    ap.add_argument("--p2cfg", default="configs/p2.yaml")
+    ap.add_argument("--mounts", nargs="*", default=["lamppost", "facade"])
+    ap.add_argument("--out", default="bound_summary.json")
+    ap.add_argument("--map-only", action="store_true", help="LoS-only and map-aided (sigma_map 0) only, iso array (second deployment)")
     a = ap.parse_args()
     if torch.cuda.device_count() != 1:
         raise SystemExit("expected exactly one visible GPU (GPU 1)")
-    raw = load_yaml(ROOT / "configs" / "m2_scenario.yaml")
-    p2cfg = load_yaml(ROOT / "configs" / "p2.yaml")
+    raw = load_yaml(ROOT / a.scenario)
+    p2cfg = load_yaml(ROOT / a.p2cfg)
     tcfg = load_yaml(ROOT / "configs" / "tvt.yaml")
+    if a.map_only:
+        tcfg["map"]["sigma_map_m"] = [0.0]
+        tcfg["array"]["sweep"] = []
     seeds = check(load()["development"])
-    jobs = [(s, m, d) for s in seeds for m in ("lamppost", "facade") for d in ("low", "high")]
+    jobs = [(s, m, d) for s in seeds for m in a.mounts for d in ("low", "high")]
     if a.limit:
         jobs = jobs[: a.limit]
     (OUT / "bound").mkdir(parents=True, exist_ok=True)
@@ -142,11 +153,11 @@ def main() -> None:
         np.savez(OUT / "bound" / f"{job[1]}_{job[2]}_{job[0]}.npz", blocked=r["blocked"], **{k.replace("|", "__"): v for k, v in r["peb"].items()})
         print(f"{job}: {time.perf_counter() - t0:.0f} s, peak {torch.cuda.max_memory_allocated() / 2**30:.1f} GB, "
               f"median los {np.median(r['peb']['mapsweep|los']):.3f} map0 {np.median(r['peb']['mapsweep|map_0']):.4f} "
-              f"mapinf {np.median(r['peb']['mapsweep|map_inf']):.4f} m", flush=True)
+              f"mapinf {np.median(r['peb'].get('mapsweep|map_inf', np.nan)):.4f} m", flush=True)
     summ = summarize(jobs, store)
     summ["wall_s"] = time.perf_counter() - clock
     summ["definition"] = __doc__
-    (OUT / "bound_summary.json").write_text(json.dumps(summ, indent=1) + "\n")
+    (OUT / a.out).write_text(json.dumps(summ, indent=1) + "\n")
     for k, c in summ["configs"].items():
         print(f"{k:45s} all {c['all']['mean']:.4f} [{c['all']['ci95_boot'][0]:.4f}, {c['all']['ci95_boot'][1]:.4f}]  blocked {c['blocked']['mean']:.4f}  "
               f"both-LoS {c['both_los']['mean']:.4f}  <0.1 m {c['share_below_0.1m_all']:.2f}")

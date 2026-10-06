@@ -102,7 +102,8 @@ def run(jobs, set_name, cond, sigma_map, params, raw, p2cfg, tcfg, *, save=True,
             wmap = walk_map(raw, sc, p2cfg)
         truth = truth_posteriors(sc, np.arange(600) * 0.1)
         rk = (tracks_fn or real_tracks)(job, raw) if cond == "pred_real" else None
-        rng_map = np.random.default_rng([job[0], ["lamppost", "facade"].index(job[1]), ["low", "high"].index(job[2]), 7])
+        m_id = ["lamppost", "facade"].index(job[1]) if job[1] in ("lamppost", "facade") else 2 + sum(map(ord, job[1]))  # canyon draws unchanged
+        rng_map = np.random.default_rng([job[0], m_id, ["low", "high"].index(job[2]), 7])
         e = rng_map.standard_normal(len(faces)) * float(sigma_map)
         e = np.where(np.array([fc["axis"] for fc in faces]) == 2, 0.0, e)
         for u in range(comp["valid"].shape[1]):
