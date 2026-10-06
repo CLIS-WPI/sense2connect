@@ -1,0 +1,40 @@
+# Paper 2 (ROADMAP_P2.md incl. Addendum A). Scenario, traffic, arrays and
+# blockage are those of paper 1 (configs/m2_scenario.yaml, read-only).
+link:
+  ue_tx_power_dbm: 23.0        # UL SRS, single isotropic UE antenna
+  oru_noise_figure_db: 7.0
+  noise_psd_dbm_hz: -174.0     # kT at 290 K
+  srs_symbols_per_epoch: 1     # one SRS symbol every 0.1 s
+  srs_comb: 1                  # every active subcarrier carries SRS
+numerology: 3                  # 120 kHz subcarrier spacing
+bandwidths:                    # TS 38.101-2 Table 5.3.2-1 (120 kHz SCS)
+  "100": {n_rb: 66, n_sc: 792}
+  "200": {n_rb: 132, n_sc: 1584}
+  "400": {n_rb: 264, n_sc: 3168}
+timing_cases: [toa, tdoa, aoa]  # (a) synchronised ToA, (b) unknown UE clock bias, (c) AoA only
+hardware:
+  sigma_sync_ns: [0.0, 0.3, 1.0, 3.0]   # inter-O-RU time offset per O-RU, N(0, s^2)
+  sync_mode_main: per_run               # one draw per run (sensitivity: per_epoch)
+  sigma_phi_deg: [0.0, 2.0, 5.0]        # per-element phase error, fixed per O-RU and run
+blockage:
+  blocked_los_db: 10.0         # model-B LoS loss at or above this = blocked (paper-1 10 dB event level)
+  blocked_variants: [kept, biased]
+info_variants: [los, map]      # LoS-only vs map-aided (all traced paths, image method)
+thresholds_m:
+  decimeter: 0.1
+  paper1_break_even: [0.08, 0.13]   # paper 1 (development seeds, 15-30 dB)
+bootstrap:
+  n: 10000
+  seed: 20261005
+# Reflecting planes of the scene simple_street_canyon (faces of the mesh
+# bounding boxes; queried with sionna.rt.load_scene): the image-method
+# derivatives use these exact planes (bounce planes recovered from the cached,
+# mm-rounded bounce points are snapped to the nearest one within 5 mm).
+known_planes:
+  x: [-62.411423, -62.107651, -15.11901, 16.002499, 32.356606, 62.640274, 63.478111]
+  y: [-8.613335, 9.571564, 10.337294]
+  z: [-0.030794]
+# Second held-out set (after the estimator fix, tag p2-freeze2); never used before.
+# The 2001-2010 results stay as the pre-fix record. Selected with S2C_EVAL_SET=heldout2.
+heldout2: [3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010]
+lane_width_m: 3.5

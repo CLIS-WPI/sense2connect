@@ -85,3 +85,10 @@ human review.
   `sim/sensing/trace.py`, `sim/sensing/cache.py`, scene config), so edits
   in `xapp/` or analysis scripts do not invalidate ray-trace caches.
   Propose this change in the M3 plan before implementing it.
+## Paper 2 (branch `paper2`)
+Specification, hypotheses P1-P4, rules and milestones P2-M1..M5 are in
+`ROADMAP_P2.md`; the step plan is `results/P2/plan.md`. Paper 1 is frozen
+at tag `v1.4.1-wcnc2027`: never modify `paper/`, `sim/sensing/`, `xapp/`,
+existing scripts, configs or `results/` outside `results/P2/`. Paper 2
+code lives only in `sim/positioning/`, `scripts/p2_*.py`,
+`configs/p2.yaml`, `paper2/`; paper-1 caches are read-only.
