@@ -1,0 +1,65 @@
+<scene version="2.1.0">
+
+<!-- TVT T6 second deployment: four-way intersection (configs/tvt_intersection_design.md). Generated from the design boxes. -->
+
+	<bsdf type="itu-radio-material" id="glass">
+        <string name="type" value="glass"/>
+        <float name="thickness" value="0.1"/>
+	</bsdf>
+	<bsdf type="itu-radio-material" id="wood">
+        <string name="type" value="wood"/>
+        <float name="thickness" value="0.1"/>
+	</bsdf>
+	<bsdf type="itu-radio-material" id="marble">
+        <string name="type" value="marble"/>
+        <float name="thickness" value="0.1"/>
+	</bsdf>
+	<bsdf type="itu-radio-material" id="brick">
+        <string name="type" value="brick"/>
+        <float name="thickness" value="0.1"/>
+	</bsdf>
+	<bsdf type="itu-radio-material" id="concrete">
+        <string name="type" value="concrete"/>
+        <float name="thickness" value="0.1"/>
+	</bsdf>
+
+	<shape type="cube" id="building_sw">
+		<transform name="to_world">
+			<scale x="30.45" y="30.7" z="12.5"/>
+			<translate x="-39.55" y="-39.3" z="12.5"/>
+		</transform>
+		<ref id="concrete" name="bsdf"/>
+	</shape>
+	<shape type="cube" id="building_se">
+		<transform name="to_world">
+			<scale x="30.45" y="30.7" z="10.0"/>
+			<translate x="39.55" y="-39.3" z="10.0"/>
+		</transform>
+		<ref id="brick" name="bsdf"/>
+	</shape>
+	<shape type="cube" id="building_nw">
+		<transform name="to_world">
+			<scale x="30.45" y="30.2" z="15.0"/>
+			<translate x="-39.55" y="39.8" z="15.0"/>
+		</transform>
+		<ref id="marble" name="bsdf"/>
+	</shape>
+	<shape type="cube" id="building_ne">
+		<transform name="to_world">
+			<scale x="30.45" y="30.2" z="11.0"/>
+			<translate x="39.55" y="39.8" z="11.0"/>
+		</transform>
+		<ref id="glass" name="bsdf"/>
+	</shape>
+	<bsdf type="itu-radio-material" id="floor_concrete">
+        <string name="type" value="concrete"/>
+        <float name="thickness" value="0.1"/>
+	</bsdf>
+	<shape type="cube" id="floor">
+		<transform name="to_world">
+			<scale x="100" y="100" z="0.05"/>
+			<translate x="0" y="0" z="-0.05"/>
+		</transform>
+		<ref id="floor_concrete" name="bsdf"/>
+	</shape>
+</scene>
