@@ -1,0 +1,40 @@
+# TVT T6 intersection: configs/p2.yaml with the intersection's reflecting planes (scene boxes) and its walkable
+# area (sidewalk bands of configs/tvt_intersection.yaml). Everything else as configs/p2.yaml.
+link: {ue_tx_power_dbm: 23.0, oru_noise_figure_db: 7.0, noise_psd_dbm_hz: -174.0,
+  srs_symbols_per_epoch: 1, srs_comb: 1}
+numerology: 3
+bandwidths:
+  '100': {n_rb: 66, n_sc: 792}
+  '200': {n_rb: 132, n_sc: 1584}
+  '400': {n_rb: 264, n_sc: 3168}
+timing_cases: [toa, tdoa, aoa]
+hardware:
+  sigma_sync_ns: [0.0, 0.3, 1.0, 3.0]
+  sync_mode_main: per_run
+  sigma_phi_deg: [0.0, 2.0, 5.0]
+blockage:
+  blocked_los_db: 10.0
+  blocked_variants: [kept, biased]
+info_variants: [los, map]
+thresholds_m:
+  decimeter: 0.1
+  paper1_break_even: [0.08, 0.13]
+bootstrap: {n: 10000, seed: 20261005}
+known_planes:
+  x: [-70.0, -9.1, 9.1, 70.0]
+  y: [-70.0, -8.6, 9.6, 70.0]
+  z: [0.0]
+heldout2: [3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010]
+lane_width_m: 3.5
+walk_rects:
+- [-40.0, 40.0, -8.6, -4.25]
+- [-40.0, 40.0, 4.25, 9.6]
+- [4.25, 9.1, -73.5, 6.5]
+- [-9.1, -4.25, -7.0, 73.0]
+walk_edges:
+  x:
+  - [-40.0, -1.0]
+  - [40.0, 1.0]
+  y:
+  - [-73.5, -1.0]
+  - [73.0, 1.0]

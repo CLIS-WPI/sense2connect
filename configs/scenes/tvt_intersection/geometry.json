@@ -1,0 +1,67 @@
+{
+ "definition": "TVT T6 intersection: building boxes of configs/scenes/tvt_intersection/tvt_intersection.xml (design file configs/tvt_intersection_design.md); same layout as paper2/tables/geometry.json street.mesh_bboxes for sim/tvt/sources.faces_from_geometry.",
+ "street": {
+  "mesh_bboxes": {
+   "building_sw": {
+    "min": [
+     -70.0,
+     -70.0,
+     0.0
+    ],
+    "max": [
+     -9.1,
+     -8.6,
+     25.0
+    ]
+   },
+   "building_se": {
+    "min": [
+     9.1,
+     -70.0,
+     0.0
+    ],
+    "max": [
+     70.0,
+     -8.6,
+     20.0
+    ]
+   },
+   "building_nw": {
+    "min": [
+     -70.0,
+     9.6,
+     0.0
+    ],
+    "max": [
+     -9.1,
+     70.0,
+     30.0
+    ]
+   },
+   "building_ne": {
+    "min": [
+     9.1,
+     9.6,
+     0.0
+    ],
+    "max": [
+     70.0,
+     70.0,
+     22.0
+    ]
+   },
+   "floor": {
+    "min": [
+     -100.0,
+     -100.0,
+     -0.1
+    ],
+    "max": [
+     100.0,
+     100.0,
+     0.0
+    ]
+   }
+  }
+ }
+}
