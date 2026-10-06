@@ -1,0 +1,99 @@
+# TVT T6 sensitivity: both O-RUs on 10 m lampposts (paper 1: 5 m). Everything else as configs/m2_scenario.yaml;
+# alias mount lamppost_h10 keeps the caches apart.
+seed: 101
+carrier_hz: 2.8e10
+numerology: 3
+n_subcarriers: 1024
+dt_s: 0.1
+duration_s: 2.0
+mount: lamppost_h10
+density: low
+array:
+  synthetic_array: true
+  oru: {num_rows: 8, num_cols: 8, vertical_spacing: 0.5, horizontal_spacing: 0.5,
+    polarization: V, pattern: iso}
+  ue: {num_rows: 1, num_cols: 1, vertical_spacing: 0.5, horizontal_spacing: 0.5, polarization: V,
+    pattern: iso}
+second_oru: {enabled: true, height_m: 10.0, x_offset_m: 40.0}
+scene: simple_street_canyon
+solvers: {max_depth: 2, samples_per_src: 20000, max_num_paths_per_src: 10000, samples_per_sp: 20000,
+  buffer_size_per_sp: 20000, specular_reflection: true, diffraction: false, refraction: false}
+blockage:
+  event_loss_db: 3.0
+  ue_thresholds_db: [3.0, 10.0, 20.0]
+  min_gap_s: 0.5
+  sensing_range_m: 40.0
+lanes:
+- name: eastbound
+  origin_m: [-40.0, -2.5, 0.0]
+  direction: [1.0, 0.0, 0.0]
+  length_m: 80.0
+- name: westbound
+  origin_m: [40.0, 2.5, 0.0]
+  direction: [-1.0, 0.0, 0.0]
+  length_m: 80.0
+sidewalks:
+- name: south
+  origin_m: [-40.0, -7.0, 0.0]
+  direction: [1.0, 0.0, 0.0]
+  length_m: 80.0
+- name: north
+  origin_m: [-40.0, 6.5, 0.0]
+  direction: [1.0, 0.0, 0.0]
+  length_m: 80.0
+oru_mounts:
+  lamppost_h10: {height_m: 10.0, x_m: 12.0, y_m: 6.5}
+blocker_kinds:
+  car:
+    object_type: vehicle-multi-sp
+    length_m: 5.0
+    width_m: 2.0
+    height_m: 1.6
+    speed_mps: [8.0, 12.0]
+  bus:
+    object_type: vehicle-multi-sp
+    length_m: 12.0
+    width_m: 2.5
+    height_m: 3.2
+    speed_mps: [6.0, 10.0]
+  truck:
+    object_type: vehicle-multi-sp
+    length_m: 8.0
+    width_m: 2.5
+    height_m: 3.5
+    speed_mps: [6.0, 10.0]
+  pedestrian:
+    object_type: human
+    length_m: 0.5
+    width_m: 0.5
+    height_m: 1.75
+    speed_mps: [1.0, 1.5]
+traffic:
+  low: {n_cars: 4, n_buses: 1, n_trucks: 1, n_sidewalk_pedestrians: 6, n_crossing_pedestrians: 2}
+  high: {n_cars: 12, n_buses: 2, n_trucks: 2, n_sidewalk_pedestrians: 12, n_crossing_pedestrians: 4}
+ues:
+- {name: ue-0, sidewalk: south, s0_m: 20.0, speed_mps: 1.2, height_m: 1.5}
+- {name: ue-1, sidewalk: south, s0_m: 45.0, speed_mps: 1.0, height_m: 1.5}
+render:
+  enabled: false
+  every: 10
+  resolution: [640, 480]
+  num_samples: 32
+  camera_position_m: [22.0, 0.5, 8.0]
+  camera_look_at_m: [0.0, -2.0, 1.2]
+sensing_radar:
+  duration_s: 0.512
+  sensing_range_m: 40.0
+  match_gate_m: 8.0
+  max_range_m: 120.0
+  wall_y_m: [9.6, -8.6]
+  waveform: {numerology: 3, n_subcarriers: 1024, n_subcarriers_alt: 2048, cpi_slots: 256,
+    sensing_symbols_per_slot: 1, symbols_per_slot: 14, window: true}
+  noise: {enabled: true, tx_power_dbm: 30.0, noise_figure_db: 7.0, temperature_k: 290.0}
+  arrays:
+    tx: {num_rows: 1, num_cols: 1, pattern: iso, polarization: V}
+    rx: {num_rows: 8, num_cols: 8, vertical_spacing: 0.5, horizontal_spacing: 0.5,
+      pattern: iso, polarization: V}
+  cluster: {min_samples: 1}
+  cfar: {guard: 2}
+  tracker: {confirm_hits: 2}
