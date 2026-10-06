@@ -1,0 +1,48 @@
+# TVT journal extension (ROADMAP_TVT.md). Scenario, traffic, arrays and blockage are
+# those of paper 1 (configs/m2_scenario.yaml, configs/m3.yaml, read-only) and paper 2
+# (configs/p2.yaml, read-only); this file holds only TVT settings.
+service:
+  # Cell SNR model (sim/tvt/service.py): power_sum (paper-1 code; every path with full
+  # array gain, powers added), best_beam (best beam of a 2-D DFT codebook, band-averaged
+  # coherent gain), mrt (matched filter, upper bound). Human decision (GOAL_TVT.md, T0):
+  # all journal results use best_beam.
+  model: best_beam
+  codebook_oversampling: 2      # 16 x 16 = 256 beams on the (u_y, u_z) grid
+array:
+  # Physical array model (sim/tvt/array_model.py). Main = paper-2 array (isotropic elements,
+  # phase errors 2 deg); the other values are T1/T6 sweeps.
+  pattern: iso                  # iso | tr38901 (8 dBi, 65 deg HPBW, 30 dB front-to-back)
+  sigma_phi_deg: 2.0
+  sigma_g_db: 0.0
+  sigma_r_m: 0.0
+  sweep:                        # (pattern, sigma_g_db, sigma_r_m)
+    - [iso, 0.0, 0.0]
+    - [tr38901, 0.0, 0.0]
+    - [iso, 1.0, 0.0]
+    - [iso, 0.0, 0.0001]
+    - [iso, 0.0, 0.0005]
+    - [iso, 0.0, 0.001]
+    - [tr38901, 1.0, 0.0005]
+map:
+  # Facade offsets d_s ~ N(0, sigma_map^2) along the normal (vertical x and y planes of
+  # configs/p2.yaml known_planes); ground known. "inf" = offsets free (no prior).
+  sigma_map_m: [0.0, 0.1, 0.25, 0.5, 1.0, .inf]
+bound:
+  bw: "400"
+  timing: tdoa
+  sigma_sync_ns: 1.0
+  blocked_db: 10.0
+extract:
+  # Multipath extraction (sim/tvt/extract.py); fixed design values, not tuned on results.
+  k_max: 8
+  pfa: 0.01                     # per snapshot, over all beam-delay cells
+  dyn_range_db: 40.0            # components more than this below the strongest are dropped (T2: 25 dB loses 40 % of isolated strong paths)
+  q: 16                         # beamspace grid (2x oversampled 8x8)
+visibility:
+  # Path-visibility prediction (sim/tvt/visibility.py, scripts/tvt_t3_visibility.py).
+  samples: 32                   # K joint Monte Carlo samples
+  threshold_db: 10.0            # blocked = model-B loss >= 10 dB (paper-1/2 event level)
+  horizons_s: [0.0, 0.5, 1.0]
+  sigma_ue_m: 0.3               # isotropic UE sampling spread around the paper-2 estimate (fixed, not tuned)
+  radar_budget: 2               # paper-1 sensing budget (configs/m3.yaml sensing.budgets)
+  epoch_chunk: 25

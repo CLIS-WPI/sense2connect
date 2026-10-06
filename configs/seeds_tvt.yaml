@@ -1,0 +1,11 @@
+# TVT journal seed sets (ROADMAP_TVT.md, research integrity). Disjoint.
+# tuning: parameter tuning only; development: design and debugging (all T0-T6 results);
+# training: only for the learned baseline of T5; heldout: NEVER opened before the tag
+# tvt-freeze exists (guard in sim/tvt/seeds.py). The conference held-out sets 2001-2010
+# and 3001-3010 are consumed and listed here only so that the guard refuses them too.
+tuning: [101, 102, 103, 104, 105]
+development: [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010]
+training: [5001, 5002, 5003, 5004, 5005, 5006, 5007, 5008, 5009, 5010, 5011, 5012, 5013, 5014, 5015, 5016, 5017, 5018, 5019, 5020,
+           5021, 5022, 5023, 5024, 5025, 5026, 5027, 5028, 5029, 5030, 5031, 5032, 5033, 5034, 5035, 5036, 5037, 5038, 5039, 5040]
+heldout: [4001, 4002, 4003, 4004, 4005, 4006, 4007, 4008, 4009, 4010]
+consumed: [2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010]
