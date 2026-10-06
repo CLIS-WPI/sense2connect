@@ -148,6 +148,89 @@ class MapBoundTest(unittest.TestCase):
         d = np.sqrt(np.outer(np.diag(Jn), np.diag(Jn)))
         self.assertLess(np.max(np.abs(Jg - Jn) / d), 1e-5)
 
+    def test_va_derivatives(self):
+        """VA Jacobian vs central differences of the image-method model, and its projection on 2 d n = offset derivatives."""
+        from sim.positioning.geometry import mirror, reflect_matrix
+        from sim.tvt.geometry_map import C0, offset_derivatives, va_derivatives
+
+        known, orus, ue, N, A, V, _ = _toy_scene()
+        h = 1e-5
+        for c in range(2):
+            Pn = N.shape[1]
+            oru = np.broadcast_to(orus[c], (Pn, 3))
+            uev = np.broadcast_to(ue, (Pn, 3))
+            dv = va_derivatives(oru, uev, N[c], A[c], V[c])
+            od = offset_derivatives(oru, uev, N[c], A[c], V[c])
+            for p in range(Pn):
+                v0, v1 = V[c][p]
+                if not v0:
+                    for key in ("dtau", "daz", "del"):
+                        self.assertTrue(np.all(dv[key][p] == 0))
+                    continue
+                n0, n1, q0, q1 = N[c][p, 0], N[c][p, 1], A[c][p, 0], A[c][p, 1]
+                R0 = reflect_matrix(n0)
+                R1 = reflect_matrix(n1) if v1 else np.eye(3)
+                R = R1 @ R0
+                o0 = mirror(orus[c], n0, q0)
+                o0 = mirror(o0, n1, q1) if v1 else o0
+                p0 = mirror(ue, n1, q1) if v1 else ue
+                p0 = mirror(p0, n0, q0)
+
+                def meas(delta):
+                    o_, p_ = o0 + delta, p0 - R.T @ delta
+                    w = p_ - orus[c]
+                    u = w / np.linalg.norm(w)
+                    return np.array([np.linalg.norm(ue - o_) / C0, math.atan2(u[1], u[0]), math.asin(u[2])])
+
+                an = np.stack([dv["dtau"][p], dv["daz"][p], dv["del"][p]])  # [3 meas, 3 delta]
+                for k in range(3):
+                    e = np.zeros(3)
+                    e[k] = h
+                    fd = (meas(e) - meas(-e)) / (2 * h)
+                    self.assertTrue(np.all(np.abs(an[:, k] - fd) <= np.array([1e-16, 1e-9, 1e-9]) + 1e-5 * np.abs(fd)), (c, p, k, an[:, k], fd))
+                # surface offsets are the special case delta = 2 d n (last plane) and R_1 2 n_0 (first plane)
+                proj = {0: an @ (R1 @ (2 * n0)), 1: an @ (2 * n1)} if v1 else {0: an @ (2 * n0)}
+                for slot, val in proj.items():
+                    np.testing.assert_allclose(val, [od["dtau"][p, slot], od["daz"][p, slot], od["del"][p, slot]], rtol=1e-9, atol=1e-15)
+
+    @unittest.skipUnless(_cuda(), "needs CUDA")
+    def test_va_peb_limits(self):
+        """pebs with free VAs: sigma_va -> 0 gives the known-map PEB, sigma_va -> inf the LoS-only PEB."""
+        from sim.positioning.geometry import path_geometry
+        from sim.tvt.geometry_map import offset_derivatives, surface_ids, surfaces, va_derivatives
+        from sim.tvt.peb import pebs
+
+        known, orus, ue, N, A, V, _ = _toy_scene()
+        Pn = N.shape[1]
+        rng = np.random.default_rng(3)
+        geo = {k: [] for k in ("tau", "az", "el", "dtau", "daz", "del")}
+        od, dva, sid = [], [], []
+        surf = surfaces(known)
+        for c in range(2):
+            oru = np.broadcast_to(orus[c], (Pn, 3))
+            uev = np.broadcast_to(ue, (Pn, 3))
+            g = path_geometry(oru, uev, N[c], A[c], V[c])
+            for k in geo:
+                geo[k].append(g[k])
+            od.append(offset_derivatives(oru, uev, N[c], A[c], V[c]))
+            dva.append(va_derivatives(oru, uev, N[c], A[c], V[c]))
+            sid.append(surface_ids(N[c], A[c], V[c], surf))
+        st = lambda xs: np.stack(xs)[None, None]  # [1, 1, C, ...]
+        inp = {"wl": WL, "a": st([(rng.standard_normal(Pn) + 1j * rng.standard_normal(Pn)) * 3 for _ in range(2)]),
+               "cls": st([V[c].sum(-1) for c in range(2)]), "valid": np.ones((1, 1, 2, Pn), bool), "los_loss": np.zeros((1, 1, 2)),
+               "geo": {k: st(v) for k, v in geo.items()}, "surf": surf, "sid": st(sid),
+               "doff": {k: st([o[k] for o in od]) for k in ("dtau", "daz", "del")}, "dva": {k: st([o[k] for o in dva]) for k in ("dtau", "daz", "del")}}
+        f = (np.arange(16) - 7.5) * 120e3 * 100
+        res = pebs(inp, f, 1.0, sync_ns=1.0, sigma_phi_deg=2.0, sigma_g_db=0.0, sigma_r_m=0.0, pattern="iso", sigma_maps=[0.0, math.inf],
+                   va_sigmas=[1e-7, 1.0, 1e4, math.inf])
+        los, m0 = res["los"].item(), res["map_0"].item()
+        self.assertLess(m0, 0.5 * los)
+        self.assertAlmostEqual(res["va_1e-07"].item() / m0, 1.0, places=4)
+        self.assertAlmostEqual(res["va_inf"].item() / los, 1.0, places=6)
+        self.assertAlmostEqual(res["va_10000"].item() / los, 1.0, places=4)
+        self.assertLessEqual(res["map_inf"].item(), los * (1 + 1e-9))
+        self.assertTrue(m0 <= res["va_1"].item() <= los)
+
     @unittest.skipUnless(_cuda(), "needs CUDA")
     def test_map_peb_vs_bruteforce(self):
         """Toy scene: composed pipeline (gram_general, efim_geometric, H with offset derivatives, priors) vs ONE numerical

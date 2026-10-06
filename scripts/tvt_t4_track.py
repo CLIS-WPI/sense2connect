@@ -15,6 +15,8 @@ Map error: the tracker's faces are displaced by e_f ~ N(0, sigma_map^2) (vertica
 run, seeded), the tracker estimates the offsets with prior sigma_map.
 Writes results/TVT/T4/track/<set>/<cond>_map<sigma>/<mount>_<density>_<seed>.npz (xy, P_xy, flags).
 Run: python scripts/tvt_t4_track.py --set development --cond pred_real [--sigma-map 0] [--params results/TVT/T4/tuned.json]
+     [--calibration results/TVT/T3/visibility.json]   (frozen copies for T7: configs/tvt_frozen/tracker.json,
+     configs/tvt_frozen/visibility_calibration.json; written by scripts/tvt_freeze_params.py)
 """
 
 from __future__ import annotations
@@ -68,7 +70,7 @@ def real_tracks(job, raw, det_dir: Path | None = None, cache_tag: str = "") -> d
 
 
 def run(jobs, set_name, cond, sigma_map, params, raw, p2cfg, tcfg, *, save=True, tag=None, log=True, cfg: str = CFG, tracks_fn=None,
-        faces_path: Path | None = None) -> dict:
+        faces_path: Path | None = None, calibration_path: str | Path | None = None) -> dict:
     import torch  # noqa: F401
 
     from sim.positioning.estimator_v2 import walk_map
@@ -81,7 +83,7 @@ def run(jobs, set_name, cond, sigma_map, params, raw, p2cfg, tcfg, *, save=True,
     from tvt_t3_visibility import isotonic_apply
 
     wl = 299_792_458.0 / float(raw["carrier_hz"])
-    t3 = json.loads((ROOT / "results" / "TVT" / "T3" / "visibility.json").read_text())
+    t3 = json.loads(Path(calibration_path or ROOT / "results" / "TVT" / "T3" / "visibility.json").read_text())
     cal = {k: t3["calibration"][f"est|0|{k}"] for k in ("los", "nlos")}
     faces = street_faces(faces_from_geometry(faces_path))
     vc = tcfg["visibility"]
@@ -257,6 +259,7 @@ def main() -> None:
     ap.add_argument("--cond", default="pred_real", choices=["none", "oracle", "pred_real", "pred_perfect"])
     ap.add_argument("--sigma-map", type=float, default=0.0)
     ap.add_argument("--params", default=str(OUT / "tuned.json"))
+    ap.add_argument("--calibration", default=None, help="isotonic visibility calibration (default results/TVT/T3/visibility.json)")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--cfg", default=CFG, help="measurement configuration (scripts/tvt_t4_measure.py --cfg)")
     ap.add_argument("--scenario", default="configs/m2_scenario.yaml")
@@ -279,7 +282,8 @@ def main() -> None:
         def tfn(job, raw_):
             return real_tracks(job, raw_, det_dir=ROOT / "results" / "TVT" / "T6" / "si" / f"inr{a.si_inr:g}" / job[1] / job[2] / f"seed_{job[0]}",
                                cache_tag=f"si{a.si_inr:g}_")
-    out = run(jobs, a.set, a.cond, a.sigma_map, params, raw, p2cfg, tcfg, cfg=a.cfg, tag=a.tag, faces_path=ROOT / a.faces if a.faces else None, tracks_fn=tfn)
+    out = run(jobs, a.set, a.cond, a.sigma_map, params, raw, p2cfg, tcfg, cfg=a.cfg, tag=a.tag, faces_path=ROOT / a.faces if a.faces else None, tracks_fn=tfn,
+              calibration_path=a.calibration)
     errs = np.concatenate([np.linalg.norm(r["xy"][20:] - r["ue"][20:, :, :2], axis=-1).ravel() for r in out["res"].values()])
     print(f"{a.cond} map {a.sigma_map}: median {np.nanmedian(errs):.3f} m, p90 {np.nanpercentile(errs, 90):.3f} m, timing {out['timing']}")
 

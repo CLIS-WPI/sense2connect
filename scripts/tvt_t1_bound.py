@@ -9,7 +9,9 @@ configuration of configs/tvt.yaml (bound: 400 MHz, TDoA, sigma_sync 1 ns, blocke
    array.sweep, with sigma_phi 2 deg.
 Seed level: per seed the median PEB over its 4 runs x 2 UEs x epochs (all / both-LoS / blocked
 epochs; blocked = LoS model-B loss >= 10 dB at one O-RU at least), mean over seeds with a
-bootstrap CI; exact Wilcoxon for paired configurations. Writes results/TVT/T1/bound/<job>.npz and
+bootstrap CI; exact Wilcoxon for paired configurations. --va-check (sanity check of the saturation,
+human request after T1): LoS-only, map-aided at sigma_map 0 / 0.1 / inf and the free-VA model (every
+NLoS virtual anchor displaced in 3-D, prior sigma_va in VA_SIGMAS), main array only. Writes results/TVT/T1/bound/<job>.npz and
 results/TVT/T1/bound_summary.json. Run: python scripts/tvt_t1_bound.py [--limit N]
 """
 
@@ -31,6 +33,7 @@ for p in (ROOT, ROOT / "scripts"):
 
 K_B, T0 = 1.380649e-23, 290.0
 OUT = ROOT / "results" / "TVT" / "T1"
+VA_SIGMAS = [0.01, 0.1, 1.0, 10.0, 100.0, math.inf]
 
 
 def link(p2cfg: dict, bw: str) -> tuple[np.ndarray, float]:
@@ -52,6 +55,12 @@ def run_job(job, raw, p2cfg, tcfg) -> dict:
     inp = job_setup(job, raw, p2cfg)
     sm = [float(x) for x in tcfg["map"]["sigma_map_m"]]
     out = {}
+    if tcfg.get("va_check"):
+        res = pebs(inp, f, scale, sync_ns=float(b["sigma_sync_ns"]), sigma_phi_deg=float(tcfg["array"]["sigma_phi_deg"]), sigma_g_db=0.0,
+                   sigma_r_m=0.0, pattern="iso", sigma_maps=[0.0, 0.1, math.inf], timing=str(b["timing"]), blocked_db=float(b["blocked_db"]),
+                   va_sigmas=VA_SIGMAS)
+        blocked = (inp["los_loss"] >= float(b["blocked_db"])).any(-1)
+        return {"peb": {f"mapsweep|{k}": v for k, v in res.items()}, "blocked": blocked, "ue": inp["ue"]}
     res = pebs(inp, f, scale, sync_ns=float(b["sigma_sync_ns"]), sigma_phi_deg=float(tcfg["array"]["sigma_phi_deg"]), sigma_g_db=0.0, sigma_r_m=0.0,
                pattern="iso", sigma_maps=sm, timing=str(b["timing"]), blocked_db=float(b["blocked_db"]))
     for k, v in res.items():
@@ -106,7 +115,7 @@ def summarize(jobs, store) -> dict:
         base_los = per_seed[("mapsweep|los", state)]
         base_map = per_seed[("mapsweep|map_0", state)]
         for k in keys:
-            if k.startswith("mapsweep|map_"):
+            if k.startswith("mapsweep|map_") or k.startswith("mapsweep|va_"):
                 tests[f"{k} vs map_0 | {state}"] = paired(per_seed[(k, state)], base_map)
                 tests[f"{k} vs los | {state}"] = paired(per_seed[(k, state)], base_los)
             if k.startswith("array|") and not k.startswith("array|iso|g0|r0|"):
@@ -129,6 +138,7 @@ def main() -> None:
     ap.add_argument("--mounts", nargs="*", default=["lamppost", "facade"])
     ap.add_argument("--out", default="bound_summary.json")
     ap.add_argument("--map-only", action="store_true", help="LoS-only and map-aided (sigma_map 0) only, iso array (second deployment)")
+    ap.add_argument("--va-check", action="store_true", help="free-VA sanity check (writes bound_va/ and --out)")
     a = ap.parse_args()
     if torch.cuda.device_count() != 1:
         raise SystemExit("expected exactly one visible GPU (GPU 1)")
@@ -138,11 +148,13 @@ def main() -> None:
     if a.map_only:
         tcfg["map"]["sigma_map_m"] = [0.0]
         tcfg["array"]["sweep"] = []
+    tcfg["va_check"] = a.va_check
+    bdir = OUT / ("bound_va" if a.va_check else "bound")
     seeds = check(load()["development"])
     jobs = [(s, m, d) for s in seeds for m in a.mounts for d in ("low", "high")]
     if a.limit:
         jobs = jobs[: a.limit]
-    (OUT / "bound").mkdir(parents=True, exist_ok=True)
+    bdir.mkdir(parents=True, exist_ok=True)
     store = {}
     clock = time.perf_counter()
     for job in jobs:
@@ -150,7 +162,7 @@ def main() -> None:
         torch.cuda.reset_peak_memory_stats()
         r = run_job(job, raw, p2cfg, tcfg)
         store[job] = r
-        np.savez(OUT / "bound" / f"{job[1]}_{job[2]}_{job[0]}.npz", blocked=r["blocked"], **{k.replace("|", "__"): v for k, v in r["peb"].items()})
+        np.savez(bdir / f"{job[1]}_{job[2]}_{job[0]}.npz", blocked=r["blocked"], **{k.replace("|", "__"): v for k, v in r["peb"].items()})
         print(f"{job}: {time.perf_counter() - t0:.0f} s, peak {torch.cuda.max_memory_allocated() / 2**30:.1f} GB, "
               f"median los {np.median(r['peb']['mapsweep|los']):.3f} map0 {np.median(r['peb']['mapsweep|map_0']):.4f} "
               f"mapinf {np.median(r['peb'].get('mapsweep|map_inf', np.nan)):.4f} m", flush=True)

@@ -9,6 +9,9 @@ Element nuisances (phase / gain / position errors) per O-RU with Gaussian priors
 eliminated per O-RU (sim/tvt/fim.efim_geometric). "los": every NLoS path is a free nuisance
 (LoS-only information); "map": NLoS paths informative through the image method. Blocked LoS
 (model-B LoS loss >= 10 dB): "biased" (geometry free) as the paper-2 main configuration.
+Sanity model "va" (``va_sigmas``): instead of the surface offsets, the virtual anchor of EVERY
+NLoS path gets its own free 3-D displacement with prior N(0, sigma_va^2 I)
+(sim/tvt/geometry_map.va_derivatives); sigma_va -> 0 must give map_0, sigma_va -> inf approaches "los".
 """
 
 from __future__ import annotations
@@ -24,7 +27,7 @@ def job_setup(job: tuple, raw: dict, p2cfg: dict, axes: str = "xy") -> dict:
     """Frozen paper-2 inputs plus surface ids and offset derivatives (uncertain surfaces: planes normal to ``axes``)."""
     import p2_peb
     from sim.positioning.geometry import bounce_planes
-    from sim.tvt.geometry_map import offset_derivatives, surface_ids, surfaces
+    from sim.tvt.geometry_map import offset_derivatives, surface_ids, surfaces, va_derivatives
 
     inp = p2_peb.job_inputs(job, raw, p2cfg)
     seed, mount, density = job
@@ -40,7 +43,7 @@ def job_setup(job: tuple, raw: dict, p2cfg: dict, axes: str = "xy") -> dict:
     surf = surfaces(p2cfg["known_planes"], axes)
     sid = surface_ids(N, A, V, surf)
     od = offset_derivatives(oru, ue, N, A, V)
-    inp.update({"surf": surf, "sid": sid, "doff": od})
+    inp.update({"surf": surf, "sid": sid, "doff": od, "dva": va_derivatives(oru, ue, N, A, V)})
     return inp
 
 
@@ -68,10 +71,24 @@ def h_matrix(inp: dict) -> np.ndarray:
     return H
 
 
+def h_matrix_va(inp: dict) -> np.ndarray:
+    """H [T, U, C, 3P, 5 + 3 C P]: base columns and a free 3-D VA displacement per (O-RU, path) (zero for LoS / absent)."""
+    H0 = h_matrix(inp)[..., :N_BASE]
+    T, U, C, P = inp["a"].shape
+    dva = inp["dva"]  # [T, U, C, P, 3]
+    H = np.concatenate([H0, np.zeros(H0.shape[:-1] + (3 * C * P,))], -1)
+    for c in range(C):
+        for p in range(P):
+            col = N_BASE + 3 * (c * P + p)
+            for i, key, scale in ((0, "dtau", 1e9), (1, "daz", 1.0), (2, "del", 1.0)):
+                H[:, :, c, 3 * p + i, col:col + 3] = dva[key][:, :, c, p] * scale
+    return H
+
+
 def pebs(inp: dict, f_hz: np.ndarray, beta_scale: float, *, sync_ns: float, sigma_phi_deg: float, sigma_g_db: float, sigma_r_m: float,
          pattern: str, sigma_maps: list[float], timing: str = "tdoa", blocked_db: float = 10.0, device: str = "cuda",
-         chunk: int = 25) -> dict[str, np.ndarray]:
-    """PEB [T, U] for "los" and for "map" at every sigma_map (m; 0 = known, inf = free offsets)."""
+         chunk: int = 25, va_sigmas: list[float] | None = None) -> dict[str, np.ndarray]:
+    """PEB [T, U] for "los", for "map" at every sigma_map (m; 0 = known, inf = free offsets) and "va_<s>" for every sigma_va."""
     import torch
 
     from sim.positioning.array import element_positions
@@ -128,4 +145,24 @@ def pebs(inp: dict, f_hz: np.ndarray, beta_scale: float, *, sync_ns: float, sigm
                     prior[..., idx, idx] = 1.0 / sm ** 2
             key = "los" if info == "los" else f"map_{sm:g}"
             out[key] = peb_from_theta(J0, prior, present).cpu().numpy()
+        if info == "map" and va_sigmas:
+            Hv = torch.as_tensor(h_matrix_va(inp), device=device)
+            Jv = theta_information(Keff, Hv)
+            n_th = Hv.shape[-1]
+            nlos_used = (is_nlos & ~free_path).reshape(T, U, C * P)  # [T, U, C P]
+            for sv in va_sigmas:
+                prior = torch.zeros((T, U, n_th, n_th), dtype=torch.float64, device=device)
+                present = torch.zeros((T, U, n_th), dtype=torch.bool, device=device)
+                if timing != "aoa" and sync_ns > 0:
+                    for c in range(C):
+                        present[..., 2 + c] = True
+                        prior[..., 2 + c, 2 + c] = 1.0 / sync_ns ** 2
+                if timing == "tdoa":
+                    present[..., 4] = True
+                if sv > 0:
+                    present[..., N_BASE:] = nlos_used.repeat_interleave(3, dim=-1)
+                    if math.isfinite(sv):
+                        idx = torch.arange(N_BASE, n_th, device=device)
+                        prior[..., idx, idx] = 1.0 / sv ** 2
+                out[f"va_{sv:g}"] = peb_from_theta(Jv, prior, present).cpu().numpy()
     return out

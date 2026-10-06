@@ -113,5 +113,44 @@ class LearnedTest(unittest.TestCase):
         self.assertTrue(np.all(loss[0] == 0.0))
 
 
+class J3ClassifierTest(unittest.TestCase):
+    def test_error_types(self):
+        """Synthetic lane: every outage step gets the error type of the definition in scripts/tvt_j3_diagnosis.py."""
+        from sim.comm.phy import MAX_NR_SE
+        from tvt_j3_diagnosis import CATS, classify_lane
+
+        n_t, tau, ovh = 1000, 2, 0.1
+        meta = {"bandwidth_hz": 400e6, "rate_req_bps": 400e6, "dt_s": 0.01, "tau_ho_steps": tau}
+        snr = np.full((n_t, 2), 20.0)
+        snr[100:200, 0] = -10.0  # cell 0 bad while serving, no switch -> missed
+        snr[300:400, 0] = -10.0  # cell 0 bad while serving, switch at 350 -> late (mistimed) + necessary interruption
+        snr[640:700, 0] = -10.0  # switch 1 -> 0 at 650 into the already bad cell 0 while cell 1 is usable -> unnecessary
+        snr[800:820, 1] = 0.3  # usable without, not with the overhead -> overhead
+        snr[900:910, :] = -10.0  # both bad -> unavoidable
+        hos = {"step": np.array([350, 650]), "from": np.array([0, 1]), "to": np.array([1, 0])}
+        serv = np.zeros(n_t, np.int64)
+        serv[350:650] = 1
+        serv[650:] = 0
+        serv[700:] = 1  # (synthetic: serving trace only needs to be consistent with the steps classified below)
+        intr = np.zeros(n_t, bool)
+        for st in hos["step"]:
+            intr[st:st + tau] = True
+        se = np.minimum(np.log2(1.0 + 10.0 ** (snr / 10.0)), MAX_NR_SE)
+        rate = np.where(intr, 0.0, 400e6 * (1 - ovh) * se[np.arange(n_t), serv])
+        outr = intr | (rate < 400e6)
+        cat, cls, sw = classify_lane(serv, outr, intr, snr, ovh, hos, [], meta)
+        name = lambda k: CATS[cat[k]] if cat[k] >= 0 else None  # noqa: E731
+        self.assertEqual(name(150), "missed_switch")
+        self.assertEqual(name(320), "mistimed_switch")
+        self.assertEqual(name(350), "switch_necessary")
+        self.assertEqual(name(650), "unnecessary_switch")
+        self.assertEqual(name(680), "unnecessary_switch")
+        self.assertEqual(name(810), "overhead")
+        self.assertEqual(name(905), "unavoidable")
+        self.assertIsNone(name(500))
+        self.assertEqual([x["necessary"] for x in sw], [True, False])
+        self.assertEqual(int((cat >= 0).sum()), int(outr.sum()))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -33,10 +33,17 @@ Schemes:
   riskneutral_tvt_perfect    risk_tvt_perfect with lambda = 0 (J4 ablation with perfect tracks)
   planner_tvt_perfect / risk_tvt_perfect   perfect blocker tracks + tvt UE (J3 "perfect tracks")
   planner_true_perfect                       perfect tracks + true UE (paper-1 "perfect" planner)
+  planner_white_perfect                      perfect tracks + true UE plus white Gaussian errors with the per-axis
+                                             RMS of the tvt UE error over the development jobs (J3 diagnosis)
+  planner_whitenw_perfect                    the same with the RMS over the epochs outside the 1 s after a UE wrap
+                                             (the scenario wraps UE positions at the street ends: x jumps by 80 m)
   genie / cost-aware oracle                  references from the T0 best-beam sandbox (paper-1 code)
 Metrics: outage at the service rate [s/UE-min], handovers/min, ping-pong share, outage inside
 10 dB events per blocker class; seed level (per seed mean over 4 runs x 2 UEs), paired vs A5:
 mean difference, bootstrap CI, exact Wilcoxon. Writes results/TVT/T5/handover.json.
+--dump-steps DIR (J3 diagnosis): per margin and scheme, the per-10-ms-step timeline of the development
+evaluation (serving cell, SNR of both cells, rate, outage, interruption, handovers, overhead) and the
+UE positions / blockage events per job, for scripts/tvt_j3_diagnosis.py.
 Run: python scripts/tvt_t5_handover.py [--schemes ...] [--margins ...]
 """
 
@@ -256,6 +263,9 @@ def main() -> None:
     ap.add_argument("--track-set", default="development", help="T4 track set directory of the evaluation jobs")
     ap.add_argument("--si-inr", type=float, default=None, help="real tracks from the residual-SI detections (T6)")
     ap.add_argument("--tune-own", action="store_true", help="tune on the tuning seeds of the evaluation scenario/mounts (second deployment)")
+    ap.add_argument("--learned", default=str(OUT / "learned.pt"), help="learned predictor weights")
+    ap.add_argument("--learned-manifest", default=None, help="json with the expected sha256 of --learned (configs/tvt_frozen/learned.json); refused on mismatch")
+    ap.add_argument("--dump-steps", default=None, help="directory for the per-step timelines of the development evaluation (J3 diagnosis)")
     a = ap.parse_args()
     if torch.cuda.device_count() != 1:
         raise SystemExit("expected exactly one visible GPU (GPU 1)")
@@ -313,12 +323,36 @@ def main() -> None:
     else:
         real = {job: T4.real_tracks(job, raw_of(job)) for job in pred_jobs}
     rng0 = np.random.default_rng(20261006)
-    sources = {k: {} for k in ("true_perfect", "tvt_perfect", "tvt_real", "p2_real")}
+    sources = {k: {} for k in ("true_perfect", "tvt_perfect", "tvt_real", "p2_real", "white_perfect", "whitenw_perfect")}
+    # per-axis RMS of the tvt UE error over the development jobs (all epochs the planner sees)
+    err, keep = [], []
+    for j in dev_jobs:
+        tu = truth[j]["ue"][..., :2]
+        err.append((tvt_xy(a.track_set, j, a.track_tag)[0][: n_r] - tu).reshape(-1, 2))
+        wrap = np.zeros(tu.shape[:2], bool)
+        wrap[1:] = np.linalg.norm(np.diff(tu, axis=0), axis=-1) > 10.0
+        after = np.zeros_like(wrap)
+        for k_ in range(10):  # 1 s of sensing epochs after a wrap
+            after[k_:] |= wrap[: wrap.shape[0] - k_]
+        keep.append(~after.reshape(-1))
+    err, keep = np.concatenate(err), np.concatenate(keep)
+    white_rms = np.sqrt(np.mean(err ** 2, axis=0))
+    whitenw_rms = np.sqrt(np.mean(err[keep] ** 2, axis=0))
+    print(f"tvt UE error per-axis RMS over the development jobs: x {white_rms[0]:.3f} m, y {white_rms[1]:.3f} m; outside 1 s after a UE wrap "
+          f"({100 * (1 - keep.mean()):.1f} % of epochs excluded): x {whitenw_rms[0]:.3f} m, y {whitenw_rms[1]:.3f} m", flush=True)
+    ue_dump = {}
     samples = {"risk_real": {}, "risk_perfect": {}}
     learned_prob = {}
     learned = None
-    lp = OUT / "learned.pt"
+    lp = Path(a.learned)
     if lp.exists():
+        if a.learned_manifest:
+            import hashlib
+
+            want = json.loads(Path(a.learned_manifest).read_text())["sha256"]
+            got = hashlib.sha256(lp.read_bytes()).hexdigest()
+            if got != want:
+                raise SystemExit(f"learned weights {lp}: sha256 {got} != frozen {want}")
         learned = torch.load(lp, weights_only=False)
     for job in pred_jobs:
         set_name = "tuning" if job in tune_jobs else "development"
@@ -335,6 +369,16 @@ def main() -> None:
             fix_p2 = tr["ue"].copy()
             fix_p2[..., :2] = p2v[: n_r]
         sources["true_perfect"][job] = predict(pt, tr["ue"], tr["ue_vel"], tr["oru"], taus, wl)
+        rng_w = np.random.default_rng([job[0], sum(map(ord, job[1])), ["low", "high"].index(job[2]), 7])
+        fix_white = tr["ue"].copy()
+        z = rng_w.standard_normal(fix_white[..., :2].shape)
+        fix_white[..., :2] += z * white_rms
+        fix_whitenw = tr["ue"].copy()
+        fix_whitenw[..., :2] += z * whitenw_rms
+        sources["white_perfect"][job] = predict(pt, fix_white, tr["ue_vel"], tr["oru"], taus, wl)
+        sources["whitenw_perfect"][job] = predict(pt, fix_whitenw, tr["ue_vel"], tr["oru"], taus, wl)
+        if job in dev_jobs:
+            ue_dump[job] = {"true": tr["ue"][..., :2], "tvt": fix_tvt[..., :2], "white": fix_white[..., :2], "whitenw": fix_whitenw[..., :2]}
         sources["tvt_perfect"][job] = predict(pt, fix_tvt, tr["ue_vel"], tr["oru"], taus, wl)
         sources["tvt_real"][job] = predict(rt, fix_tvt, tr["ue_vel"], tr["oru"], taus, wl)
         if fix_p2 is not None:
@@ -368,7 +412,26 @@ def main() -> None:
         print("no paper-2 estimates for the evaluation jobs -> planner_p2 skipped", flush=True)
     if fixed:
         schemes = [x for x in schemes if all(x in fixed.get(lab, {}) for lab in a.margins)]
-    res = {"definition": __doc__, "model": model, "margin_ref_db": info["margin_ref_db"], "grids": GRIDS, "schemes": {},
+    import run_m5_planner as M5
+
+    cap = {}
+    if a.dump_steps:
+        dump_dir = Path(a.dump_steps)
+        dump_dir.mkdir(parents=True, exist_ok=True)
+        sim_orig = M5.simulate
+
+        def sim_capture(lanes, **kw):
+            out_ = sim_orig(lanes, **kw)
+            cap["last"] = (out_, lanes)
+            return out_
+
+        M5.simulate = sim_capture
+        np.savez_compressed(dump_dir / "ue.npz", **{f"{k}|{j[1]}_{j[2]}_{j[0]}": v[k] for j, v in ue_dump.items() for k in v})
+        (dump_dir / "events.json").write_text(json.dumps({f"{j[1]}_{j[2]}_{j[0]}": built[j]["events"] for j in dev_jobs}, default=R._json) + "\n")
+        (dump_dir / "meta.json").write_text(json.dumps({"white_rms_m": white_rms.tolist(), "whitenw_rms_m": whitenw_rms.tolist(), "tau_ho_steps": tau,
+                                                         "e2_delay_steps": d, "report_steps": rs,
+                                                         "rate_req_bps": rate_req, "bandwidth_hz": bw, "overhead": ovh, "dt_s": R.DT_COMM}) + "\n")
+    res = {"definition": __doc__, "model": model, "white_rms_m": white_rms.tolist(), "whitenw_rms_m": whitenw_rms.tolist(), "margin_ref_db": info["margin_ref_db"], "grids": GRIDS, "schemes": {},
            "overrides": {"fixed": a.fixed, "e2_ms": a.e2_ms, "ovh_scale": a.ovh_scale, "scenario": a.scenario, "mounts": a.mounts, "densities": a.densities,
                          "track_tag": a.track_tag, "si_inr": a.si_inr}}
     a3c = R._grid(A3W)
@@ -448,7 +511,8 @@ def main() -> None:
                 params, obj, rows = evaluate(sch, lambda c: trigger_rows(tune_jobs, f"learned{c['threshold']}", lpred[c["threshold"]], c),
                                              lambda c: trigger_rows(dev_jobs, f"learned{c['threshold']}", lpred[c["threshold"]], c), combos, mi)
             elif sch.startswith("planner_"):
-                src = {"planner_p2": "p2_real", "planner_tvt": "tvt_real", "planner_tvt_perfect": "tvt_perfect", "planner_true_perfect": "true_perfect"}[sch]
+                src = {"planner_p2": "p2_real", "planner_tvt": "tvt_real", "planner_tvt_perfect": "tvt_perfect", "planner_true_perfect": "true_perfect",
+                       "planner_white_perfect": "white_perfect", "planner_whitenw_perfect": "whitenw_perfect"}[sch]
                 combos = [{"H": h} for h in GRIDS["planner"]["H"]]
                 params, obj, rows = evaluate(sch, lambda c: planner_rows(tune_jobs, plan_table(src, c["H"])),
                                              lambda c: planner_rows(dev_jobs, plan_table(src, c["H"])), combos, mi)
@@ -474,6 +538,14 @@ def main() -> None:
                 rows = planner_rows(dev_jobs, lambda ix: risk_table(cst, ix, params["lam"], params["theta"]))
             else:
                 raise SystemExit(f"unknown scheme {sch}")
+            if a.dump_steps and "last" in cap:
+                sm, ln = cap.pop("last")
+                keys = [f"{r['job'][1]}_{r['job'][2]}_{r['job'][0]}|{r['ue']}" for r in rows]
+                assert sm["serving"].shape[0] == len(keys)
+                np.savez_compressed(dump_dir / f"{lab.split()[0]}_{sch}.npz", lanes=np.array(keys), serving=sm["serving"], outage_req=sm["outage_req"],
+                                    interrupted=sm["interrupted"], rate=sm["rate"], snr=ln.snr_db.astype(np.float32),
+                                    overhead=np.broadcast_to(np.asarray(ln.overhead, dtype=np.float64), (len(keys),)),
+                                    **{f"ho_{k}": v for k, v in sm["handovers"].items()})
             out_m[sch] = {"params": params, "tuning_objective": list(obj) if isinstance(obj, tuple) else obj, **summarize(rows), "rows": strip(rows),
                           "wall_s": time.perf_counter() - t0}
             print(f"{lab[:9]:9s} {sch:20s} outage {out_m[sch]['outage']:.3f} s/UE-min, HO/min {out_m[sch]['ho_per_min']:.2f}, ping-pong "
