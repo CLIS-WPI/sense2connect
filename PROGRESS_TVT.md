@@ -46,3 +46,14 @@ sim/tvt/seeds.py; no tvt-freeze tag). Detailed reports: results/TVT/<T>/report.m
       (scripts/tvt_frozen_at.sh) because of the whole-tree provenance of the sensing caches.
 - [ ] Human decisions pending: see "Open questions" (paper-1 service-model sentence, T1 acceptance, array
       orientation, CHO model, narrative choice after T4).
+
+## J1-J5 summary (development seeds 1001-1010 only; seed-level exact Wilcoxon over 10 seeds)
+| hypothesis | verdict | evidence |
+|---|---|---|
+| J1 predicted visibility improves association | NOT SUPPORTED (slightly negative) | Visibility predicted from real tracks: +1.4 mm median error vs no visibility (p 0.02); no gain during blockage or in the second before onset. Oracle visibility: -3.2 mm during blockage (p 0.049), so the mechanism works but the predictor is too weak (T3: real-track AUC 0.74, pedestrians ~0.5). Same picture in every calibration, bandwidth and variant sweep and in the intersection (p 0.56). |
+| J2 tracker narrows the gap to the PEB | SUPPORTED (gap narrowed, not closed) | Median 3.7 cm vs 12.8 cm for the paper-2 estimator; during blockage 6.4 cm vs 1.01 m (p 0.002). About 11x the map-aided PEB remains. Causes: 87-90 % of the strong paths cannot be resolved in one snapshot (T2), long tails after reinitialisation, and map error (p90 0.44 -> 0.91 m for sigma_map 0.1 -> 1 m). Both narratives are documented in the T4 report, as instructed; no choice made. |
+| J3 planner beats A5 with perfect tracks | NOT SUPPORTED in the reference canyon; MIXED across variants | Reference canyon: planner with TVT positions and perfect tracks never beats A5; exact positions beat A5 at 25 dB only. UE-speed variants: perfect-track planners beat A5 at 25 dB (exact positions at 20-30 dB). Real tracks: +0.19..+3.7 s/UE-min worse than A5 everywhere. CHO = A5 in this simulator. |
+| J4 risk-aware beats risk-neutral, same inputs | NOT SUPPORTED | Real inputs: no better at any margin, worse at the reference margin (p 0.006). Perfect tracks (added ablation riskneutral_tvt_perfect, same grid, tuned on the tuning seeds, results/TVT/T5/handover_j4_perfect.json): differences -0.008..0 s/UE-min, p >= 0.45 at every margin. The perfect-track risk-aware planner's advantage over the deterministic planner (15 dB, 30 dB, reference) comes from the sample-based look-ahead, not from the CVaR term (lambda = 0 does as well). |
+| J5 conclusions robust | SUPPORTED for the negative/positive pattern above | Map error, calibration, sync, bandwidth, O-RU height, UE speed, density, E2 delay 0-100 ms, sensing overhead x0-x2, residual SI up to 40 dB and a second deployment (intersection) leave the conclusions unchanged: the tracker beats paper-2 everywhere (paper-2 estimator collapses at 3 m O-RU height: 1.50 m vs 4.3 cm), and A5 is the best practical handover scheme everywhere. |
+
+Learned baseline (T5): see the T5 row; results are added when the training-seed traces finish.

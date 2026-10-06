@@ -30,6 +30,7 @@ Schemes:
                   decision: switch iff mean + lambda CVaR_alpha (switch) + theta < same for stay;
                   grid H x lambda x theta (27), alpha 0.9, K 16
   riskneutral_tvt the same with lambda = 0 (J4 ablation; grid H x theta, 9)
+  riskneutral_tvt_perfect    risk_tvt_perfect with lambda = 0 (J4 ablation with perfect tracks)
   planner_tvt_perfect / risk_tvt_perfect   perfect blocker tracks + tvt UE (J3 "perfect tracks")
   planner_true_perfect                       perfect tracks + true UE (paper-1 "perfect" planner)
   genie / cost-aware oracle                  references from the T0 best-beam sandbox (paper-1 code)
@@ -451,10 +452,10 @@ def main() -> None:
                 combos = [{"H": h} for h in GRIDS["planner"]["H"]]
                 params, obj, rows = evaluate(sch, lambda c: planner_rows(tune_jobs, plan_table(src, c["H"])),
                                              lambda c: planner_rows(dev_jobs, plan_table(src, c["H"])), combos, mi)
-            elif sch in ("risk_tvt", "riskneutral_tvt", "risk_tvt_perfect"):
-                smp = samples["risk_perfect" if sch == "risk_tvt_perfect" else "risk_real"]
+            elif sch in ("risk_tvt", "riskneutral_tvt", "risk_tvt_perfect", "riskneutral_tvt_perfect"):
+                smp = samples["risk_perfect" if sch.endswith("_perfect") else "risk_real"]
                 g = dict(GRIDS["risk"])
-                if sch == "riskneutral_tvt":
+                if sch.startswith("riskneutral_"):
                     g["lam"] = [0.0]
                 best = None
                 for h in ([] if fixed else g["H"]):
@@ -482,7 +483,8 @@ def main() -> None:
             for sch, v in out_m.items():
                 if sch != "A5":
                     v["vs_A5"] = paired([v["per_seed"][x]["outage"] for x in seeds], [out_m["A5"]["per_seed"][x]["outage"] for x in seeds])
-        for pair in (("risk_tvt", "riskneutral_tvt"), ("risk_tvt", "planner_tvt"), ("planner_tvt", "planner_p2"), ("risk_tvt_perfect", "planner_tvt_perfect")):
+        for pair in (("risk_tvt", "riskneutral_tvt"), ("risk_tvt", "planner_tvt"), ("planner_tvt", "planner_p2"), ("risk_tvt_perfect", "planner_tvt_perfect"),
+                     ("risk_tvt_perfect", "riskneutral_tvt_perfect")):
             if pair[0] in out_m and pair[1] in out_m:
                 seeds = sorted(out_m[pair[0]]["per_seed"])
                 out_m[f"{pair[0]} vs {pair[1]}"] = paired([out_m[pair[0]]["per_seed"][x]["outage"] for x in seeds], [out_m[pair[1]]["per_seed"][x]["outage"] for x in seeds])
