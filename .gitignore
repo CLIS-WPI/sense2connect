@@ -7,3 +7,14 @@ results/*
 !results/.gitkeep
 *.h5
 *.npz
+
+# LaTeX build outputs of the TVT draft
+paper_tvt/*.aux
+paper_tvt/*.bbl
+paper_tvt/*.blg
+paper_tvt/*.log
+paper_tvt/*.out
+paper_tvt/*.fls
+paper_tvt/*.fdb_latexmk
+paper_tvt/*.synctex.gz
+paper_tvt/main.pdf
