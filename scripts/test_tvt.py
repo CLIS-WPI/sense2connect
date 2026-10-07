@@ -158,5 +158,29 @@ class ServiceModelTest(unittest.TestCase):
             self.assertTrue(np.array_equal(v > 0, m), k)
             self.assertLess(np.max(np.abs(v[m] - ref[m]) / ref[m]), 1e-6, k)  # |a|^2 64 vs cached power (3e-7)
 
+class FrozenParamsTest(unittest.TestCase):
+    def test_frozen_configs_match_sources(self):
+        """configs/tvt_frozen: every recorded source still has the recorded sha256 (if present) and the learned weights match."""
+        import hashlib
+        import json
+
+        d = ROOT / "configs" / "tvt_frozen"
+        man = json.loads((d / "manifest.json").read_text())
+        for name, info in man["files"].items():
+            self.assertEqual(hashlib.sha256((d / name).read_bytes()).hexdigest(), info["sha256"], name)
+            for src, h in info["sources"].items():
+                f = ROOT / src
+                if f.exists():
+                    self.assertEqual(hashlib.sha256(f.read_bytes()).hexdigest(), h, f"{name}: source {src} changed after the freeze")
+        lj = json.loads((d / "learned.json").read_text())
+        w = ROOT / lj["path"]
+        if w.exists():
+            self.assertEqual(hashlib.sha256(w.read_bytes()).hexdigest(), lj["sha256"])
+        ho = json.loads((d / "handover.json").read_text())
+        for lab, cell in ho["schemes"].items():
+            for sch in ("A5", "planner_tvt", "risk_tvt", "planner_tvt_perfect", "trigger_learned"):
+                self.assertIn("params", cell[sch], f"{lab} {sch}")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

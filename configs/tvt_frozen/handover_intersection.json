@@ -1,0 +1,356 @@
+{
+ "model": "best_beam",
+ "margin_ref_db": 33.63267997427079,
+ "schemes": {
+  "15 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 1.0,
+     "hysteresis_db": 6.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 1.0,
+     "hold_s": 0.5
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 1.0,
+     "lam": 0.0,
+     "theta": 2.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 1.0,
+     "lam": 0.0,
+     "theta": 2.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 2.0,
+     "lam": 0.5,
+     "theta": 2.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   }
+  },
+  "20 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 3.0,
+     "hysteresis_db": 6.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 2.0,
+     "hold_s": 0.2
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.5,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 1.0
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.5,
+     "theta": 2.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 1.0
+    }
+   }
+  },
+  "25 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 10.0,
+     "hysteresis_db": 10.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 3.0,
+     "hold_s": 0.5
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 2.0,
+     "lam": 1.0,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 2.0
+    }
+   }
+  },
+  "30 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 10.0,
+     "hysteresis_db": 10.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 3.0,
+     "hold_s": 1.0
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 2.0,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   }
+  },
+  "3GPP short-range reference": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 15.0,
+     "hysteresis_db": 15.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 3.0,
+     "hold_s": 1.0
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 2.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   }
+  }
+ },
+ "origin": {
+  "15 dB | A3": "results/TVT/T5/handover_intersection_tuned.json",
+  "15 dB | A5": "results/TVT/T5/handover_intersection_tuned.json",
+  "15 dB | trigger_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "15 dB | planner_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "15 dB | risk_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "15 dB | riskneutral_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "15 dB | planner_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "15 dB | risk_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "15 dB | planner_true_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "20 dB | A3": "results/TVT/T5/handover_intersection_tuned.json",
+  "20 dB | A5": "results/TVT/T5/handover_intersection_tuned.json",
+  "20 dB | trigger_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "20 dB | planner_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "20 dB | risk_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "20 dB | riskneutral_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "20 dB | planner_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "20 dB | risk_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "20 dB | planner_true_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "25 dB | A3": "results/TVT/T5/handover_intersection_tuned.json",
+  "25 dB | A5": "results/TVT/T5/handover_intersection_tuned.json",
+  "25 dB | trigger_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "25 dB | planner_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "25 dB | risk_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "25 dB | riskneutral_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "25 dB | planner_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "25 dB | risk_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "25 dB | planner_true_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "30 dB | A3": "results/TVT/T5/handover_intersection_tuned.json",
+  "30 dB | A5": "results/TVT/T5/handover_intersection_tuned.json",
+  "30 dB | trigger_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "30 dB | planner_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "30 dB | risk_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "30 dB | riskneutral_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "30 dB | planner_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "30 dB | risk_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "30 dB | planner_true_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "3GPP short-range reference | A3": "results/TVT/T5/handover_intersection_tuned.json",
+  "3GPP short-range reference | A5": "results/TVT/T5/handover_intersection_tuned.json",
+  "3GPP short-range reference | trigger_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "3GPP short-range reference | planner_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "3GPP short-range reference | risk_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "3GPP short-range reference | riskneutral_tvt": "results/TVT/T5/handover_intersection_tuned.json",
+  "3GPP short-range reference | planner_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "3GPP short-range reference | risk_tvt_perfect": "results/TVT/T5/handover_intersection_tuned.json",
+  "3GPP short-range reference | planner_true_perfect": "results/TVT/T5/handover_intersection_tuned.json"
+ },
+ "_sources": {
+  "results/TVT/T5/handover_intersection_tuned.json": "8aa2f6eb9a47781a5b8222d31e71417f29483e7796efabba394d7ee3733128f3"
+ }
+}

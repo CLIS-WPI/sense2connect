@@ -1,0 +1,46 @@
+{
+ "params": {
+  "q_acc": 0.2,
+  "floor_u": 0.002,
+  "pd_nlos": 0.8,
+  "eps_robust": 0.3,
+  "_q_prior": {
+   "los": 0.8178005008347246,
+   "nlos": 0.6458922479064422
+  }
+ },
+ "tuning": {
+  "grid": {
+   "q_acc": [
+    0.2,
+    1.0
+   ],
+   "floor_u": [
+    0.001,
+    0.002
+   ],
+   "pd_nlos": [
+    0.5,
+    0.8
+   ],
+   "eps_robust": [
+    0.1,
+    0.3
+   ]
+  },
+  "best": {
+   "params": {
+    "q_acc": 0.2,
+    "floor_u": 0.002,
+    "pd_nlos": 0.8,
+    "eps_robust": 0.3
+   },
+   "median_m": 0.03789513542549178,
+   "p90_m": 0.237122164194063,
+   "wall_s": 244.52675200626254
+  }
+ },
+ "_sources": {
+  "results/TVT/T4/tuned.json": "bcfb464b79a9b76ec503d72fb08a8ef331d4d14fe6dd4b724e00140ce76a4cc5"
+ }
+}
