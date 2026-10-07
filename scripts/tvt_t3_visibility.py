@@ -84,7 +84,7 @@ def job_data(job, raw, p2cfg, tcfg, *, real: bool) -> dict:
         spec = raw["sensing_radar"]
         cfg = __import__("sim.scenes.config", fromlist=["load_yaml"]).load_yaml(ROOT / "configs" / "m3.yaml")
         det = cfg["sensing"]["budgets"][int(tcfg["visibility"]["radar_budget"])]
-        frames = replay_with_covariance(load_detections(d), train=int(det["train"]), pfa=float(det["pfa"]), eps_m=float(det["eps_m"]),
+        frames = replay_with_covariance(load_detections(__import__("sim.tvt.panels", fromlist=["detections_dir"]).detections_dir(mount, density, seed)), train=int(det["train"]), pfa=float(det["pfa"]), eps_m=float(det["eps_m"]),
                                         ghost_association_m=float(det["ghost_association_m"]), walls=[float(v) for v in spec["wall_y_m"]], spec=spec,
                                         lanes=list(raw["lanes"]), sidewalks=list(raw["sidewalks"]), tuned=cfg["sensing"]["map_tracker"])
         kb = raw["blocker_kinds"]
@@ -92,7 +92,7 @@ def job_data(job, raw, p2cfg, tcfg, *, real: bool) -> dict:
         pk = pack_posteriors(frames[:T], sizes)
         pk["mean"][..., 2] = pk["size"][..., 2] / 2.0  # box resting on the ground
         out["real"] = pk
-        out["radar_m"] = np.asarray(load_detections(d)["radar_position_m"], dtype=np.float64)
+        out["radar_m"] = np.asarray(load_detections(__import__("sim.tvt.panels", fromlist=["detections_dir"]).detections_dir(mount, density, seed))["radar_position_m"], dtype=np.float64)
     return out
 
 
@@ -288,7 +288,7 @@ def main() -> None:
     for job in dev:
         t0 = time.perf_counter()
         jd = job_data(job, raw, p2cfg, tcfg, real=True)
-        est = np.load(ROOT / "results" / "P2" / "est_A" / "dev" / "bw400_tdoa_s1_p2_b" / f"{job[1]}_{job[2]}_{job[0]}_track.npz")["xy_ekf"]
+        est = np.load(__import__("sim.tvt.panels", fromlist=["est_track_path"]).est_track_path("development", "bw400_tdoa_s1_p2_b", job))["xy_ekf"]
         est = np.where(np.isfinite(est), est, jd["truth"]["ue"][..., :2])  # before the first estimate: truth (first 2 s are excluded below)
         kinds = np.array(jd["kinds"] + ["none"])
         rng = np.random.default_rng([job[0], ["lamppost", "facade"].index(job[1]), ["low", "high"].index(job[2])])

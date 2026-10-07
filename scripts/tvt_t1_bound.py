@@ -48,7 +48,13 @@ def link(p2cfg: dict, bw: str) -> tuple[np.ndarray, float]:
 
 
 def run_job(job, raw, p2cfg, tcfg) -> dict:
+    from sim.tvt.panels import config as pn_config
+    from sim.tvt.panels import enabled
     from sim.tvt.peb import job_setup, pebs
+
+    global MAIN_PATTERN, PANELS
+    PANELS = enabled()  # back-to-back TR 38.901 panels (configs/tvt.yaml panels); sweep entries keep their own pattern
+    MAIN_PATTERN = str(pn_config()["pattern"]) if PANELS else "iso"
 
     b = tcfg["bound"]
     f, scale = link(p2cfg, str(b["bw"]))
@@ -57,17 +63,17 @@ def run_job(job, raw, p2cfg, tcfg) -> dict:
     out = {}
     if tcfg.get("va_check"):
         res = pebs(inp, f, scale, sync_ns=float(b["sigma_sync_ns"]), sigma_phi_deg=float(tcfg["array"]["sigma_phi_deg"]), sigma_g_db=0.0,
-                   sigma_r_m=0.0, pattern="iso", sigma_maps=[0.0, 0.1, math.inf], timing=str(b["timing"]), blocked_db=float(b["blocked_db"]),
+                   sigma_r_m=0.0, pattern=MAIN_PATTERN, panels=PANELS, sigma_maps=[0.0, 0.1, math.inf], timing=str(b["timing"]), blocked_db=float(b["blocked_db"]),
                    va_sigmas=VA_SIGMAS)
         blocked = (inp["los_loss"] >= float(b["blocked_db"])).any(-1)
         return {"peb": {f"mapsweep|{k}": v for k, v in res.items()}, "blocked": blocked, "ue": inp["ue"]}
     res = pebs(inp, f, scale, sync_ns=float(b["sigma_sync_ns"]), sigma_phi_deg=float(tcfg["array"]["sigma_phi_deg"]), sigma_g_db=0.0, sigma_r_m=0.0,
-               pattern="iso", sigma_maps=sm, timing=str(b["timing"]), blocked_db=float(b["blocked_db"]))
+               pattern=MAIN_PATTERN, panels=PANELS, sigma_maps=sm, timing=str(b["timing"]), blocked_db=float(b["blocked_db"]))
     for k, v in res.items():
         out[f"mapsweep|{k}"] = v
     for pat, sg, sr in tcfg["array"]["sweep"]:
         res = pebs(inp, f, scale, sync_ns=float(b["sigma_sync_ns"]), sigma_phi_deg=float(tcfg["array"]["sigma_phi_deg"]), sigma_g_db=float(sg),
-                   sigma_r_m=float(sr), pattern=str(pat), sigma_maps=[0.0], timing=str(b["timing"]), blocked_db=float(b["blocked_db"]))
+                   sigma_r_m=float(sr), pattern=str(pat), sigma_maps=[0.0], panels=PANELS, timing=str(b["timing"]), blocked_db=float(b["blocked_db"]))
         for k, v in res.items():
             out[f"array|{pat}|g{float(sg):g}|r{float(sr):g}|{k}"] = v
     if not tcfg["array"]["sweep"]:  # second deployment: LoS-only and map-aided only
@@ -76,7 +82,7 @@ def run_job(job, raw, p2cfg, tcfg) -> dict:
     # all known planes uncertain (facades and ground), offsets free
     inp_xyz = job_setup(job, raw, p2cfg, axes="xyz")
     res = pebs(inp_xyz, f, scale, sync_ns=float(b["sigma_sync_ns"]), sigma_phi_deg=float(tcfg["array"]["sigma_phi_deg"]), sigma_g_db=0.0, sigma_r_m=0.0,
-               pattern="iso", sigma_maps=[float("inf")], timing=str(b["timing"]), blocked_db=float(b["blocked_db"]))
+               pattern=MAIN_PATTERN, panels=PANELS, sigma_maps=[float("inf")], timing=str(b["timing"]), blocked_db=float(b["blocked_db"]))
     out["mapsweep_xyz|map_inf"] = res["map_inf"]
     blocked = (inp["los_loss"] >= float(b["blocked_db"])).any(-1)  # [T, U]
     return {"peb": out, "blocked": blocked, "ue": inp["ue"]}

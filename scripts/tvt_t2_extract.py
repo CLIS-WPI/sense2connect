@@ -51,6 +51,7 @@ def main() -> None:
     import p2_estimate as P
     from sim.positioning.array import element_positions
     from sim.positioning.estimator import synth_torch
+    from sim.tvt import panels as PN
     from sim.scenes.config import load_yaml
     from sim.tvt.extract import extract
     from sim.tvt.seeds import check
@@ -104,23 +105,30 @@ def main() -> None:
                         present = np.abs(beta[c]) > 0
                         if not present.any():
                             continue
+                        bc, rc, sxc = beta[c], r, 1
+                        if PN.enabled():  # back-to-back panels: the panel facing the UE (pattern, rotated element grid)
+                            oru_x = jp["oru"][t, c, 0] if np.ndim(jp["oru"]) == 3 else jp["oru"][c, 0]
+                            sxc = int(PN.facing(jp["ue"][t, u, 0], oru_x))
+                            bc = beta[c] * PN.amplitude(uu[c], sxc)
+                            rc = r @ PN.rotation(sxc).T
                         nd = a.draws
                         delta = ss * rng.standard_normal(nd)
                         bclk = rng.uniform(-50.0, 50.0, nd)
                         psi = math.radians(ph) * rng.standard_normal((nd, 64))
-                        bt = torch.as_tensor(np.broadcast_to(beta[c], (nd, beta.shape[1])).copy(), device="cuda")
+                        bt = torch.as_tensor(np.broadcast_to(bc, (nd, beta.shape[1])).copy(), device="cuda")
                         tt_np = tau[c][None, :] + (delta + bclk)[:, None]
                         tt = torch.as_tensor(tt_np, device="cuda")
                         ut = torch.as_tensor(np.broadcast_to(uu[c], (nd,) + uu[c].shape).copy(), device="cuda")
-                        Y = synth_torch(bt, tt, ut, f, r, wl, psi=torch.as_tensor(psi, device="cuda"), gen=gen)
+                        Y = synth_torch(bt, tt, ut, f, rc, wl, psi=torch.as_tensor(psi, device="cuda"), gen=gen)
                         torch.cuda.synchronize()
                         t0 = time.perf_counter()
                         ex = extract(Y, f, wl, k_max=int(ecfg["k_max"]), pfa=pfa, dyn_range_db=dyn, q=int(ecfg["q"]), sweeps=a.sweeps)
                         torch.cuda.synchronize()
                         timing.append((time.perf_counter() - t0) / nd)
+                        ex["uy"] = sxc * np.asarray(ex["uy"])  # panel-local -> world
                         period = 1e9 / df
-                        snr_db = 10 * np.log10(np.abs(beta[c][present]) ** 2 * n_sc * 64)
-                        vt, vy, vz = crb(np.abs(beta[c][present]) ** 2, n_sc, 64, f, k, yz)
+                        snr_db = 10 * np.log10(np.abs(bc[present]) ** 2 * n_sc * 64)
+                        vt, vy, vz = crb(np.abs(bc[present]) ** 2, n_sc, 64, f, k, yz)
                         # separation of every true path from its nearest other true path, in resolution cells
                         tp, up = tau[c][present], uu[c][present][:, 1:]
                         sep = np.sqrt(((tp[:, None] - tp[None, :]) * n_sc * df * 1e-9) ** 2 + ((up[:, None, 0] - up[None, :, 0]) * 4) ** 2

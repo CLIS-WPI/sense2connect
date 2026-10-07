@@ -42,7 +42,17 @@ DT_COMM, DT_SENSE = 0.01, 0.1
 
 def sources() -> list[Path]:
     return [ROOT / n for n in ("sim/tvt/service.py", "scripts/tvt_service.py", "xapp/timeline.py", "sim/comm/blockage_torch.py",
-                               "sim/scenes/motion.py", "sim/scenes/traffic.py", "sim/positioning/array.py")]
+                               "sim/scenes/motion.py", "sim/scenes/traffic.py", "sim/positioning/array.py", "sim/tvt/panels.py",
+                               "sim/tvt/array_model.py")]
+
+
+def _tag(model: str) -> str:
+    """Cache tag of the fields: model (+ codebook oversampling) + array model (_b2b = back-to-back panels)."""
+    from sim.tvt.panels import enabled
+
+    sc = service_cfg()
+    tag = f"{model}_os{int(sc['codebook_oversampling'])}" if model == "best_beam" else model
+    return tag + ("_b2b" if enabled() else "")
 
 
 def service_cfg() -> dict[str, Any]:
@@ -103,9 +113,11 @@ def fields(job: tuple, model: str, raw: dict, actors: dict | None = None) -> dic
     from sim.tvt.service import timeline_fields
     from xapp.timeline import held_segments, load_geometry
 
+    from sim.tvt.panels import enabled
+
     sc = service_cfg()
     d = _job_dir(job)
-    tag = f"{model}_os{int(sc['codebook_oversampling'])}" if model == "best_beam" else model
+    tag = _tag(model)
     meta_p = d / f"fields_{tag}_meta.json"
     if meta_p.exists():
         try:
@@ -126,11 +138,17 @@ def fields(job: tuple, model: str, raw: dict, actors: dict | None = None) -> dic
     n_sc = int(raw["n_subcarriers"])
     df = 15e3 * 2 ** int(raw["numerology"])
     f_off = (np.arange(n_sc) - (n_sc - 1) / 2.0) * df
+    pn = None
+    if enabled():
+        from sim.scenes.traffic import prepare_scenario
+
+        sc0 = prepare_scenario(raw, seed=seed, mount=mount, density=density, duration_s=0.1, dt_s=DT_SENSE)
+        pn = {"ue": np.asarray(actors["ue_position_m"], dtype=np.float64), "oru": np.array([o["position_m"] for o in sc0["orus"]], dtype=np.float64)}
     out = timeline_fields(model, seg, loss, a_center, float(meta["wavelength_m"]), f_off, int(round(DT_SENSE / DT_COMM)),
-                          oversampling=int(sc["codebook_oversampling"]))
+                          oversampling=int(sc["codebook_oversampling"]), panels=pn)
     d.mkdir(parents=True, exist_ok=True)
     np.savez(d / f"fields_{tag}.npz", **out)
-    meta_p.write_text(json.dumps({"job": list(job), "model": model, "oversampling": int(sc["codebook_oversampling"]),
+    meta_p.write_text(json.dumps({"job": list(job), "model": model, "oversampling": int(sc["codebook_oversampling"]), "array": "back_to_back" if enabled() else "single_iso",
                                   "provenance": {"kind": "tvt_service_fields", **scoped_version(sources())}}) + "\n")
     return out
 
@@ -139,7 +157,7 @@ def precompute(jobs: list[tuple], model: str, raw: dict, workers: int = 4) -> No
     todo = []
     for job in jobs:
         try:
-            fields_cached = (_job_dir(job) / f"fields_{model}{'_os' + str(int(service_cfg()['codebook_oversampling'])) if model == 'best_beam' else ''}_meta.json").exists()
+            fields_cached = (_job_dir(job) / f"fields_{_tag(model)}_meta.json").exists()
         except Exception:  # noqa: BLE001
             fields_cached = False
         if not fields_cached:
@@ -158,8 +176,10 @@ def install(model: str) -> None:
     """Patch run_m3.build so that every pipeline sees the fields of ``model``."""
     import run_m3 as R
 
-    if model == "power_sum":
-        return
+    from sim.tvt.panels import enabled
+
+    if model == "power_sum" and not enabled():
+        return  # the frozen paper-1 fields ARE the isotropic power sum
     orig = R.build
     if getattr(orig, "_tvt_model", None):
         return

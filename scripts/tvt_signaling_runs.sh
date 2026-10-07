@@ -32,7 +32,8 @@ case "$stage" in
     run "$H $I --tune-own --schemes A3 A5 CHO trigger_tvt trigger_learned planner_tvt risk_tvt riskneutral_tvt planner_tvt_perfect risk_tvt_perfect planner_true_perfect --out handover_intersection_tuned_$M.json" "x_tuned"
     ;;
   ovh0)  # human item 5: truth-UE planner with perfect tracks at sensing overhead 0 vs A5, re-tuned at overhead 0
-    run "$H --ovh-scale 0 --schemes A5 planner_true_perfect planner_tvt_perfect --out handover_ovh0_tuned_$M.json" "ovh0_tuned"
+    # third round (human item 4, J3 part e): + the planner with the TRUE future blocker trajectories; step dumps for the class breakdown
+    run "$H --ovh-scale 0 --schemes A5 planner_true_perfect planner_tvt_perfect planner_true_future --dump-steps results/TVT/J3_diagnosis/steps_ovh0_$M --out handover_ovh0_tuned_$M.json" "ovh0_tuned"
     ;;
   fsweep)
     [ "$M" = failure_aware ] || { echo "fsweep needs failure_aware"; exit 1; }

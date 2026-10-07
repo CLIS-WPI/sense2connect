@@ -117,6 +117,27 @@ class RadarTransformTest(unittest.TestCase):
             np.testing.assert_allclose(got, want, rtol=0, atol=2e-3 * np.abs(want).max())
 
 
+class TrackerGatingTest(unittest.TestCase):
+    def test_search_cost_uses_the_panel_half_space(self):
+        """Two candidates mirrored across the O-RU's y-z plane have the same (u_y, u_z); the panel sign picks the right one."""
+        from sim.tvt.tracker import MultipathTracker
+
+        tr = object.__new__(MultipathTracker)
+        tr.C, tr.oru = 1, np.array([[12.0, 6.5, 5.0]])
+        g = np.array([[20.0, -6.0, 1.5], [4.0, -6.0, 1.5]])  # x - x_O-RU = +8 / -8 m, identical (u_y, u_z)
+        d = g[0] - tr.oru[0]
+        u = d / np.linalg.norm(d)
+        base = {"uy": np.array([u[1]]), "uz": np.array([u[2]]), "tau_ns": np.array([0.0]), "valid": np.array([True])}
+        c_iso = tr.search_cost([base], g)
+        self.assertAlmostEqual(c_iso[0], c_iso[1], places=9)  # one isotropic UPA: mirror-ambiguous
+        c_p = tr.search_cost([base | {"sx": np.array([1])}], g)
+        c_m = tr.search_cost([base | {"sx": np.array([-1])}], g)
+        self.assertLess(c_p[0], 1.0)
+        self.assertGreater(c_p[1], 1e11)
+        self.assertLess(c_m[1], 1.0)
+        self.assertGreater(c_m[0], 1e11)
+
+
 class SionnaExactTest(unittest.TestCase):
     """Pattern on the traced angles == Sionna trace with TR 38.901 panels (GPU)."""
 

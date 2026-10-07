@@ -53,7 +53,9 @@ def real_tracks(job, raw, det_dir: Path | None = None, cache_tag: str = "") -> d
     if f.exists():
         with np.load(f) as g:
             return {k: g[k] for k in g.files}
-    d = det_dir or ROOT / "results" / "cache" / job[1] / job[2] / f"seed_{job[0]}"
+    from sim.tvt.panels import detections_dir
+
+    d = det_dir or detections_dir(job[1], job[2], job[0])
     spec = raw["sensing_radar"]
     cfg = load_yaml(ROOT / "configs" / "m3.yaml")
     tc = load_yaml(ROOT / "configs" / "tvt.yaml")["visibility"]
@@ -121,7 +123,8 @@ def run(jobs, set_name, cond, sigma_map, params, raw, p2cfg, tcfg, *, save=True,
     for t in range(T):
         live = []
         for i, (tr, d) in enumerate(zip(trackers, data)):
-            meas = [{k: d["comp"][k][t, d["u"], c] for k in ("tau_ns", "uy", "uz", "var_tau", "var_uy", "var_uz", "valid")} for c in range(tr.C)]
+            keys = ("tau_ns", "uy", "uz", "var_tau", "var_uy", "var_uz", "valid") + (("sx",) if "sx" in d["comp"] else ())
+            meas = [{k: d["comp"][k][t, d["u"], c] for k in keys} for c in range(tr.C)]
             d["meas"] = meas
             if tr.st is None:
                 p0 = tr.global_search(meas)
@@ -280,7 +283,7 @@ def main() -> None:
     tfn = None
     if a.si_inr is not None:
         def tfn(job, raw_):
-            return real_tracks(job, raw_, det_dir=ROOT / "results" / "TVT" / "T6" / "si" / f"inr{a.si_inr:g}" / job[1] / job[2] / f"seed_{job[0]}",
+            return real_tracks(job, raw_, det_dir=__import__("sim.tvt.panels", fromlist=["detections_dir"]).detections_dir(job[1], job[2], job[0], a.si_inr),
                                cache_tag=f"si{a.si_inr:g}_")
     out = run(jobs, a.set, a.cond, a.sigma_map, params, raw, p2cfg, tcfg, cfg=a.cfg, tag=a.tag, faces_path=ROOT / a.faces if a.faces else None, tracks_fn=tfn,
               calibration_path=a.calibration)

@@ -41,10 +41,10 @@ def main() -> None:
     per = {}
     for job in jobs:
         jd = V3.job_data(job, raw, p2cfg, tcfg, real=False)
-        est = np.load(ROOT / "results" / "P2" / "est_A" / "dev" / "bw400_tdoa_s1_p2_b" / f"{job[1]}_{job[2]}_{job[0]}_track.npz")["xy_ekf"]
+        est = np.load(__import__("sim.tvt.panels", fromlist=["est_track_path"]).est_track_path("development", "bw400_tdoa_s1_p2_b", job))["xy_ekf"]
         est = np.where(np.isfinite(est), est, jd["truth"]["ue"][..., :2])
         for inr in inrs:
-            d = ROOT / "results" / "TVT" / "T6" / "si" / f"inr{inr:g}" / job[1] / job[2] / f"seed_{job[0]}"
+            d = __import__("sim.tvt.panels", fromlist=["detections_dir"]).detections_dir(job[1], job[2], job[0], inr)
             rk = T4.real_tracks(job, raw, det_dir=d, cache_tag=f"si{inr:g}_")
             jd["real"] = rk
             n_tracks = float(rk["valid"].sum(1).mean())

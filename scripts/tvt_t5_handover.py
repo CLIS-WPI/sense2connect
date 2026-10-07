@@ -31,6 +31,8 @@ Schemes:
   riskneutral_tvt_perfect    risk_tvt_perfect with lambda = 0 (J4 ablation with perfect tracks)
   planner_tvt_perfect / risk_tvt_perfect   perfect blocker tracks + tvt UE (J3 "perfect tracks")
   planner_true_perfect                       perfect tracks + true UE (paper-1 "perfect" planner)
+  planner_true_future                        true UE + the TRUE future blocker trajectories over the horizon (J3 part e,
+                                             configs/tvt.yaml diagnosis; vs planner_true_perfect: trajectory predictability)
   planner_white_perfect                      perfect tracks + true UE plus white Gaussian errors with the per-axis
                                              RMS of the tvt UE error over the development jobs (J3 diagnosis)
   planner_whitenw_perfect                    the same with the RMS over the epochs outside the 1 s after a UE wrap
@@ -104,13 +106,31 @@ def tvt_xy(set_name: str, job, tag: str = "pred_real_map0") -> tuple[np.ndarray,
 
 def p2_xy(set_name: str, job) -> np.ndarray | None:
     """Paper-2 estimator-A positions (None where the estimator was not run, e.g. the intersection)."""
-    if set_name == "variant":
-        f = ROOT / "results" / "TVT" / "T6" / "est_A" / CFG / f"{job[1]}_{job[2]}_{job[0]}_track.npz"
-    elif set_name == "tuning":
-        f = ROOT / "results" / "TVT" / "T5" / "est_A" / "tuning" / CFG / f"{job[1]}_{job[2]}_{job[0]}_track.npz"
-    else:
-        f = ROOT / "results" / "P2" / "est_A" / "dev" / CFG / f"{job[1]}_{job[2]}_{job[0]}_track.npz"
+    from sim.tvt.panels import est_track_path
+
+    f = est_track_path(set_name, CFG, job)
     return fill_xy(np.load(f)["xy_ekf"]) if f.exists() else None
+
+
+def future_truth_states(raw: dict, job, n_r: int, taus) -> np.ndarray:
+    """True blocker states [n_tau, R, B, 5] at t_r + tau (exact motion model, sim.scenes.motion.states_at), velocities 0."""
+    from sim.scenes.motion import states_at
+    from sim.scenes.traffic import prepare_scenario
+
+    sc = prepare_scenario(raw, seed=job[0], mount=job[1], density=job[2], duration_s=60.0, dt_s=0.1)
+    bl = list(sc["vehicles"]) + list(sc["pedestrians"])
+    taus = np.asarray(taus, dtype=np.float64)
+    out = np.zeros((taus.size, n_r, len(bl), 5))
+    cache = {}
+    for r in range(n_r):
+        for j, tau in enumerate(taus):
+            t = round(r * 0.1 + float(tau), 6)
+            if t not in cache:
+                st = states_at(sc, t)
+                cache[t] = np.array([[st[b["name"]]["position_m"][0], st[b["name"]]["position_m"][1], st[b["name"]]["position_m"][2], 0.0, 0.0]
+                                     for b in bl])
+            out[j, r] = cache[t]
+    return out
 
 
 def predict(tracks: dict, fix: np.ndarray, vel: np.ndarray, oru: np.ndarray, taus: np.ndarray, wl: float) -> np.ndarray:
@@ -360,7 +380,7 @@ def main() -> None:
     # --- predictions per job and source
     truth = {job: truth_tracks(raw_of(job), job, n_r) for job in pred_jobs}
     if a.si_inr is not None:
-        real = {job: T4.real_tracks(job, raw_ev, det_dir=ROOT / "results" / "TVT" / "T6" / "si" / f"inr{a.si_inr:g}" / job[1] / job[2] / f"seed_{job[0]}",
+        real = {job: T4.real_tracks(job, raw_ev, det_dir=__import__("sim.tvt.panels", fromlist=["detections_dir"]).detections_dir(job[1], job[2], job[0], a.si_inr),
                                     cache_tag=f"si{a.si_inr:g}_") for job in pred_jobs}
     else:
         real = {job: T4.real_tracks(job, raw_of(job)) for job in pred_jobs}
@@ -374,7 +394,8 @@ def main() -> None:
                 ex[r_ * rs: r_ * rs + int(round(float(ev_cfg["wrap_mask_s"]) / R.DT_COMM))] = True
             wrap_excl[(j, u)] = ex
     rng0 = np.random.default_rng(20261006)
-    sources = {k: {} for k in ("true_perfect", "tvt_perfect", "tvt_real", "p2_real", "white_perfect", "whitenw_perfect")}
+    sources = {k: {} for k in ("true_perfect", "tvt_perfect", "tvt_real", "p2_real", "white_perfect", "whitenw_perfect", "true_future")}
+    want_future = "planner_true_future" in (a.schemes or [])
     # per-axis RMS of the tvt UE error over the development jobs (all epochs the planner sees)
     err, keep = [], []
     for j in dev_jobs:
@@ -420,6 +441,13 @@ def main() -> None:
             fix_p2 = tr["ue"].copy()
             fix_p2[..., :2] = p2v[: n_r]
         sources["true_perfect"][job] = predict(pt, tr["ue"], tr["ue_vel"], tr["oru"], taus, wl)
+        if want_future:  # J3 part e: blockers at their TRUE positions at t + tau (no extrapolation), UE as in true_perfect
+            fs = future_truth_states(raw_of(job), job, n_r, taus)
+            per_tau = [predict({"state": fs[j_], "size": pt["size"], "valid": pt["valid"]}, tr["ue"], tr["ue_vel"], tr["oru"],
+                               np.asarray(taus)[j_:j_ + 1], wl) for j_ in range(len(taus))]
+            sources["true_future"][job] = np.concatenate(per_tau, axis=-1)
+            assert sources["true_future"][job].shape == sources["true_perfect"][job].shape, (sources["true_future"][job].shape,
+                                                                                               sources["true_perfect"][job].shape)
         rng_w = np.random.default_rng([job[0], sum(map(ord, job[1])), ["low", "high"].index(job[2]), 7])
         fix_white = tr["ue"].copy()
         z = rng_w.standard_normal(fix_white[..., :2].shape)
@@ -597,7 +625,7 @@ def main() -> None:
                 params, obj, rows = evaluate(sch, lambda c: trigger_rows(tune_jobs, f"learned{c['threshold']}", lpred[c["threshold"]], c),
                                              lambda c: trigger_rows(dev_jobs, f"learned{c['threshold']}", lpred[c["threshold"]], c), combos, mi)
             elif sch.startswith("planner_"):
-                src = {"planner_p2": "p2_real", "planner_tvt": "tvt_real", "planner_tvt_perfect": "tvt_perfect", "planner_true_perfect": "true_perfect",
+                src = {"planner_p2": "p2_real", "planner_tvt": "tvt_real", "planner_tvt_perfect": "tvt_perfect", "planner_true_perfect": "true_perfect", "planner_true_future": "true_future",
                        "planner_white_perfect": "white_perfect", "planner_whitenw_perfect": "whitenw_perfect"}[sch]
                 combos = [{"H": h} for h in GRIDS["planner"]["H"]]
                 params, obj, rows = evaluate(sch, lambda c: planner_rows(tune_jobs, plan_table(src, c["H"])),

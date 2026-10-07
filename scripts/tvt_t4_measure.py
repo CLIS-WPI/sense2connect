@@ -66,9 +66,23 @@ def measure(job, raw, p2cfg, ecfg, cfg_name: str, device: str = "cuda") -> dict:
     gen = torch.Generator(device=device)
     gen.manual_seed(P._job_seed(job, "noise", cfg["bw"])[0])
     K = int(ecfg["k_max"])
+    from sim.tvt import panels as PN
+
+    use_panels = PN.enabled()
+    NP = 2 if use_panels else 1  # back-to-back panels: components of both panels side by side (K per panel)
     dom = {k: np.zeros((T, U, C)) for k in ("tau_ns", "uy", "uz", "snr", "ratio_db")}
-    comp = {k: np.zeros((T, U, C, K)) for k in ("tau_ns", "uy", "uz", "var_tau", "var_uy", "var_uz", "amp2")}
-    comp["valid"] = np.zeros((T, U, C, K), dtype=bool)
+    comp = {k: np.zeros((T, U, C, NP * K)) for k in ("tau_ns", "uy", "uz", "var_tau", "var_uy", "var_uz", "amp2")}
+    comp["valid"] = np.zeros((T, U, C, NP * K), dtype=bool)
+    if use_panels:
+        # panel sign of every component / of the dominant-path measurement; -x panel: own element phase errors and noise
+        comp["sx"] = np.repeat(np.array(PN.SIGNS), K)[None, None, None, :].repeat(T, 0).repeat(U, 1).repeat(C, 2)
+        dom["sx"] = np.ones((T, U, C))
+        dom["energy_ratio_db"] = np.zeros((T, U, C))
+        psi_m = math.radians(cfg["phi"]) * np.random.default_rng(P._job_seed(job, "hw_panel_minus")).standard_normal((C, 64))
+        gen_m = torch.Generator(device=device)
+        gen_m.manual_seed(P._job_seed(job, "noise_panel_minus", cfg["bw"])[0])
+        amp_pn = PN.snapshot_amplitude(u)  # [2, T, U, C, P]
+    dup_removed = [0, 0]  # back-lobe copies removed, components before
     chunk = 48
     for lo in range(0, len(items), chunk):
         it = items[lo:lo + chunk]
@@ -77,19 +91,61 @@ def measure(job, raw, p2cfg, ecfg, cfg_name: str, device: str = "cuda") -> dict:
         tt = torch.as_tensor(tau[ti, ui, ci] + shift[ti, ui, ci][:, None], device=device)
         ut = torch.as_tensor(u[ti, ui, ci], device=device)
         ps = torch.as_tensor(psi[ci], device=device)
-        Y = synth_torch(bt, tt, ut, f, r, jp["wl"], psi=ps, gen=gen)
-        m = measure_torch(Y, f, jp["wl"])
-        for k in dom:
-            dom[k][ti, ui, ci] = m[k]
-        ex = extract(Y, f, jp["wl"], k_max=K, pfa=float(ecfg["pfa"]), dyn_range_db=float(ecfg["dyn_range_db"]), q=int(ecfg["q"]))
-        for k in ("tau_ns", "uy", "uz", "var_tau", "var_uy", "var_uz"):
-            comp[k][ti, ui, ci] = ex[k]
-        comp["amp2"][ti, ui, ci] = np.abs(ex["beta"]) ** 2
-        comp["valid"][ti, ui, ci] = ex["valid"]
+        if not use_panels:
+            Y = synth_torch(bt, tt, ut, f, r, jp["wl"], psi=ps, gen=gen)
+            m = measure_torch(Y, f, jp["wl"])
+            for k in dom:
+                dom[k][ti, ui, ci] = m[k]
+            ex = extract(Y, f, jp["wl"], k_max=K, pfa=float(ecfg["pfa"]), dyn_range_db=float(ecfg["dyn_range_db"]), q=int(ecfg["q"]))
+            for k in ("tau_ns", "uy", "uz", "var_tau", "var_uy", "var_uz"):
+                comp[k][ti, ui, ci] = ex[k]
+            comp["amp2"][ti, ui, ci] = np.abs(ex["beta"]) ** 2
+            comp["valid"][ti, ui, ci] = ex["valid"]
+            continue
+        per = []
+        for pi, sx in enumerate(PN.SIGNS):
+            btp = bt * torch.as_tensor(amp_pn[pi][ti, ui, ci], device=device)
+            rr = r @ PN.rotation(sx).T  # world element positions of the panel
+            Y = synth_torch(btp, tt, ut, f, rr, jp["wl"], psi=ps if sx == 1 else torch.as_tensor(psi_m[ci], device=device),
+                            gen=gen if sx == 1 else gen_m)
+            energy = (Y.abs() ** 2).sum((1, 2)).double().cpu().numpy()
+            m = measure_torch(Y, f, jp["wl"])  # local frame of the panel: world u_y = sx * local u_y
+            m["uy"] = sx * np.asarray(m["uy"])
+            ex = extract(Y, f, jp["wl"], k_max=K, pfa=float(ecfg["pfa"]), dyn_range_db=float(ecfg["dyn_range_db"]), q=int(ecfg["q"]))
+            ex["uy"] = sx * np.asarray(ex["uy"])
+            sl = slice(pi * K, (pi + 1) * K)
+            for k in ("tau_ns", "uy", "uz", "var_tau", "var_uy", "var_uz"):
+                comp[k][ti, ui, ci, sl] = ex[k]
+            comp["amp2"][ti, ui, ci, sl] = np.abs(ex["beta"]) ** 2
+            comp["valid"][ti, ui, ci, sl] = ex["valid"]
+            per.append((energy, m))
+        # the same path on both panels (back-lobe copy): one resolution cell apart -> keep the stronger component only
+        n_sc_b = float(f.size) * float(f[1] - f[0])  # occupied bandwidth [Hz]
+        per_ns = 1e9 / float(f[1] - f[0])
+        c0, c1 = (slice(0, K), slice(K, 2 * K))
+        g_ = lambda k, sl: comp[k][ti, ui, ci, sl]  # noqa: E731
+        dt = g_("tau_ns", c0)[:, :, None] - g_("tau_ns", c1)[:, None, :]
+        dt = (dt + 0.5 * per_ns) % per_ns - 0.5 * per_ns
+        d2 = (dt * 1e-9 * n_sc_b) ** 2 + ((g_("uy", c0)[:, :, None] - g_("uy", c1)[:, None, :]) * 4) ** 2 + ((g_("uz", c0)[:, :, None] - g_("uz", c1)[:, None, :]) * 4) ** 2
+        same = (d2 < 1.0) & g_("valid", c0)[:, :, None] & g_("valid", c1)[:, None, :]
+        a0, a1 = g_("amp2", c0)[:, :, None], g_("amp2", c1)[:, None, :]
+        drop0 = (same & (a0 < a1)).any(2)
+        drop1 = (same & (a1 <= a0)).any(1)
+        dup_removed[0] += int(drop0.sum() + drop1.sum())
+        dup_removed[1] += int(g_("valid", c0).sum() + g_("valid", c1).sum())
+        comp["valid"][ti, ui, ci, c0] = g_("valid", c0) & ~drop0
+        comp["valid"][ti, ui, ci, c1] = g_("valid", c1) & ~drop1
+        sel = per[0][0] >= per[1][0]  # dominant-path measurement from the panel with the larger snapshot energy
+        for k in ("tau_ns", "uy", "uz", "snr", "ratio_db"):
+            dom[k][ti, ui, ci] = np.where(sel, per[0][1][k], per[1][1][k])
+        dom["sx"][ti, ui, ci] = np.where(sel, 1.0, -1.0)
+        dom["energy_ratio_db"][ti, ui, ci] = 10 * np.log10(np.maximum(per[0][0], 1e-30) / np.maximum(per[1][0], 1e-30))
     period = 1e9 / df
     dom["tau_ns"] = np.where(dom["tau_ns"] > 0.5 * period, dom["tau_ns"] - period, dom["tau_ns"])
     comp["tau_ns"] = np.mod(comp["tau_ns"], period)
     comp["tau_ns"] = np.where(comp["tau_ns"] > 0.5 * period, comp["tau_ns"] - period, comp["tau_ns"])
+    if use_panels:
+        print(f"  {job}: cross-panel duplicates removed {dup_removed[0]} of {dup_removed[1]} components", flush=True)
     return {"dom": dom, "comp": comp, "ue": jp["ue"], "oru": jp["oru"], "blocked": jp["blocked"], "los_loss": jp["los_loss"],
             "truth": {"delta_ns": delta, "b_clk_ns": b_clk, "psi": psi}, "period_ns": period, "n_sc": n_sc, "df": df}
 
@@ -123,7 +179,7 @@ def main() -> None:
         t0 = time.perf_counter()
         res = measure(job, raw, p2cfg, ecfg, a.cfg)
         ref = ROOT / "results" / "P2" / "est" / "dev" / a.cfg / f"{job[1]}_{job[2]}_{job[0]}.npz"
-        if a.set == "development" and ref.exists():
+        if a.set == "development" and ref.exists() and not __import__("sim.tvt.panels", fromlist=["enabled"]).enabled():
             with np.load(ref) as g:
                 for k in ("tau_ns", "uy", "uz"):
                     worst = max(worst, float(np.max(np.abs(g[k] - res["dom"][k]))))
@@ -133,7 +189,9 @@ def main() -> None:
         nv = res["comp"]["valid"].sum(-1)
         print(f"{job}: {time.perf_counter() - t0:.0f} s, components per snapshot {nv.mean():.2f} (max {nv.max()}), "
               f"paper-2 regression max |diff| {worst:.2e}", flush=True)
-    meta = {"set": a.set, "cfg": a.cfg, "jobs": [list(j) for j in jobs], "extract": ecfg, "paper2_measurement_max_abs_diff": worst,
+    panels_on = __import__("sim.tvt.panels", fromlist=["enabled"]).enabled()
+    meta = {"set": a.set, "cfg": a.cfg, "jobs": [list(j) for j in jobs], "extract": ecfg, "array": "back_to_back" if panels_on else "single_iso",
+            "paper2_measurement_max_abs_diff": None if panels_on else worst,
             "wall_s": time.perf_counter() - clock}
     (out / f"meta_{'_'.join(a.mounts)}.json").write_text(json.dumps(meta, indent=1) + "\n")
     print(json.dumps(meta))

@@ -166,6 +166,10 @@ class FrozenParamsTest(unittest.TestCase):
 
         d = ROOT / "configs" / "tvt_frozen"
         man = json.loads((d / "manifest.json").read_text())
+        from sim.tvt.panels import enabled
+
+        self.assertEqual(man.get("array", "single_iso").split()[0], "back_to_back" if enabled() else "single_iso",
+                         "configs/tvt_frozen was frozen under a different array model (configs/tvt.yaml panels)")
         for name, info in man["files"].items():
             self.assertEqual(hashlib.sha256((d / name).read_bytes()).hexdigest(), info["sha256"], name)
             for src, h in info["sources"].items():

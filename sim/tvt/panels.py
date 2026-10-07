@@ -138,3 +138,47 @@ def keep_facing(detections: list[dict], sx: int, oru_x: float) -> list[dict]:
 def snapshot_amplitude(u: np.ndarray) -> np.ndarray:
     """Pattern amplitude of both panels for arrival directions u [..., 3] at the O-RU: [2, ...] (+x, -x)."""
     return np.stack([amplitude(u, s) for s in SIGNS], axis=0)
+
+
+# --- result locations (isotropic: the paper-1 / paper-2 / first-round paths; panels: results/TVT/...) ------
+
+UE_SPEED_SUFFIXES = ("_ueslow", "_uefast")  # UE-speed variants share the blocker traffic (and radar) of their base mount
+
+
+def detections_dir(mount: str, density: str, seed: int, inr: float | None = None) -> Path:
+    """Directory with detections_1024.json of a job (residual-SI INR ``inr`` dB, T6)."""
+    base = mount
+    for s in UE_SPEED_SUFFIXES:
+        if mount.endswith(s):
+            base = mount[: -len(s)]
+    if enabled():
+        tag = "det" if not inr else f"det_inr{float(inr):g}"
+        return ROOT / "results" / "TVT" / "radar" / tag / base / density / f"seed_{seed}"
+    if inr is not None:
+        return ROOT / "results" / "TVT" / "T6" / "si" / f"inr{float(inr):g}" / mount / density / f"seed_{seed}"
+    return ROOT / "results" / "cache" / mount / density / f"seed_{seed}"
+
+
+def est_track_path(set_name: str, cfg: str, job: tuple) -> Path:
+    """Paper-2 estimator-A track of a job (set_name: tuning | development | variant)."""
+    name = f"{job[1]}_{job[2]}_{job[0]}_track.npz"
+    if enabled():
+        s = "development" if set_name == "variant" else set_name
+        return ROOT / "results" / "TVT" / "est_A" / s / cfg / name
+    if set_name == "variant":
+        return ROOT / "results" / "TVT" / "T6" / "est_A" / cfg / name
+    if set_name == "tuning":
+        return ROOT / "results" / "TVT" / "T5" / "est_A" / "tuning" / cfg / name
+    return ROOT / "results" / "P2" / "est_A" / "dev" / cfg / name
+
+
+def est_dir(set_name: str, cfg: str) -> Path:
+    return est_track_path(set_name, cfg, (0, "x", "x")).parent
+
+
+def est_params(bw: str, timing: str) -> dict:
+    """Estimator-A parameters: re-tuned on the panel measurements (scripts/tvt_est_tune.py) or paper 2's."""
+    import json
+
+    f = ROOT / "results" / "TVT" / "est_A" / "est_tuned_A.json" if enabled() else ROOT / "results" / "P2" / "est_tuned_A.json"
+    return json.loads(f.read_text())["tuned"][f"{bw}|{timing}"]["params"]

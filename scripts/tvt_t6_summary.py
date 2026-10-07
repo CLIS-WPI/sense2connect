@@ -150,7 +150,7 @@ def main() -> None:
         suf = "" if cfg == "bw400_tdoa_s1_p2_b" else f"_{cfg}"
         a = tracker_errors(trk / f"none_map0{suf}", canyon)
         b = tracker_errors(trk / f"pred_real_map0{suf}", canyon)
-        c = p2_errors(ROOT / "results" / "P2" / "est_A" / "dev" / cfg, canyon, meas / cfg)
+        c = p2_errors(__import__("sim.tvt.panels", fromlist=["est_dir"]).est_dir("development", cfg), canyon, meas / cfg)
         out["calibration"][cfg] = {"none": a, "pred_real": b, "paper2_A": c}
         if b and c:
             out["calibration"][cfg]["pred_real_vs_paper2_median"] = paired(b["median"]["per_seed"], c["median"]["per_seed"])
@@ -167,12 +167,12 @@ def main() -> None:
         jobs = [(s, m, d) for s in seeds for m in mounts for d in ("low", "high")]
         a = tracker_errors(trk / "none_map0", jobs)
         b = tracker_errors(trk / "pred_real_map0", jobs)
-        c = p2_errors(ROOT / "results" / "TVT" / "T6" / "est_A" / "bw400_tdoa_s1_p2_b", jobs, meas / "bw400_tdoa_s1_p2_b")
+        c = p2_errors(__import__("sim.tvt.panels", fromlist=["est_dir"]).est_dir("variant", "bw400_tdoa_s1_p2_b"), jobs, meas / "bw400_tdoa_s1_p2_b")
         out["variants"][v] = {"none": a, "pred_real": b, "paper2_A": c}
         print(f"| {v} | {fmt(a)} | {fmt(b)} | {fmt(c)} |")
     lp = [(s, "lamppost", d) for s in seeds for d in ("low", "high")]
     print(f"| reference lamppost 5 m, paper speeds | {fmt(tracker_errors(trk / 'none_map0', lp))} | {fmt(tracker_errors(trk / 'pred_real_map0', lp))} | "
-          f"{fmt(p2_errors(ROOT / 'results' / 'P2' / 'est_A' / 'dev' / 'bw400_tdoa_s1_p2_b', lp, meas / 'bw400_tdoa_s1_p2_b'))} |")
+          f"{fmt(p2_errors(__import__("sim.tvt.panels", fromlist=["est_dir"]).est_dir('development', 'bw400_tdoa_s1_p2_b'), lp, meas / 'bw400_tdoa_s1_p2_b'))} |")
     print()
     handover_table([(v, T5 / f"handover_{v}.json") for v in ("ueslow", "uefast", "h3", "h10")] + [("main (canyon)", T5 / "handover.json")], "UE speed / O-RU height (handover)", out)
 
@@ -184,7 +184,7 @@ def main() -> None:
     for dens in ("low", "high"):
         jobs = [(s, m, dens) for s in seeds for m in ("lamppost", "facade")]
         a, b = tracker_errors(trk / "none_map0", jobs), tracker_errors(trk / "pred_real_map0", jobs)
-        c = p2_errors(ROOT / "results" / "P2" / "est_A" / "dev" / "bw400_tdoa_s1_p2_b", jobs, meas / "bw400_tdoa_s1_p2_b")
+        c = p2_errors(__import__("sim.tvt.panels", fromlist=["est_dir"]).est_dir("development", "bw400_tdoa_s1_p2_b"), jobs, meas / "bw400_tdoa_s1_p2_b")
         out["density"][dens] = {"none": a, "pred_real": b, "paper2_A": c}
         print(f"| {dens} | {fmt(a)} | {fmt(b)} | {fmt(c)} |")
     print()

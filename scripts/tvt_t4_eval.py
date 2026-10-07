@@ -70,7 +70,7 @@ def main() -> None:
             data[c][j] = {"err": np.where(np.isfinite(e), e, 1e3), "nees": nees}
     data["paper2_A"] = {}
     for j in jobs:
-        r = np.load(ROOT / "results" / "P2" / "est_A" / "dev" / CFG / f"{j[1]}_{j[2]}_{j[0]}_track.npz")
+        r = np.load(__import__("sim.tvt.panels", fromlist=["est_track_path"]).est_track_path("development", CFG, j))
         ue = np.load(ROOT / "results" / "TVT" / "T4" / "meas" / "development" / CFG / f"{j[1]}_{j[2]}_{j[0]}.npz")["ue"]
         e = np.linalg.norm(r["xy_ekf"] - ue[..., :2], axis=-1)
         data["paper2_A"][j] = {"err": np.where(np.isfinite(e), e, 1e3)}

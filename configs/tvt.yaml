@@ -80,7 +80,11 @@ panels:
     # (the +x panel keeps the paper-2 random stream; the -x panel uses a separate stream).
     # - T1 bound: FIM summed over both panels of both O-RUs.
     # - TVT tracker (T2 extraction): run per panel; every component carries its panel sign and is associated
-    #   only with sources predicted in that panel's half-space.
+    #   only with sources predicted in that panel's half-space. Each path reaches BOTH panels (the other one through
+    #   its 30 dB back lobe, with the same delay and world (u_y, u_z)), so components of the two panels that fall in
+    #   one resolution cell, (d_tau B)^2 + (d_u_y 4)^2 + (d_u_z 4)^2 < 1 (the T2 matching rule), are one path: only
+    #   the stronger is kept (the panel facing the path). Fixed after a one-job smoke test of the measurement
+    #   (47 % of the components were back-lobe copies), before any tracker run.
     # - Paper-2 estimator A (baseline, same information): per O-RU the dominant path of the panel with the
     #   larger snapshot energy; its front/back hypothesis is restricted to that panel's half-space. Estimator A
     #   is re-tuned on the tuning seeds with its paper-2 procedure (v1 grid 144 points, then sel_gate 3 points).

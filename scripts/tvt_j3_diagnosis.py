@@ -367,6 +367,7 @@ def part_c(meta, events) -> dict:
                     cell["vs_true_perfect"] = paired([v["total"][s_] for s_ in seeds], [tp["total"][s_] for s_ in seeds])
                     cell["vs_true_perfect_unmasked"] = paired([v["total_unmasked"][s_] for s_ in seeds], [tp["total_unmasked"][s_] for s_ in seeds])
                     cell["vs_true_perfect_1s_after_ue_wrap"] = paired([v["wrap"][s_] for s_ in seeds], [tp["wrap"][s_] for s_ in seeds])
+                    cell["vs_true_perfect_by_class"] = {k: paired([x[s_] for s_ in seeds], [tp["cls"][k][s_] for s_ in seeds]) for k, x in v["cls"].items()}
                 cell["gap_by_category"] = {k: paired([x[s_] for s_ in seeds], [a5["cat"][k][s_] for s_ in seeds]) for k, x in v["cat"].items()}
                 cell["gap_by_class"] = {k: paired([x[s_] for s_ in seeds], [a5["cls"][k][s_] for s_ in seeds]) for k, x in v["cls"].items()}
                 cell["gap_by_category_class"] = {k: float(np.mean([x[s_] - a5["cat_cls"][k][s_] for s_ in seeds])) for k, x in v["cat_cls"].items()}
@@ -395,6 +396,23 @@ def part_d(model: str) -> dict:
                         "outage": cell[sch]["outage"], "A5": cell["A5"]["outage"], "params": cell[sch]["params"],
                         "vs_A5": paired([cell[sch]["per_seed"][x]["outage"] for x in seeds], [cell["A5"]["per_seed"][x]["outage"] for x in seeds])}
     return out
+
+
+def part_e(model: str) -> dict | None:
+    """Human item 4 (third round): truth-UE planner at sensing overhead 0, blocker states (i) perfect at the decision
+    instant and extrapolated (planner_true_perfect) vs (ii) the true future trajectories (planner_true_future), vs A5,
+    by blocker class; both re-tuned at overhead 0 on the tuning seeds (T5 run handover_ovh0_tuned_<model>.json with
+    --dump-steps results/TVT/J3_diagnosis/steps_ovh0_<model>). Same classifier and masks as part c."""
+    global STEPS, PLANNERS
+    d = OUT / f"steps_ovh0_{model}"
+    if not (d / "meta.json").exists():
+        return None
+    saved = (STEPS, PLANNERS)
+    STEPS, PLANNERS = d, ("planner_true_perfect", "planner_true_future")
+    try:
+        return part_c(json.loads((d / "meta.json").read_text()), json.loads((d / "events.json").read_text()))
+    finally:
+        STEPS, PLANNERS = saved
 
 
 def main() -> None:
@@ -427,9 +445,11 @@ def main() -> None:
     out["model"] = a.model
     if a.model:
         out["d_overhead0"] = part_d(a.model)
+        out["e_future_truth"] = part_e(a.model)
     (OUT / (f"diagnosis_{a.model}.json" if a.model else "diagnosis.json")).write_text(json.dumps(out, indent=1, default=float) + "\n")
     print_tables(out)
     print_part_d(out)
+    print_part_e(out)
 
 
 def print_tables(o: dict) -> None:
@@ -517,3 +537,29 @@ def print_part_d(o: dict) -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def print_part_e(o: dict) -> None:
+    e = o.get("e_future_truth")
+    if not e:
+        return
+    pv = lambda v: f"{v['mean_diff']:+.3f} ({v['wilcoxon_p_two_sided']:.2g})"  # noqa: E731
+    print("### e) Trajectory predictability vs sensing accuracy (human item 4): truth UE, sensing overhead 0, re-tuned at overhead 0 "
+          "[s/UE-min, primary (wrap-masked); seed-level mean difference (exact Wilcoxon p)]\n")
+    print("| margin | A5 | (i) perfect at decision, extrapolated | (ii) true future trajectories | (i) vs A5 | (ii) vs A5 | (ii) vs (i) |")
+    print("|---|---|---|---|---|---|---|")
+    for lab, cell in e.items():
+        if "planner_true_future" not in cell or "planner_true_perfect" not in cell:
+            continue
+        i_, ii = cell["planner_true_perfect"], cell["planner_true_future"]
+        print(f"| {lab} | {cell['A5']['outage']:.3f} | {i_['outage']:.3f} | {ii['outage']:.3f} | {pv(i_['gap_vs_A5'])} | {pv(ii['gap_vs_A5'])} | {pv(ii['vs_true_perfect'])} |")
+    print()
+    print("| margin | scheme | gap vs A5 by blocker class: bus/truck | pedestrian | car | no LoS blocker | none |")
+    print("|---|---|---|---|---|---|---|")
+    for lab, cell in e.items():
+        for sch in ("planner_true_perfect", "planner_true_future"):
+            if sch in cell and "gap_by_class" in cell[sch]:
+                print(f"| {lab} | {sch} | " + " | ".join(pv(cell[sch]["gap_by_class"][k]) for k in CLASSES) + " |")
+        if "planner_true_future" in cell and "vs_true_perfect_by_class" in cell["planner_true_future"]:
+            print(f"| {lab} | (ii) - (i) | " + " | ".join(pv(cell["planner_true_future"]["vs_true_perfect_by_class"][k]) for k in CLASSES) + " |")
+    print()

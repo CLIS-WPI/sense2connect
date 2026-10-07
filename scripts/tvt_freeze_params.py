@@ -12,7 +12,8 @@ Outputs (configs/tvt_frozen/):
   handover_<model>.json        per-margin parameters of every handover scheme for signaling model ideal / failure_aware
                                (scripts/tvt_t5_handover.py --signaling <model> --fixed); primary objective wrap-masked
   handover_intersection_<model>.json   the same, re-tuned on the intersection tuning seeds (T6 second deployment)
-  p2_estimator.json            paper-2 estimator-A parameters used for the planner_p2 inputs (paper-2 tuning seeds)
+  p2_estimator.json            estimator-A parameters of the planner_p2 inputs (back-to-back panels: re-tuned on the tuning
+                               seeds, results/TVT/est_A/est_tuned_A.json; isotropic: paper 2's)
   learned.json                 path + sha256 + training summary of the learned predictor (--learned-manifest)
   manifest.json                sources, sha256, git commit of the freeze
 Run: python scripts/tvt_freeze_params.py
@@ -23,9 +24,12 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 RES = ROOT / "results"
 OUT = ROOT / "configs" / "tvt_frozen"
 
@@ -62,7 +66,9 @@ def scheme_params(files: list[Path]) -> tuple[dict, dict]:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    manifest = {"definition": __doc__, "git_commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip(),
+    from sim.tvt.panels import enabled as _pn
+
+    manifest = {"definition": __doc__, "array": "back_to_back (configs/tvt.yaml panels)" if _pn() else "single_iso", "git_commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip(),
                 "files": {}}
 
     def write(name: str, obj: dict, sources: list[Path]) -> None:
@@ -94,8 +100,15 @@ def main() -> None:
         write(f"handover_intersection_{m}.json", {"model": d["model"], "signaling": d["signaling"], "margin_ref_db": d["margin_ref_db"], "schemes": params,
                                                  "origin": origin}, [f])
 
-    f = RES / "P2" / "est_tuned.json"
-    write("p2_estimator.json", {"tuned": json.loads(f.read_text())["tuned"]}, [f])
+    from sim.tvt.panels import enabled
+
+    if enabled():  # back-to-back panels: estimator A re-tuned on the panel measurements (scripts/tvt_est_tune.py)
+        f = RES / "TVT" / "est_A" / "est_tuned_A.json"
+        d = json.loads(f.read_text())
+        write("p2_estimator.json", {"array": "back_to_back", "tuned": d["tuned"], "base_v1": d["base"]}, [f])
+    else:
+        f = RES / "P2" / "est_tuned.json"
+        write("p2_estimator.json", {"tuned": json.loads(f.read_text())["tuned"]}, [f])
 
     w = RES / "TVT" / "T5" / "learned.pt"
     lj = RES / "TVT" / "T5" / "learned.json"

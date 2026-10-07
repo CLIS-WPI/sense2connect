@@ -125,6 +125,7 @@ class MultipathTracker:
         N, A, V = self._planes(x)
         ue = np.array([x[IX], x[IY], self.z])
         pr = predict(self.oru[c], ue, N[idx], A[idx], V[idx])
+        self._pred_sx = np.where(pr["u"][:, 0] >= 0.0, 1, -1)  # half-space of each source's departure (back-to-back panels)
         S = len(idx)
         h = np.stack([pr["tau"] + x[ID0 + c] + x[IB], pr["u"][:, 1], pr["u"][:, 2]], -1)
         H = np.zeros((S, 3, self.n))
@@ -168,6 +169,9 @@ class MultipathTracker:
             uy, uz = d[:, 1] / r, d[:, 2] / r
             zy, zz = m["uy"][m["valid"]], m["uz"][m["valid"]]
             ca = ((uy[:, None] - zy[None]) ** 2 + (uz[:, None] - zz[None]) ** 2) / 0.02 ** 2
+            if "sx" in m:  # back-to-back panels: a component only explains a LoS in its panel's half-space
+                gsx = np.where(d[:, 0] >= 0.0, 1, -1)
+                ca = np.where(gsx[:, None] == m["sx"][m["valid"]][None], ca, 1e12)
             j = ca.argmin(1)
             cost += ca[np.arange(g.shape[0]), j]
             tau_sel.append((m["tau_ns"][m["valid"]][j], r / 0.299792458))
@@ -269,6 +273,8 @@ class MultipathTracker:
                 lik = np.exp(-0.5 * d2) / np.sqrt((2 * np.pi) ** 3 * np.maximum(det, 1e-300))
                 gate |= d2 < pr.gate
                 wmode[..., mode] = pw[:, None] * lik / lam
+            if "sx" in m:  # back-to-back panels: association only within the measuring panel's half-space
+                gate &= self._pred_sx[:, None] == np.asarray(m["sx"])[jj][None, :]
             wmode = np.where(gate[..., None], wmode, 0.0)
             w = wmode.sum(-1)
             w0 = qs * (1 - pdc) + (1 - qs) * (1 - pr.pd_blk)

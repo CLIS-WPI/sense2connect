@@ -154,9 +154,21 @@ def gains(model: str, a: np.ndarray, u: np.ndarray, tau: np.ndarray, gain: np.nd
 
 
 def timeline_fields(model: str, seg: dict[str, np.ndarray], path_loss_db: np.ndarray, a_center: np.ndarray, wavelength_m: float,
-                    f_offsets: np.ndarray, steps_per_snapshot: int, *, oversampling: int = 2, device: str = "cuda") -> dict[str, np.ndarray]:
-    """The four power fields of the frozen timeline under ``model``: unblocked_power, blocked_power, los_blocked_power, best_alt_power [T,U,C]."""
+                    f_offsets: np.ndarray, steps_per_snapshot: int, *, oversampling: int = 2, device: str = "cuda",
+                    panels: dict[str, np.ndarray] | None = None) -> dict[str, np.ndarray]:
+    """The four power fields of the frozen timeline under ``model``: unblocked_power, blocked_power, los_blocked_power, best_alt_power [T,U,C].
+
+    ``panels`` (configs/tvt.yaml panels: back_to_back): {"ue": [T, U, 3] UE positions per step, "oru": [C, 3]}; every
+    path coefficient is weighted by the TR 38.901 element amplitude of the panel facing the UE at its departure
+    direction (sim/tvt/panels.link_amplitude). The back panel's element grid is the mirror of the front one, so the
+    best-beam codebook gains are unchanged (symmetric 8x8 grid and DFT grid). None = the papers' isotropic UPA.
+    """
     st = path_states(seg, a_center, wavelength_m, steps_per_snapshot)
+    if panels is not None:
+        from sim.tvt.panels import link_amplitude
+
+        amp, _sx = link_amplitude(st["u"], panels["ue"], panels["oru"])
+        st["a"] = st["a"] * amp
     gain = np.where(np.isfinite(path_loss_db), 10.0 ** (-np.nan_to_num(path_loss_db, posinf=0.0) / 10.0), 0.0)
     gain = np.where(seg["path_class"] >= 0, gain, 0.0)
     g = gains(model, st["a"], st["u"], st["tau"], gain, wavelength_m, f_offsets, oversampling=oversampling, device=device)

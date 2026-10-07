@@ -87,8 +87,14 @@ def h_matrix_va(inp: dict) -> np.ndarray:
 
 def pebs(inp: dict, f_hz: np.ndarray, beta_scale: float, *, sync_ns: float, sigma_phi_deg: float, sigma_g_db: float, sigma_r_m: float,
          pattern: str, sigma_maps: list[float], timing: str = "tdoa", blocked_db: float = 10.0, device: str = "cuda",
-         chunk: int = 25, va_sigmas: list[float] | None = None) -> dict[str, np.ndarray]:
-    """PEB [T, U] for "los", for "map" at every sigma_map (m; 0 = known, inf = free offsets) and "va_<s>" for every sigma_va."""
+         chunk: int = 25, va_sigmas: list[float] | None = None, panels: bool = False) -> dict[str, np.ndarray]:
+    """PEB [T, U] for "los", for "map" at every sigma_map (m; 0 = known, inf = free offsets) and "va_<s>" for every sigma_va.
+
+    ``panels`` (configs/tvt.yaml panels: back_to_back): every O-RU has two back-to-back panels (+x, -x) with ``pattern``.
+    Each panel's Fisher information is the frozen gram in its local frame (az - pi for the -x panel: the local direction
+    R^T u with the unrotated element grid is the world direction with the rotated grid); path amplitudes and element
+    errors are eliminated per panel (independent nuisances, unknown inter-panel calibration), and the geometric EFIMs of
+    the two panels are summed (shared delays, angles, clocks)."""
     import torch
 
     from sim.positioning.array import element_positions
@@ -111,11 +117,14 @@ def pebs(inp: dict, f_hz: np.ndarray, beta_scale: float, *, sync_ns: float, sigm
     absent = torch.as_tensor(~inp["valid"], device=device)
     blk = torch.as_tensor(inp["los_loss"] >= blocked_db, device=device)
     is_los, is_nlos = cls == 0, cls > 0
-    Ks = []
-    for lo in range(0, T, chunk):
-        J = gram_general(beta[lo:lo + chunk], tau[lo:lo + chunk], az[lo:lo + chunk], el[lo:lo + chunk], f_hz, r, wl, pattern=pattern, kinds=kinds)
-        Ks.append(J)
-    Jall = torch.cat(Ks, 0)
+    shifts = (0.0, math.pi) if panels else (0.0,)
+    Jpan = []
+    for sh in shifts:
+        Ks = []
+        for lo in range(0, T, chunk):
+            azl = torch.remainder(az[lo:lo + chunk] - sh + math.pi, 2 * math.pi) - math.pi
+            Ks.append(gram_general(beta[lo:lo + chunk], tau[lo:lo + chunk], azl, el[lo:lo + chunk], f_hz, r, wl, pattern=pattern, kinds=kinds))
+        Jpan.append(torch.cat(Ks, 0))
     out = {}
     for info in ["los", "map"]:
         free_path = absent | (is_los & blk[..., None])
@@ -125,7 +134,7 @@ def pebs(inp: dict, f_hz: np.ndarray, beta_scale: float, *, sync_ns: float, sigm
         if timing == "aoa":
             free[..., 0] = True
         free = free.reshape(T, U, C, 3 * P)
-        Keff = torch.cat([efim_geometric(Jall[lo:lo + chunk], P, prior_e, free[lo:lo + chunk]) for lo in range(0, T, chunk)], 0)
+        Keff = sum(torch.cat([efim_geometric(Jall[lo:lo + chunk], P, prior_e, free[lo:lo + chunk]) for lo in range(0, T, chunk)], 0) for Jall in Jpan)
         Keff = torch.where(free[..., :, None] | free[..., None, :], torch.zeros_like(Keff), Keff)
         J0 = theta_information(Keff, H)
         for sm in ([math.nan] if info == "los" else sigma_maps):
