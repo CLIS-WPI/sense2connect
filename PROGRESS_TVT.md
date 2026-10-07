@@ -32,6 +32,13 @@ sim/tvt/seeds.py; no tvt-freeze tag). Detailed reports: results/TVT/<T>/report.m
 3. Tuned parameters copied into committed files configs/tvt_frozen/ (scripts/tvt_freeze_params.py);
    learned weights referenced by path + sha256; T7 must not re-tune.
 4. Point on held-out seeds closed by the humans: nothing was run for 4001-4010.
+5. Narrative after T4: the humans chose "requirements and achievable region" (reports not reworded).
+6. Before the freeze (second round): handover-failure model + proper CHO applied to all schemes, every
+   result under "ideal" and "failure_aware" signaling, re-tuned per model with equal budgets; values,
+   sources and the T6 sensitivity sweep fixed in configs/tvt.yaml (signaling:) BEFORE any run (commit
+   of that config precedes all failure-aware results). Primary metrics exclude the 1 s after each UE
+   wrap (configs/tvt.yaml evaluation:), unmasked metrics as supplement. Learned-trigger threshold grid
+   0.5 / 0.725 / 0.95 (same 3 points). Array orientation unchanged.
 
 ## Open questions for the humans
 1. Array orientation: the paper arrays face +x along the street; a deployment facing the street would
@@ -43,8 +50,6 @@ sim/tvt/seeds.py; no tvt-freeze tag). Detailed reports: results/TVT/<T>/report.m
    frozen) or document it as a limitation?
 4. The learned trigger's threshold was tuned to the upper grid edge (0.7) at every margin; the grid was not
    extended (equal tuning budget). Accept as is for T7?
-5. Narrative choice after T4 ("closes the gap" vs "requirements and achievable region"): both written up,
-   not chosen.
 
 ## Freeze-readiness checklist (T7 prerequisites; status on development seeds)
 - [x] Seed sets and held-out guard (configs/seeds_tvt.yaml, sim/tvt/seeds.py): 4001-4010 refused without the

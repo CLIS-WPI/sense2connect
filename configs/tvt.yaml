@@ -46,3 +46,78 @@ visibility:
   sigma_ue_m: 0.3               # isotropic UE sampling spread around the paper-2 estimate (fixed, not tuned)
   radar_budget: 2               # paper-1 sensing budget (configs/m3.yaml sensing.budgets)
   epoch_chunk: 25
+evaluation:
+  # Human decision before the freeze (PROGRESS_TVT.md, "Human decisions"), fixed before any run
+  # that uses it. The paper-1 scenario wraps every UE from one street end to the other (x jumps
+  # by 80 m between two 0.1 s epochs). PRIMARY metrics of every scheme and every later
+  # evaluation (tuning objective included) exclude the 1 s after each wrap; the unmasked metrics
+  # are reported as a supplement.
+  wrap_jump_m: 10.0             # a wrap = truth UE moves > 10 m between consecutive 0.1 s epochs
+  wrap_mask_s: 1.0              # excluded window after each wrap (outage, handovers, failures)
+learned:
+  # Learned-trigger threshold grid (human decision: cover the optimum with the SAME number of
+  # points as before, 3; previous grid 0.3 / 0.5 / 0.7 put the optimum on the edge). Re-tuned on
+  # the tuning seeds only.
+  threshold_grid: [0.5, 0.725, 0.95]
+signaling:
+  # Handover-failure model (human decision before the freeze; reason: CHO, required by
+  # ROADMAP_TVT, cannot be distinguished from A5 without it). Applied identically to ALL schemes
+  # (sim/tvt/signaling.py). Every result is reported under "ideal" (paper-1 simulator: no
+  # failures) and "failure_aware" signaling; schemes are re-tuned on the tuning seeds for each
+  # model with the same budgets. Values fixed here, with sources, BEFORE any failure-aware run.
+  # SNR below is the serving-cell SNR of the service model (best beam) per 10 ms step; it stands
+  # in for the SSB / hypothetical-PDCCH quality of radio link monitoring (assumption).
+  rlm:
+    l1_sample_s: 0.01           # TR 36.839 V11.1.0 cl. 5.2.1.2: L1 sample once every 10 ms (radio frame)
+    qout_window_s: 0.2          # TR 36.839 cl. 5.2.1.2: samples filtered linearly over a 200 ms sliding window for Qout
+    qin_window_s: 0.1           # TR 36.839 cl. 5.2.1.2: 100 ms sliding window for Qin (mean of the dB samples)
+    indication_interval_s: 0.02 # TS 38.133 V19.6.0 cl. 8.1.6: TIndication_interval = max(10 ms, TRLM-RS,M) without DRX;
+                                # RLM-RS = SSB with 20 ms periodicity (the periodicity a UE assumes for initial access,
+                                # TS 38.213 cl. 4.1; ASSUMED configured value)
+    qout_db: -8.0               # TR 36.839 cl. 5.2.1.3 ("threshold Qout (-8 dB)") and Table 5.6.1.1; consistent with the
+                                # TS 38.133 A.7.5.1.1 FR2 out-of-sync test (OOS required at SNR -15 dB, not at -6 dB)
+    qin_db: -6.0                # TR 36.839 Table 5.6.1.1; TS 38.133 A.7.5.1.2 FR2 in-sync test requires IS at -4.5 dB
+  rlf:
+    # TS 38.331 V19.4.0 cl. 9.2.3 "Default values timers and constants": t310 ms1000, n310 n1, n311 n1,
+    # t311 ms30000. These are the SPECIFIED DEFAULTS (not only typical configured values); ranges in the
+    # RLF-TimersAndConstants IE (cl. 6.3.2): t310 {0, 50, 100, 200, 500, 1000, 2000, 4000, 6000} ms.
+    # Procedure: T310 starts on N310 consecutive out-of-sync indications (cl. 5.3.10.1), stops on N311
+    # consecutive in-sync indications (cl. 5.3.10.2), RLF on expiry (cl. 5.3.10.3). T310 is not started
+    # while a handover is executing (T304 running, cl. 5.3.10.1).
+    t310_s: 1.0
+    n310: 1
+    n311: 1
+    t311_s: 30.0
+  reestablishment:
+    # Consequence of RLF: RRC re-establishment to the best cell (highest L3-filtered SNR); the whole
+    # interruption tau_re counts as outage; if no cell has its Qout-filtered SNR >= Qout at the end of
+    # tau_re the outage continues (cell selection while T311 runs) until one does.
+    # TS 38.133 V19.6.0 cl. 6.2.1.2.1: T_UE_re-establish_delay = 50 ms + T_identify_intra_NR + T_SI-NR + T_PRACH;
+    # FR2-1, SSB Es/Iot >= -8 dB (Table 6.2.1.2.1-1, Note 2): T_identify = max(1000 ms, M1 x T_SMTC + Tproc),
+    # M1 = 80, Tproc = 0, T_SMTC = 20 ms -> 1600 ms; T_SI-NR = 160 ms (SIB1 periodicity, TS 38.331 cl. 5.2.1);
+    # T_PRACH <= association period + 10 ms = 20 ms (10 ms association period, ASSUMED).
+    # tau_re = 50 + 1600 + 160 + 20 ms = 1.83 s: the requirement (worst case for a compliant UE).
+    tau_re_s: 1.83
+    cho_recovery: true          # TS 38.331 cl. 5.3.7.3 (attemptCondReconfig): after RLF, if the selected cell is the
+                                # prepared CHO candidate the UE applies the stored condRRCReconfig. Cell selection still
+                                # dominates the delay, so the SAME tau_re is charged (no assumed delay advantage).
+  handover_command:
+    # A network-commanded handover (A3, A5, sensing trigger, planners) fails if, at command delivery,
+    # T310 is running or the serving cell's Qout-filtered SNR is below Qout (TR 36.839 cl. 5.2.1.3,
+    # criterion 1, human decision). Consequence: the UE stays on the serving cell, no interruption; the
+    # scheme may decide again. Delivery = the step at which the switch would execute.
+    # NOT modelled: target-side failure (T304 expiry, TR 36.839 state 3), command retransmissions.
+    enabled: true
+  cho:
+    # Conditional handover (TS 38.331 cl. 5.3.5.13.4): the other cell is the prepared candidate; the UE
+    # executes when condEventA5 (thresholds t1/t2 on L3-filtered SNR, timeToTrigger) holds; no command on
+    # the critical path. After an execution the new candidate (the cell just left) is re-prepared by an
+    # RRC reconfiguration on the new serving cell t_prep later; that delivery obeys the command-failure
+    # rule and is retried every 10 ms until it succeeds.
+    t_prep_s: 0.05              # TR 36.839 cl. 5.5.5.2.1 simulation parameters: handover preparation time 50 ms
+    condition: a5               # tuned on the tuning seeds over the A5 grid (100 points, the A5 budget)
+  sweep:
+    # Pre-declared T6 sensitivity (all schemes, parameters fixed at the failure-aware primary tuning):
+    t310_s: [0.2, 0.5, 1.0]
+    q_offset_db: [-3.0, 3.0]    # Qout and Qin shifted together
+    tau_re_s: [1.83, 0.23]      # 0.23 s = 50 ms + T_SI + T_PRACH with the target already identified
