@@ -36,21 +36,30 @@ panels:
   # Element pattern: 3GPP TR 38.901 V19.5.0 Table 7.3-1 (checked in the spec text):
   #   A_dB(theta, phi) = -min(-(A_V + A_H), A_max) + G_E,max, A_V = -min(12 ((theta - 90)/theta_3dB)^2, SLA_V),
   #   A_H = -min(12 (phi/phi_3dB)^2, A_max), theta_3dB = phi_3dB = 65 deg, SLA_V = A_max = 30 dB, G_E,max = 8 dBi;
-  #   angles in the panel's local frame; vertical polarization (mono-polarized solver: scalar field amplitude
-  #   sqrt(G)). The UE stays a single isotropic element. The 8 dBi enter the link budget through the pattern
+  #   angles in the panel's local frame; vertical polarization, field amplitude sqrt(G) on the theta unit
+  #   vector. The UE stays a single isotropic element. The 8 dBi enter the link budget through the pattern
   #   (configs/m3.yaml rework.budget did not add it); margins keep their definition (median best-cell unblocked
   #   SNR on the tuning jobs minus SNR_req), so the 3GPP reference margin changes.
   pattern: tr38901
   g_max_dbi: 8.0
   hpbw_deg: 65.0
   front_to_back_db: 30.0
-  # Method: the pattern is applied to the traced path angles (no geometric re-trace). Sionna applies the element
-  # pattern of a synthetic array as one scalar factor per path at the departure/arrival angle at the array centre
-  # (mono-polarized variant), and the paths themselves do not depend on the pattern or the orientation, so
-  # a_p(panel) = a_p(iso) * A_tx(u_dep) * A_rx(u_arr), and the element phases follow from the panel's element
-  # positions. Verified against a Sionna re-trace with tr38901 panels at yaw 0 / 180 deg
-  # (scripts/test_tvt_panels.py). The sensing-trace caches are nevertheless re-traced with the unchanged paper-1
-  # trace function in a frozen clone of the new commit, only because their provenance is whole-tree.
+  # Method: the pattern is applied to the traced path angles. For a synthetic array Sionna weights each path by
+  # the element field pattern at the departure / arrival direction at the array centre; the paths do not depend
+  # on the pattern, and a pure yaw rotation leaves the V polarization unchanged (the solver variant
+  # cuda_ad_mono_polarized is monochromatic AND polarized). Hence, from a trace with UNTILTED isotropic arrays,
+  # a_m(panel) = a_c A_tx(u_dep) A_rx(u_arr) exp(j k u . R_panel r_m) exactly. scripts/test_tvt_panels.py checks
+  # this against Sionna traces with TR 38.901 panels at yaw 0 / 180 deg: max relative difference <= 5e-6 for comm
+  # links and for the radar (all paths except one leaving and arriving exactly at the nadir, theta = 180 deg, where
+  # the GCS-LCS polarization angle is undefined: the radar's own ground return straight below the O-RU, static,
+  # zero Doppler, removed by the blind and the twin clutter removal).
+  # - Communication / positioning: the cached comm and paper-2 path traces used untilted O-RU arrays -> reused.
+  # - Radar: the paper-1 radar was tilted (look_at the street centre, pitch 28 deg); its V polarization differs
+  #   and the pattern on its trace is NOT exact (relative error ~0.4, test). The radar is therefore re-traced ONCE
+  #   with an untilted isotropic 8x8 RX / 1-element TX at the oru-0 position (unchanged paper-1 trace function,
+  #   scene, targets, solver settings and seeds; only the orientation set to 0) in a frozen clone of the tree
+  #   (whole-tree provenance), into results/TVT/radar/<mount>/<density>/seed_<s>; both panels follow from it
+  #   (sim/tvt/panels.radar_panel_paths). The paper-1 caches in results/cache are not touched.
   link:
     # Communication (best-beam service model; power_sum for the paper-1 regression): the serving and the
     # candidate cell each use the panel facing the UE, sign(x_UE - x_O-RU) (+x on a tie), re-evaluated every
