@@ -23,6 +23,59 @@ array:
     - [iso, 0.0, 0.0005]
     - [iso, 0.0, 0.001]
     - [tr38901, 1.0, 0.0005]
+panels:
+  # Physical O-RU arrays (human decision, third round before the freeze; reason: an isotropic UPA with a fully
+  # open back half-space is unphysical). Fixed here, with sources, BEFORE any run that uses it
+  # (sim/tvt/panels.py). The isotropic single-array results stay in results/TVT_iso for comparison.
+  model: back_to_back           # back_to_back (journal main) | single_iso (papers 1 and 2)
+  # Every O-RU array (both cells, and the monostatic radar at oru-0) is replaced by two back-to-back 8x8
+  # panels at the O-RU position (panel separation neglected): the paper-1/2 element grid (lambda/2, y-z
+  # plane, Sionna element order), boresight +x (yaw 0) and -x (yaw 180 deg), no tilt. The paper-1 radar
+  # pointed at the street centre (look_at); it now uses the same two panels (human decision).
+  yaw_deg: [0.0, 180.0]
+  # Element pattern: 3GPP TR 38.901 V19.5.0 Table 7.3-1 (checked in the spec text):
+  #   A_dB(theta, phi) = -min(-(A_V + A_H), A_max) + G_E,max, A_V = -min(12 ((theta - 90)/theta_3dB)^2, SLA_V),
+  #   A_H = -min(12 (phi/phi_3dB)^2, A_max), theta_3dB = phi_3dB = 65 deg, SLA_V = A_max = 30 dB, G_E,max = 8 dBi;
+  #   angles in the panel's local frame; vertical polarization (mono-polarized solver: scalar field amplitude
+  #   sqrt(G)). The UE stays a single isotropic element. The 8 dBi enter the link budget through the pattern
+  #   (configs/m3.yaml rework.budget did not add it); margins keep their definition (median best-cell unblocked
+  #   SNR on the tuning jobs minus SNR_req), so the 3GPP reference margin changes.
+  pattern: tr38901
+  g_max_dbi: 8.0
+  hpbw_deg: 65.0
+  front_to_back_db: 30.0
+  # Method: the pattern is applied to the traced path angles (no geometric re-trace). Sionna applies the element
+  # pattern of a synthetic array as one scalar factor per path at the departure/arrival angle at the array centre
+  # (mono-polarized variant), and the paths themselves do not depend on the pattern or the orientation, so
+  # a_p(panel) = a_p(iso) * A_tx(u_dep) * A_rx(u_arr), and the element phases follow from the panel's element
+  # positions. Verified against a Sionna re-trace with tr38901 panels at yaw 0 / 180 deg
+  # (scripts/test_tvt_panels.py). The sensing-trace caches are nevertheless re-traced with the unchanged paper-1
+  # trace function in a frozen clone of the new commit, only because their provenance is whole-tree.
+  link:
+    # Communication (best-beam service model; power_sum for the paper-1 regression): the serving and the
+    # candidate cell each use the panel facing the UE, sign(x_UE - x_O-RU) (+x on a tie), re-evaluated every
+    # 10 ms step from the true UE position; paths that leave the O-RU towards the other half-space get that
+    # panel's back lobe (front-to-back 30 dB).
+    select: facing
+  sensing:
+    # Monostatic radar at oru-0: each panel is its own radar (TX one element at the panel centre, RX its 64
+    # elements, the paper-1 waveform, power, noise, CFAR and angle search in the panel's local frame); the two
+    # panels use orthogonal sensing resources (ideal separation, like the paper-1 ideal full-duplex
+    # assumption; sensing overhead unchanged). A detection is kept from the panel facing it,
+    # sign(x_det - x_O-RU) = panel sign; the union over panels goes to the unchanged paper-1 ghost rejection,
+    # clustering and map tracker. Residual SI (T6) per panel with the same INR.
+    select: facing
+  positioning:
+    # UE SRS received on both panels of each O-RU: independent receiver noise per panel element (paper-2 noise
+    # model), the same O-RU clock offset for both panels, element phase errors drawn independently per panel
+    # (the +x panel keeps the paper-2 random stream; the -x panel uses a separate stream).
+    # - T1 bound: FIM summed over both panels of both O-RUs.
+    # - TVT tracker (T2 extraction): run per panel; every component carries its panel sign and is associated
+    #   only with sources predicted in that panel's half-space.
+    # - Paper-2 estimator A (baseline, same information): per O-RU the dominant path of the panel with the
+    #   larger snapshot energy; its front/back hypothesis is restricted to that panel's half-space. Estimator A
+    #   is re-tuned on the tuning seeds with its paper-2 procedure (v1 grid 144 points, then sel_gate 3 points).
+    use: both
 map:
   # Facade offsets d_s ~ N(0, sigma_map^2) along the normal (vertical x and y planes of
   # configs/p2.yaml known_planes); ground known. "inf" = offsets free (no prior).
@@ -121,3 +174,13 @@ signaling:
     t310_s: [0.2, 0.5, 1.0]
     q_offset_db: [-3.0, 3.0]    # Qout and Qin shifted together
     tau_re_s: [1.83, 0.23]      # 0.23 s = 50 ms + T_SI + T_PRACH with the target already identified
+primary:
+  # Human decision (third round): failure_aware signaling is the primary model, ideal signaling a supplement.
+  signaling: failure_aware
+diagnosis:
+  # Human item 4 (third round), J3 diagnosis part e: truth-UE planner at sensing overhead 0 vs A5, with blocker
+  # states (i) perfect at the decision instant and extrapolated with the planner's motion model (= the
+  # perfect-track planners) and (ii) the TRUE future blocker trajectories over the planning horizon; both tuned
+  # on the tuning seeds on the same grid; reported per margin and by blocker class (bus/truck, pedestrian, car).
+  # Separates trajectory predictability (i vs ii) from sensing accuracy (perfect vs real tracks).
+  future_truth: true

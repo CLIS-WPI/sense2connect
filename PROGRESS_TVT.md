@@ -48,6 +48,21 @@ sim/tvt/seeds.py; no tvt-freeze tag). Detailed reports: results/TVT/<T>/report.m
    and 45 % of the path power arrives from behind; for O-RU 1, 9.2 % of the UE epochs and 33 % of the path
    power. A deployed panel with a ground plane would see ~none of this. Recorded as a limitation of the
    scenario inherited from papers 1 and 2 (it applies to every scheme alike); see open question 1.
+8. Third round (physical arrays): every O-RU array, the oru-0 radar included, becomes two back-to-back 8x8
+   panels (+x / -x) with the TR 38.901 Table 7.3-1 element pattern (8 dBi, 65 deg, 30 dB); link and sensing
+   use the panel facing the target, positioning uses both (configs/tvt.yaml `panels:`, fixed with sources
+   before any run). The paper-1 radar looked at the street centre, not along +x; the humans chose the same
+   +-x panels for the radar too. Pattern applied to the traced path angles (exact; verified against a Sionna
+   re-trace), every stage T0-T6 and the J3 diagnosis re-run and every scheme re-tuned; the isotropic results
+   are kept in results/TVT_iso for the comparison.
+   GPU estimate before running (wall-clock hours of jobs holding GPU 1, upper bound from the logged run
+   times of the isotropic rounds): sensing re-trace for provenance ~290 jobs ~8 h; per-panel detections
+   (2 panels, incl. residual SI) ~8 h; T0 ~1.2 h; T1-T3 ~0.5 h; T4 ~5 h; T5 incl. learned baseline and the
+   estimator-A re-tuning ~3 h; T6 incl. both signaling models ~8 h; J3 ~1 h: ~35 h < 48 h, so it runs.
+9. Learned trigger: no further grid change; reported as "tuning switches the predictor off".
+10. Primary signaling model: failure_aware; ideal signaling as supplement (configs/tvt.yaml `primary:`).
+11. New J3 diagnosis part e: truth-UE planner at overhead 0 with perfect-at-decision blocker states
+    extrapolated by the motion model vs the true future trajectories, vs A5, by blocker class.
 
 ## Open questions for the humans
 1. Array back half-space (decision 7): keep the iso-element arrays without back plane for T7 and state it as a
