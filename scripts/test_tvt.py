@@ -176,10 +176,12 @@ class FrozenParamsTest(unittest.TestCase):
         w = ROOT / lj["path"]
         if w.exists():
             self.assertEqual(hashlib.sha256(w.read_bytes()).hexdigest(), lj["sha256"])
-        ho = json.loads((d / "handover.json").read_text())
-        for lab, cell in ho["schemes"].items():
-            for sch in ("A5", "planner_tvt", "risk_tvt", "planner_tvt_perfect", "trigger_learned"):
-                self.assertIn("params", cell[sch], f"{lab} {sch}")
+        for m in ("ideal", "failure_aware"):
+            ho = json.loads((d / f"handover_{m}.json").read_text())
+            self.assertEqual(ho["signaling"], m)
+            for lab, cell in ho["schemes"].items():
+                for sch in ("A5", "CHO", "planner_tvt", "risk_tvt", "planner_tvt_perfect", "trigger_learned"):
+                    self.assertIn("params", cell[sch], f"{m} {lab} {sch}")
 
 
 if __name__ == "__main__":

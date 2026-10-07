@@ -12,10 +12,8 @@ covariance) or "p2" (paper-2 estimator A, main configuration). Predicted LoS los
 by the frozen paper-1 predictor (xapp.predict_torch.predict_torch).
 Schemes:
   A3, A5          paper-1 reactive events, grids A3W (180) / A5G (100) of scripts/run_m5_planner.py
-  CHO             conditional handover: prepared target cell (always prepared with two cells) and an
-                  A3- or A5-type execution condition; tuned over the union of both grids. NOTE: the
-                  paper-1 simulator has no measurement-report / handover-command latency and no
-                  command-delivery failure, so CHO cannot gain over its execution condition here.
+  CHO             conditional handover (see Signaling below): prepared candidate, condEventA5 execution
+                  condition, no handover command; tuned over the A5 grid (100 points).
   trigger_tvt     sensing trigger in the spirit of Look-Before-Switch: hand over when a LoS blockage of
                   the serving cell is predicted within H and the other cell is predicted clear (paper-1
                   xApp trigger lanes), inputs real tracks + tvt UE; grid H x hold (12)
@@ -44,7 +42,14 @@ mean difference, bootstrap CI, exact Wilcoxon. Writes results/TVT/T5/handover.js
 --dump-steps DIR (J3 diagnosis): per margin and scheme, the per-10-ms-step timeline of the development
 evaluation (serving cell, SNR of both cells, rate, outage, interruption, handovers, overhead) and the
 UE positions / blockage events per job, for scripts/tvt_j3_diagnosis.py.
-Run: python scripts/tvt_t5_handover.py [--schemes ...] [--margins ...]
+Signaling (human decision before the freeze): --signaling ideal (paper-1 simulator) or failure_aware
+(sim/tvt/signaling.py, configs/tvt.yaml signaling: RLF with T310/N310/N311 and re-establishment,
+handover-command failure, CHO with a prepared candidate), identical for every scheme; --t310 /
+--q-offset / --tau-re override the failure model (pre-declared T6 sweep). CHO = condEventA5 executed
+without a command, tuned over the A5 grid (100 points, the A5 budget); under ideal signaling it equals A5.
+Metrics: PRIMARY outage / handovers / failures exclude the 1 s after each UE wrap (configs/tvt.yaml
+evaluation:), also as tuning objective; *_unmasked fields are the supplement.
+Run: python scripts/tvt_t5_handover.py [--schemes ...] [--margins ...] [--signaling failure_aware]
 """
 
 from __future__ import annotations
@@ -218,13 +223,17 @@ def summarize(rows, minutes_per_run: float = None) -> dict:
     for s, rs_ in sorted(by_seed.items()):
         per_seed[s] = {"outage": float(np.mean([x["outage_req_s_per_min"] for x in rs_])), "ho_per_min": float(np.mean([x["ho_per_min"] for x in rs_])),
                        "ping_pong": float(np.mean([x["ping_pong"] for x in rs_]))}
+        for key in EXTRA_KEYS:
+            if key in rs_[0]:
+                per_seed[s][key] = float(np.mean([x[key] for x in rs_]))
     for r in rows:
         for ev in r["events"]:
             cls_out.setdefault(ev["class"], []).append(ev["interruption_req_s"])
     n_min = len(rows) * 0.999  # one UE-minute per lane (60 s runs)
     return {"per_seed": per_seed, "outage": float(np.mean([x["outage_req_s_per_min"] for x in rows])), "ho_per_min": float(np.mean([x["ho_per_min"] for x in rows])),
             "ping_pong": float(np.mean([x["ping_pong"] for x in rows])),
-            "event_outage_by_class_s_per_ue_min": {k: float(np.sum(v) / n_min) for k, v in cls_out.items()}}
+            "event_outage_by_class_s_per_ue_min": {k: float(np.sum(v) / n_min) for k, v in cls_out.items()},
+            **{key: float(np.mean([x[key] for x in rows])) for key in EXTRA_KEYS if key in rows[0]}}
 
 
 def objective(rows) -> tuple[float, float]:
@@ -232,7 +241,24 @@ def objective(rows) -> tuple[float, float]:
 
 
 def strip(rows):
-    return [{k: v for k, v in r.items() if k in ("job", "ue", "outage_req_s_per_min", "ho_per_min", "ping_pong", "events")} for r in rows]
+    return [{k: v for k, v in r.items() if k in ("job", "ue", "outage_req_s_per_min", "ho_per_min", "ping_pong", "events") + EXTRA_KEYS} for r in rows]
+
+
+EXTRA_KEYS = ("outage_unmasked", "ho_per_min_unmasked", "rlf_per_min", "hof_per_min", "hof_rate", "rlf_per_min_unmasked", "hof_per_min_unmasked")
+
+
+def lane_extras(out_req: np.ndarray, ho_steps: np.ndarray, rlf_steps: np.ndarray, hof_steps: np.ndarray, excl: np.ndarray, dt: float) -> dict:
+    """Masked (primary) and unmasked metrics of one lane; excl [T] True = excluded (1 s after a UE wrap)."""
+    keep = ~excl[: out_req.size]
+    m_all = out_req.size * dt / 60.0
+    m_k = max(keep.sum(), 1) * dt / 60.0
+    kh = keep[ho_steps].sum()
+    kf = keep[hof_steps].sum()
+    return {"outage_unmasked": float(out_req.sum() * dt / m_all), "outage_req_s_per_min": float((out_req & keep).sum() * dt / m_k),
+            "ho_per_min_unmasked": float(ho_steps.size / m_all), "ho_per_min": float(kh / m_k),
+            "rlf_per_min": float(keep[rlf_steps].sum() / m_k), "rlf_per_min_unmasked": float(rlf_steps.size / m_all),
+            "hof_per_min": float(kf / m_k), "hof_per_min_unmasked": float(hof_steps.size / m_all),
+            "hof_rate": float(kf / (kf + kh)) if kf + kh else 0.0}
 
 
 def main() -> None:
@@ -263,6 +289,10 @@ def main() -> None:
     ap.add_argument("--track-set", default="development", help="T4 track set directory of the evaluation jobs")
     ap.add_argument("--si-inr", type=float, default=None, help="real tracks from the residual-SI detections (T6)")
     ap.add_argument("--tune-own", action="store_true", help="tune on the tuning seeds of the evaluation scenario/mounts (second deployment)")
+    ap.add_argument("--signaling", default="ideal", choices=["ideal", "failure_aware"])
+    ap.add_argument("--t310", type=float, default=None, help="failure model override: T310 [s] (T6 sweep)")
+    ap.add_argument("--q-offset", type=float, default=0.0, help="failure model override: Qout and Qin shift [dB] (T6 sweep)")
+    ap.add_argument("--tau-re", type=float, default=None, help="failure model override: re-establishment interruption [s] (T6 sweep)")
     ap.add_argument("--learned", default=str(OUT / "learned.pt"), help="learned predictor weights")
     ap.add_argument("--learned-manifest", default=None, help="json with the expected sha256 of --learned (configs/tvt_frozen/learned.json); refused on mismatch")
     ap.add_argument("--dump-steps", default=None, help="directory for the per-step timelines of the development evaluation (J3 diagnosis)")
@@ -286,6 +316,18 @@ def main() -> None:
         rw["e2"]["loop_delay_s"] = a.e2_ms / 1000.0
     rw["sensing"]["duty_cycle"] = float(rw["sensing"]["duty_cycle"]) * a.ovh_scale
     fixed = json.loads(Path(a.fixed).read_text())["schemes"] if a.fixed else None
+    GRIDS["trigger_learned"]["threshold"] = [float(x) for x in tcfg["learned"]["threshold_grid"]]
+    sig_cfg = None
+    if a.signaling == "failure_aware":
+        sig_cfg = copy.deepcopy(tcfg["signaling"])
+        if a.t310 is not None:
+            sig_cfg["rlf"]["t310_s"] = a.t310
+        sig_cfg["rlm"]["qout_db"] = float(sig_cfg["rlm"]["qout_db"]) + a.q_offset
+        sig_cfg["rlm"]["qin_db"] = float(sig_cfg["rlm"]["qin_db"]) + a.q_offset
+        if a.tau_re is not None:
+            sig_cfg["reestablishment"]["tau_re_s"] = a.tau_re
+    elif a.t310 is not None or a.q_offset or a.tau_re is not None:
+        raise SystemExit("failure-model overrides need --signaling failure_aware")
     model = tcfg["service"]["model"]
     tvt_service.install(model)
     s = load()
@@ -322,6 +364,15 @@ def main() -> None:
                                     cache_tag=f"si{a.si_inr:g}_") for job in pred_jobs}
     else:
         real = {job: T4.real_tracks(job, raw_of(job)) for job in pred_jobs}
+    ev_cfg = tcfg["evaluation"]
+    wrap_excl = {}
+    for j in pred_jobs:
+        tu = truth[j]["ue"][..., :2]
+        for u in range(tu.shape[1]):
+            ex = np.zeros(n_r * rs, bool)
+            for r_ in np.flatnonzero(np.linalg.norm(np.diff(tu[:, u], axis=0), axis=-1) > float(ev_cfg["wrap_jump_m"])) + 1:
+                ex[r_ * rs: r_ * rs + int(round(float(ev_cfg["wrap_mask_s"]) / R.DT_COMM))] = True
+            wrap_excl[(j, u)] = ex
     rng0 = np.random.default_rng(20261006)
     sources = {k: {} for k in ("true_perfect", "tvt_perfect", "tvt_real", "p2_real", "white_perfect", "whitenw_perfect")}
     # per-axis RMS of the tvt UE error over the development jobs (all epochs the planner sees)
@@ -414,24 +465,48 @@ def main() -> None:
         schemes = [x for x in schemes if all(x in fixed.get(lab, {}) for lab in a.margins)]
     import run_m5_planner as M5
 
+    from sim.tvt.signaling import simulate_fa
+
     cap = {}
+    simcap = []
+    cho_on = {"on": False}
+
+    def sim_patched(lanes, **kw):
+        out_ = simulate_fa(lanes, **kw, sig=sig_cfg, cho=np.full(lanes.snr_db.shape[0], cho_on["on"]))
+        fl = out_.get("failures", {})
+        simcap.append({"outage_req": out_["outage_req"], "hl": out_["handovers"]["lane"], "hs": out_["handovers"]["step"],
+                       "rl": fl.get("rlf_lane", np.zeros(0, int)), "rs": fl.get("rlf_step", np.zeros(0, int)),
+                       "fl": fl.get("hof_lane", np.zeros(0, int)), "fs": fl.get("hof_step", np.zeros(0, int))})
+        cap["last"] = (out_, lanes)
+        return out_
+
+    M5.simulate = sim_patched
+    R.simulate = sim_patched
+
+    def attach(rows):
+        """Primary (wrap-masked) and supplementary metrics into the rows of the simulate calls since the last attach."""
+        n_lanes = sum(c["outage_req"].shape[0] for c in simcap)
+        assert n_lanes == len(rows), (n_lanes, len(rows))
+        i = 0
+        for c in simcap:
+            for ln in range(c["outage_req"].shape[0]):
+                r = rows[i + ln]
+                r.update(lane_extras(c["outage_req"][ln], c["hs"][c["hl"] == ln], c["rs"][c["rl"] == ln], c["fs"][c["fl"] == ln],
+                                     wrap_excl[(r["job"], r["ue"])], R.DT_COMM))
+            i += c["outage_req"].shape[0]
+        simcap.clear()
+        return rows
+
     if a.dump_steps:
         dump_dir = Path(a.dump_steps)
         dump_dir.mkdir(parents=True, exist_ok=True)
-        sim_orig = M5.simulate
-
-        def sim_capture(lanes, **kw):
-            out_ = sim_orig(lanes, **kw)
-            cap["last"] = (out_, lanes)
-            return out_
-
-        M5.simulate = sim_capture
         np.savez_compressed(dump_dir / "ue.npz", **{f"{k}|{j[1]}_{j[2]}_{j[0]}": v[k] for j, v in ue_dump.items() for k in v})
         (dump_dir / "events.json").write_text(json.dumps({f"{j[1]}_{j[2]}_{j[0]}": built[j]["events"] for j in dev_jobs}, default=R._json) + "\n")
         (dump_dir / "meta.json").write_text(json.dumps({"white_rms_m": white_rms.tolist(), "whitenw_rms_m": whitenw_rms.tolist(), "tau_ho_steps": tau,
                                                          "e2_delay_steps": d, "report_steps": rs,
                                                          "rate_req_bps": rate_req, "bandwidth_hz": bw, "overhead": ovh, "dt_s": R.DT_COMM}) + "\n")
     res = {"definition": __doc__, "model": model, "white_rms_m": white_rms.tolist(), "whitenw_rms_m": whitenw_rms.tolist(), "margin_ref_db": info["margin_ref_db"], "grids": GRIDS, "schemes": {},
+           "signaling": a.signaling, "signaling_config": sig_cfg, "evaluation": ev_cfg,
            "overrides": {"fixed": a.fixed, "e2_ms": a.e2_ms, "ovh_scale": a.ovh_scale, "scenario": a.scenario, "mounts": a.mounts, "densities": a.densities,
                          "track_tag": a.track_tag, "si_inr": a.si_inr}}
     a3c = R._grid(A3W)
@@ -455,17 +530,20 @@ def main() -> None:
         t_m = time.perf_counter()
 
         def reactive(kind, js, cmb):
-            return run_reactive(js, [cmb], kind, {j: snr_m[j] for j in js}, built, rw, bw, rate_req, orates[mi], info["snr_req_db"])
+            simcap.clear()
+            return attach(run_reactive(js, [cmb], kind, {j: snr_m[j] for j in js}, built, rw, bw, rate_req, orates[mi], info["snr_req_db"]))
 
         def reactive_tune(kind, grid):
-            rows = run_reactive(tune_jobs, grid, kind, {j: snr_m[j] for j in tune_jobs}, built, rw, bw, rate_req, orates[mi], info["snr_req_db"])
+            simcap.clear()
+            rows = attach(run_reactive(tune_jobs, grid, kind, {j: snr_m[j] for j in tune_jobs}, built, rw, bw, rate_req, orates[mi], info["snr_req_db"]))
             byc = {}
             for r in rows:
                 byc.setdefault(r["combo"], []).append(r)
             return {ci: objective(v) for ci, v in byc.items()}
 
         def planner_rows(js, table_fn):
-            return run_planner(js, table_fn, {j: snr_m[j] for j in js}, built, rw, bw, rate_req, orates[mi], ovh)
+            simcap.clear()
+            return attach(run_planner(js, table_fn, {j: snr_m[j] for j in js}, built, rw, bw, rate_req, orates[mi], ovh))
 
         def plan_table(src, h):
             from review_b5_ablation import tables
@@ -477,7 +555,8 @@ def main() -> None:
                 built[j]["data"][f"pred_{src_name}"] = preds[j]
             lanes, index = R.make_lanes(js, [{"budget": src_name, "horizon_s": cmb["horizon_s"], "hold_s": cmb["hold_s"]}], {j: snr_m[j] for j in js}, built,
                                         "xapp", {"offset_db": 1.0, "hysteresis_db": 1.0, "ttt_s": 0.04}, rw, None)
-            return R.run_lanes(lanes, index, built, bw, rate_req, orates[mi], "xapp")
+            simcap.clear()
+            return attach(R.run_lanes(lanes, index, built, bw, rate_req, orates[mi], "xapp"))
 
         out_m = {}
         for sch in schemes:
@@ -485,18 +564,25 @@ def main() -> None:
             if sch in ("A3", "A5", "CHO") and fixed:
                 params = fixed[lab][sch]["params"]
                 obj = None
-                rows = reactive(params["kind"], dev_jobs, {k: v for k, v in params.items() if k != "kind"})
-            elif sch in ("A3", "A5", "CHO"):
-                cand = []
-                if sch in ("A3", "CHO"):
-                    sc = reactive_tune("a3", a3c)
-                    cand += [(sc[i], "a3", a3c[i]) for i in sc]
-                if sch in ("A5", "CHO"):
-                    sc = reactive_tune("a5", a5c)
-                    cand += [(sc[i], "a5", a5c[i]) for i in sc]
-                obj, kind, cmb = min(cand, key=lambda x: x[0])
+                cho_on["on"] = params["kind"] == "cho_a5"
+                rows = reactive("a5" if cho_on["on"] else params["kind"], dev_jobs, {k: v for k, v in params.items() if k != "kind"})
+                cho_on["on"] = False
+            elif sch in ("A3", "A5"):
+                kind = sch.lower()
+                grid = a3c if kind == "a3" else a5c
+                sc = reactive_tune(kind, grid)
+                obj, ci = min((sc[i], i) for i in sc)
+                cmb = grid[ci]
                 rows = reactive(kind, dev_jobs, cmb)
                 params = {"kind": kind, **cmb}
+            elif sch == "CHO":
+                cho_on["on"] = True
+                sc = reactive_tune("a5", a5c)
+                obj, ci = min((sc[i], i) for i in sc)
+                cmb = a5c[ci]
+                rows = reactive("a5", dev_jobs, cmb)
+                cho_on["on"] = False
+                params = {"kind": "cho_a5", **cmb}
             elif sch == "trigger_tvt":
                 combos = [dict(zip(GRIDS["trigger_tvt"], v)) for v in itertools.product(*GRIDS["trigger_tvt"].values())]
                 R._TRIG.clear()
@@ -545,11 +631,13 @@ def main() -> None:
                 np.savez_compressed(dump_dir / f"{lab.split()[0]}_{sch}.npz", lanes=np.array(keys), serving=sm["serving"], outage_req=sm["outage_req"],
                                     interrupted=sm["interrupted"], rate=sm["rate"], snr=ln.snr_db.astype(np.float32),
                                     overhead=np.broadcast_to(np.asarray(ln.overhead, dtype=np.float64), (len(keys),)),
-                                    **{f"ho_{k}": v for k, v in sm["handovers"].items()})
+                                    **{f"ho_{k}": v for k, v in sm["handovers"].items()}, **{f"fail_{k}": v for k, v in sm.get("failures", {}).items()},
+                                    reestablishing=sm.get("reestablishing", np.zeros((len(keys), 0), bool)))
             out_m[sch] = {"params": params, "tuning_objective": list(obj) if isinstance(obj, tuple) else obj, **summarize(rows), "rows": strip(rows),
                           "wall_s": time.perf_counter() - t0}
-            print(f"{lab[:9]:9s} {sch:20s} outage {out_m[sch]['outage']:.3f} s/UE-min, HO/min {out_m[sch]['ho_per_min']:.2f}, ping-pong "
-                  f"{out_m[sch]['ping_pong']:.2f}, params {params} [{out_m[sch]['wall_s']:.0f} s]", flush=True)
+            print(f"{lab[:9]:9s} {sch:20s} outage {out_m[sch]['outage']:.3f} s/UE-min (unmasked {out_m[sch].get('outage_unmasked', float('nan')):.3f}), "
+                  f"HO/min {out_m[sch]['ho_per_min']:.2f}, RLF/min {out_m[sch].get('rlf_per_min', 0):.3f}, HOF rate {out_m[sch].get('hof_rate', 0):.3f}, "
+                  f"ping-pong {out_m[sch]['ping_pong']:.2f}, params {params} [{out_m[sch]['wall_s']:.0f} s]", flush=True)
         if "A5" in out_m:
             seeds = sorted(out_m["A5"]["per_seed"])
             for sch, v in out_m.items():

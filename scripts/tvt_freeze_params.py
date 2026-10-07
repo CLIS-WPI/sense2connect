@@ -9,8 +9,9 @@ path and sha256 (scripts/tvt_t5_handover.py --learned-manifest refuses other wei
 Outputs (configs/tvt_frozen/):
   tracker.json                 T4 tracker parameters incl. the constant visibility prior (scripts/tvt_t4_track.py --params)
   visibility_calibration.json  T3 isotonic recalibration and coverage prior (scripts/tvt_t4_track.py --calibration)
-  handover.json                per-margin parameters of every handover scheme (scripts/tvt_t5_handover.py --fixed)
-  handover_intersection.json   the same, re-tuned on the intersection tuning seeds (T6 second deployment)
+  handover_<model>.json        per-margin parameters of every handover scheme for signaling model ideal / failure_aware
+                               (scripts/tvt_t5_handover.py --signaling <model> --fixed); primary objective wrap-masked
+  handover_intersection_<model>.json   the same, re-tuned on the intersection tuning seeds (T6 second deployment)
   p2_estimator.json            paper-2 estimator-A parameters used for the planner_p2 inputs (paper-2 tuning seeds)
   learned.json                 path + sha256 + training summary of the learned predictor (--learned-manifest)
   manifest.json                sources, sha256, git commit of the freeze
@@ -28,8 +29,8 @@ ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "results"
 OUT = ROOT / "configs" / "tvt_frozen"
 
-# scheme parameters: main T5 run first, then the runs that added schemes (duplicates must agree)
-HANDOVER_SOURCES = ["TVT/T5/handover.json", "TVT/T5/handover_j4_perfect.json", "TVT/T5/handover_learned.json", "TVT/T5/handover_j3.json"]
+# scheme parameters per signaling model (signaling round before the freeze: every scheme re-tuned in one run per model)
+MODELS = ("ideal", "failure_aware")
 
 
 def sha(p: Path) -> str:
@@ -78,15 +79,20 @@ def main() -> None:
     t3 = json.loads(f.read_text())
     write("visibility_calibration.json", {"calibration": t3["calibration"], "coverage_prior": t3["coverage_prior"], "config": t3["config"]}, [f])
 
-    files = [RES / x for x in HANDOVER_SOURCES if (RES / x).exists()]
-    params, origin = scheme_params(files)
-    main_d = json.loads(files[0].read_text())
-    write("handover.json", {"model": main_d["model"], "margin_ref_db": main_d["margin_ref_db"], "grids": main_d["grids"], "schemes": params, "origin": origin}, files)
-
-    f = RES / "TVT" / "T5" / "handover_intersection_tuned.json"
-    params, origin = scheme_params([f])
-    d = json.loads(f.read_text())
-    write("handover_intersection.json", {"model": d["model"], "margin_ref_db": d["margin_ref_db"], "schemes": params, "origin": origin}, [f])
+    for old in ("handover.json", "handover_intersection.json"):  # first-round files, superseded by the per-model files
+        if (OUT / old).exists():
+            (OUT / old).unlink()
+    for m in MODELS:
+        f = RES / "TVT" / "T5" / f"handover_{m}.json"
+        params, origin = scheme_params([f])
+        d = json.loads(f.read_text())
+        write(f"handover_{m}.json", {"model": d["model"], "signaling": d["signaling"], "signaling_config": d["signaling_config"], "evaluation": d["evaluation"],
+                                     "margin_ref_db": d["margin_ref_db"], "grids": d["grids"], "schemes": params, "origin": origin}, [f])
+        f = RES / "TVT" / "T5" / f"handover_intersection_tuned_{m}.json"
+        params, origin = scheme_params([f])
+        d = json.loads(f.read_text())
+        write(f"handover_intersection_{m}.json", {"model": d["model"], "signaling": d["signaling"], "margin_ref_db": d["margin_ref_db"], "schemes": params,
+                                                 "origin": origin}, [f])
 
     f = RES / "P2" / "est_tuned.json"
     write("p2_estimator.json", {"tuned": json.loads(f.read_text())["tuned"]}, [f])

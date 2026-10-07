@@ -1,5 +1,5 @@
 {
- "definition": "TVT freeze: copy every tuned parameter of T1-T6 from results/ into committed files under configs/tvt_frozen/.\n\nHuman decision before the freeze: T7 must not re-tune; it reads these files. Every value is copied\nverbatim from the result file that produced it (no number typed by hand); each output records its\nsource path and the source's sha256. Duplicated parameters (a scheme tuned in more than one run) must\nagree, otherwise the script stops. The learned-baseline weights are not copied; they are referenced by\npath and sha256 (scripts/tvt_t5_handover.py --learned-manifest refuses other weights).\n\nOutputs (configs/tvt_frozen/):\n  tracker.json                 T4 tracker parameters incl. the constant visibility prior (scripts/tvt_t4_track.py --params)\n  visibility_calibration.json  T3 isotonic recalibration and coverage prior (scripts/tvt_t4_track.py --calibration)\n  handover.json                per-margin parameters of every handover scheme (scripts/tvt_t5_handover.py --fixed)\n  handover_intersection.json   the same, re-tuned on the intersection tuning seeds (T6 second deployment)\n  p2_estimator.json            paper-2 estimator-A parameters used for the planner_p2 inputs (paper-2 tuning seeds)\n  learned.json                 path + sha256 + training summary of the learned predictor (--learned-manifest)\n  manifest.json                sources, sha256, git commit of the freeze\nRun: python scripts/tvt_freeze_params.py\n",
+ "definition": "TVT freeze: copy every tuned parameter of T1-T6 from results/ into committed files under configs/tvt_frozen/.\n\nHuman decision before the freeze: T7 must not re-tune; it reads these files. Every value is copied\nverbatim from the result file that produced it (no number typed by hand); each output records its\nsource path and the source's sha256. Duplicated parameters (a scheme tuned in more than one run) must\nagree, otherwise the script stops. The learned-baseline weights are not copied; they are referenced by\npath and sha256 (scripts/tvt_t5_handover.py --learned-manifest refuses other weights).\n\nOutputs (configs/tvt_frozen/):\n  tracker.json                 T4 tracker parameters incl. the constant visibility prior (scripts/tvt_t4_track.py --params)\n  visibility_calibration.json  T3 isotonic recalibration and coverage prior (scripts/tvt_t4_track.py --calibration)\n  handover_<model>.json        per-margin parameters of every handover scheme for signaling model ideal / failure_aware\n                               (scripts/tvt_t5_handover.py --signaling <model> --fixed); primary objective wrap-masked\n  handover_intersection_<model>.json   the same, re-tuned on the intersection tuning seeds (T6 second deployment)\n  p2_estimator.json            paper-2 estimator-A parameters used for the planner_p2 inputs (paper-2 tuning seeds)\n  learned.json                 path + sha256 + training summary of the learned predictor (--learned-manifest)\n  manifest.json                sources, sha256, git commit of the freeze\nRun: python scripts/tvt_freeze_params.py\n",
  "git_commit": "",
  "files": {
   "tracker.json": {
@@ -14,20 +14,29 @@
    },
    "sha256": "47592bbe38e6e930f7cfa750b697fb0c712b4acd29551ab9c72be7a44d3ae450"
   },
-  "handover.json": {
+  "handover_ideal.json": {
    "sources": {
-    "results/TVT/T5/handover.json": "284bc26ddaf5790d4d1d1e779013af60b71dfec1ec938ad216379c71890fa8b2",
-    "results/TVT/T5/handover_j4_perfect.json": "3dcb15f9d1236f74b0a8679c48d0168b8a701db0007012486f41a6a0d416381d",
-    "results/TVT/T5/handover_learned.json": "240f5ae42da0f595fc0d717c2bf1f6c61c95823c3faa147354544d510b6415c4",
-    "results/TVT/T5/handover_j3.json": "243a8e4e6a41efb024afa0eedf6017401b31aad437b13d427f178eaa7d0e99c1"
+    "results/TVT/T5/handover_ideal.json": "76e13859c82ee0abb1d2ea88b2ad6d9d543e8e1c3cfb8862ed1cd5ef5022aa52"
    },
-   "sha256": "d3fc61590dfde821744ba15ce88d4fe8239b608d77352da206ffc02e69607d74"
+   "sha256": "cd8e280b007511270203228f0c117c2c15f8d75a7c2a48b3b2ce67b6355e11fb"
   },
-  "handover_intersection.json": {
+  "handover_intersection_ideal.json": {
    "sources": {
-    "results/TVT/T5/handover_intersection_tuned.json": "8aa2f6eb9a47781a5b8222d31e71417f29483e7796efabba394d7ee3733128f3"
+    "results/TVT/T5/handover_intersection_tuned_ideal.json": "be92778533444830da281552e4ceaaf1ceeee14e9e3485302d63656fdc1d9e16"
    },
-   "sha256": "0362291e5be08328a368f48afb8e7d096416b9f0861f6be8bd3524e4c1b7aab5"
+   "sha256": "cb673b492b96b46b59b609cc506c56cb0716bc11524b50799ad6c7ae4eb495bd"
+  },
+  "handover_failure_aware.json": {
+   "sources": {
+    "results/TVT/T5/handover_failure_aware.json": "515044832971d6994da7a27b1087fda36999b0f2540aa981299a4d3400a6b6e0"
+   },
+   "sha256": "c1b1a0e2a703f942af1fab83c4c6c25b43b4f677cf0c98150a703ecf28f688e2"
+  },
+  "handover_intersection_failure_aware.json": {
+   "sources": {
+    "results/TVT/T5/handover_intersection_tuned_failure_aware.json": "14f4c19de7f1daa8f76951b5e626a2821ce39957a11052b16626256c09c806e7"
+   },
+   "sha256": "8b27c86c6c4a268645c4ea14c072a27cf38bbeee757d8b69e9e589904252101c"
   },
   "p2_estimator.json": {
    "sources": {

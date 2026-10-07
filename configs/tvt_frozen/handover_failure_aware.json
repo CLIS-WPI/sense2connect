@@ -1,0 +1,676 @@
+{
+ "model": "best_beam",
+ "signaling": "failure_aware",
+ "signaling_config": {
+  "rlm": {
+   "l1_sample_s": 0.01,
+   "qout_window_s": 0.2,
+   "qin_window_s": 0.1,
+   "indication_interval_s": 0.02,
+   "qout_db": -8.0,
+   "qin_db": -6.0
+  },
+  "rlf": {
+   "t310_s": 1.0,
+   "n310": 1,
+   "n311": 1,
+   "t311_s": 30.0
+  },
+  "reestablishment": {
+   "tau_re_s": 1.83,
+   "cho_recovery": true
+  },
+  "handover_command": {
+   "enabled": true
+  },
+  "cho": {
+   "t_prep_s": 0.05,
+   "condition": "a5"
+  },
+  "sweep": {
+   "t310_s": [
+    0.2,
+    0.5,
+    1.0
+   ],
+   "q_offset_db": [
+    -3.0,
+    3.0
+   ],
+   "tau_re_s": [
+    1.83,
+    0.23
+   ]
+  }
+ },
+ "evaluation": {
+  "wrap_jump_m": 10.0,
+  "wrap_mask_s": 1.0
+ },
+ "margin_ref_db": 34.77223518691588,
+ "grids": {
+  "trigger_tvt": {
+   "horizon_s": [
+    0.5,
+    1.0,
+    2.0,
+    3.0
+   ],
+   "hold_s": [
+    0.2,
+    0.5,
+    1.0
+   ]
+  },
+  "trigger_learned": {
+   "horizon_s": [
+    0.5,
+    1.0,
+    2.0,
+    3.0
+   ],
+   "hold_s": [
+    0.2,
+    0.5,
+    1.0
+   ],
+   "threshold": [
+    0.5,
+    0.725,
+    0.95
+   ]
+  },
+  "planner": {
+   "H": [
+    0.5,
+    1.0,
+    2.0,
+    3.0
+   ]
+  },
+  "risk": {
+   "H": [
+    0.5,
+    1.0,
+    2.0
+   ],
+   "lam": [
+    0.0,
+    0.5,
+    1.0
+   ],
+   "theta": [
+    0.0,
+    2.0,
+    5.0
+   ]
+  }
+ },
+ "schemes": {
+  "15 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "CHO": {
+    "params": {
+     "kind": "cho_a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2
+    }
+   },
+   "trigger_learned": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2,
+     "threshold": 0.95
+    }
+   },
+   "planner_p2": {
+    "params": {
+     "H": 3.0
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 3.0
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 2.0,
+     "lam": 1.0,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 2.0
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 2.0,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "riskneutral_tvt_perfect": {
+    "params": {
+     "H": 2.0,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 2.0
+    }
+   },
+   "planner_white_perfect": {
+    "params": {
+     "H": 3.0
+    }
+   },
+   "planner_whitenw_perfect": {
+    "params": {
+     "H": 3.0
+    }
+   }
+  },
+  "20 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 1.0,
+     "hysteresis_db": 1.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "CHO": {
+    "params": {
+     "kind": "cho_a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 1.0
+    }
+   },
+   "trigger_learned": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2,
+     "threshold": 0.95
+    }
+   },
+   "planner_p2": {
+    "params": {
+     "H": 2.0
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 2.0
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 2.0,
+     "lam": 1.0,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 2.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "riskneutral_tvt_perfect": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 2.0
+    }
+   },
+   "planner_white_perfect": {
+    "params": {
+     "H": 3.0
+    }
+   },
+   "planner_whitenw_perfect": {
+    "params": {
+     "H": 1.0
+    }
+   }
+  },
+  "25 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 0.0,
+     "hysteresis_db": 3.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "CHO": {
+    "params": {
+     "kind": "cho_a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 1.0
+    }
+   },
+   "trigger_learned": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2,
+     "threshold": 0.95
+    }
+   },
+   "planner_p2": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 2.0
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 1.0,
+     "lam": 0.5,
+     "theta": 0.0
+    }
+   },
+   "riskneutral_tvt_perfect": {
+    "params": {
+     "H": 2.0,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 2.0
+    }
+   },
+   "planner_white_perfect": {
+    "params": {
+     "H": 2.0
+    }
+   },
+   "planner_whitenw_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   }
+  },
+  "30 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 0.0,
+     "hysteresis_db": 10.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "CHO": {
+    "params": {
+     "kind": "cho_a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 3.0,
+     "hold_s": 1.0
+    }
+   },
+   "trigger_learned": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2,
+     "threshold": 0.95
+    }
+   },
+   "planner_p2": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 1.0,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 1.0,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 2.0,
+     "lam": 0.5,
+     "theta": 0.0
+    }
+   },
+   "riskneutral_tvt_perfect": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "planner_white_perfect": {
+    "params": {
+     "H": 2.0
+    }
+   },
+   "planner_whitenw_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   }
+  },
+  "3GPP short-range reference": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 0.0,
+     "hysteresis_db": 10.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "CHO": {
+    "params": {
+     "kind": "cho_a5",
+     "t1_db": 3.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 3.0,
+     "hold_s": 1.0
+    }
+   },
+   "trigger_learned": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2,
+     "threshold": 0.95
+    }
+   },
+   "planner_p2": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 1.0,
+     "theta": 0.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 2.0,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 2.0,
+     "lam": 1.0,
+     "theta": 0.0
+    }
+   },
+   "riskneutral_tvt_perfect": {
+    "params": {
+     "H": 2.0,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "planner_white_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "planner_whitenw_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   }
+  }
+ },
+ "origin": {
+  "15 dB | A3": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | A5": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | CHO": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | trigger_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | trigger_learned": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | planner_p2": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | planner_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | risk_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | riskneutral_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | planner_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | risk_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | riskneutral_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | planner_true_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | planner_white_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "15 dB | planner_whitenw_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | A3": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | A5": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | CHO": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | trigger_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | trigger_learned": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | planner_p2": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | planner_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | risk_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | riskneutral_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | planner_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | risk_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | riskneutral_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | planner_true_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | planner_white_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "20 dB | planner_whitenw_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | A3": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | A5": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | CHO": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | trigger_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | trigger_learned": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | planner_p2": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | planner_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | risk_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | riskneutral_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | planner_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | risk_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | riskneutral_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | planner_true_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | planner_white_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "25 dB | planner_whitenw_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | A3": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | A5": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | CHO": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | trigger_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | trigger_learned": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | planner_p2": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | planner_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | risk_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | riskneutral_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | planner_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | risk_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | riskneutral_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | planner_true_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | planner_white_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "30 dB | planner_whitenw_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | A3": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | A5": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | CHO": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | trigger_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | trigger_learned": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | planner_p2": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | planner_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | risk_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | riskneutral_tvt": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | planner_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | risk_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | riskneutral_tvt_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | planner_true_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | planner_white_perfect": "results/TVT/T5/handover_failure_aware.json",
+  "3GPP short-range reference | planner_whitenw_perfect": "results/TVT/T5/handover_failure_aware.json"
+ },
+ "_sources": {
+  "results/TVT/T5/handover_failure_aware.json": "515044832971d6994da7a27b1087fda36999b0f2540aa981299a4d3400a6b6e0"
+ }
+}

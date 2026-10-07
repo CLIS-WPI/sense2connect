@@ -27,8 +27,15 @@ c) Gap of each planner to A5 split per outage step (10 ms) into mutually exclusi
    and per blocker class (10 dB event of the UE covering the step within [onset - 2 s, end], serving
    cell first, then the other cell; "none" otherwise). Gap = planner - A5 per category; seed level
    (per seed mean over 4 runs x 2 UEs), paired exact Wilcoxon over the 10 development seeds.
-Writes results/TVT/J3_diagnosis/diagnosis.json and prints markdown tables.
-Run: python scripts/tvt_j3_diagnosis.py
+Signaling round (human decision before the freeze): --model ideal | failure_aware reads
+results/TVT/J3_diagnosis/steps_<model>/ and results/TVT/T5/handover_<model>.json; PRIMARY metrics exclude the
+1 s after each UE wrap (configs/tvt.yaml evaluation:), unmasked totals are the supplement; extra category
+     rlf_reestablishment  outage while the UE re-establishes after a radio link failure (failure-aware)
+(after "unavoidable" in the priority order). d) Sensing overhead 0 (human item 5): truth-UE and tracker-UE
+planners with perfect tracks vs A5 at overhead x1 (main), x0 with the x1 parameters (T6) and x0 re-tuned.
+Without --model the first-round inputs (steps/, handover_j3.json) are used.
+Writes results/TVT/J3_diagnosis/diagnosis[_<model>].json and prints markdown tables.
+Run: python scripts/tvt_j3_diagnosis.py [--model failure_aware]
 """
 
 from __future__ import annotations
@@ -49,7 +56,7 @@ OUT = ROOT / "results" / "TVT" / "J3_diagnosis"
 STEPS = OUT / "steps"
 MARGINS = ("15 dB", "20 dB", "25 dB", "30 dB", "3GPP short-range reference")
 PLANNERS = ("planner_true_perfect", "planner_tvt_perfect", "planner_white_perfect", "planner_whitenw_perfect", "planner_tvt")
-CATS = ("unavoidable", "switch_necessary", "unnecessary_switch", "mistimed_switch", "missed_switch", "overhead")
+CATS = ("unavoidable", "rlf_reestablishment", "switch_necessary", "unnecessary_switch", "mistimed_switch", "missed_switch", "overhead")
 CLASSES = ("bus/truck", "pedestrian", "car", "no LoS blocker", "none")
 NEED_WINDOW_S = 1.0
 EVENT_BEFORE_S = 2.0
@@ -111,7 +118,7 @@ def runs_end(bad: np.ndarray) -> np.ndarray:
     return en
 
 
-def classify_lane(serv, outr, intr, snr, ovh, hos, events, meta) -> tuple[np.ndarray, np.ndarray, list[dict]]:
+def classify_lane(serv, outr, intr, snr, ovh, hos, events, meta, reest=None) -> tuple[np.ndarray, np.ndarray, list[dict]]:
     """Category index [T] (-1 = no outage) and class index [T] of every outage step; per-switch records."""
     bw, req, dt = meta["bandwidth_hz"], meta["rate_req_bps"], meta["dt_s"]
     tau = int(meta["tau_ho_steps"])
@@ -138,6 +145,9 @@ def classify_lane(serv, outr, intr, snr, ovh, hos, events, meta) -> tuple[np.nda
     for k in np.flatnonzero(outr):
         if not us[k].any():
             cat[k] = CATS.index("unavoidable")
+            continue
+        if reest is not None and reest.size and reest[k]:
+            cat[k] = CATS.index("rlf_reestablishment")
             continue
         if intr[k]:
             i = np.searchsorted(steps, k, side="right") - 1
@@ -206,26 +216,27 @@ def part_b(meta, events) -> dict:
         e_wh = np.linalg.norm(v["white"] - v["true"], axis=-1)
         n_r = e_tvt.shape[0]
         for u in range(e_tvt.shape[1]):
-            add("tvt | all epochs", seed, e_tvt[:, u])
-            add("white | all epochs", seed, e_wh[:, u])
-            add("whitenw | all epochs", seed, np.linalg.norm(v["whitenw"] - v["true"], axis=-1)[:, u])
             tu = v["true"][:, u]
             wrap = np.zeros(n_r, bool)
             wrap[1:] = np.linalg.norm(np.diff(tu, axis=0), axis=-1) > 10.0
             after = np.zeros(n_r, bool)
             for k_ in range(eps_per_s):
                 after[k_:] |= wrap[: n_r - k_]
+            keep_e = ~after  # primary: the 1 s after each UE wrap excluded
+            add("tvt | all epochs", seed, e_tvt[keep_e, u])
+            add("white | all epochs", seed, e_wh[keep_e, u])
+            add("whitenw | all epochs", seed, np.linalg.norm(v["whitenw"] - v["true"], axis=-1)[keep_e, u])
+            add("tvt | all epochs, unmasked (supplement)", seed, e_tvt[:, u])
             add("tvt | 1 s after a UE wrap", seed, e_tvt[after, u])
-            add("tvt | outside 1 s after a UE wrap", seed, e_tvt[~after, u])
-            add("tvt | epochs after 2 s", seed, e_tvt[20:, u])
+            add("tvt | epochs after 2 s", seed, e_tvt[20:, u][keep_e[20:]])
             pre = np.zeros(n_r, bool)
             for ev in events[job]:
                 if int(ev["ue"]) != u:
                     continue
                 r1 = int(ev["start_k"]) // rs
                 pre[max(0, r1 - eps_per_s):max(0, r1)] = True
-            add("tvt | 1 s before onset", seed, e_tvt[pre, u])
-            add("white | 1 s before onset", seed, e_wh[pre, u])
+            add("tvt | 1 s before onset", seed, e_tvt[pre & keep_e, u])
+            add("white | 1 s before onset", seed, e_wh[pre & keep_e, u])
     for sch, src in (("planner_tvt_perfect", "tvt"), ("planner_true_perfect", "tvt"), ("planner_white_perfect", "white"), ("planner_whitenw_perfect", "whitenw")):
         lab = "20 dB"
         s = load_steps(lab, sch)
@@ -237,6 +248,13 @@ def part_b(meta, events) -> dict:
             r = np.clip((st - 1 - d) // rs, 0, None)
             e = np.linalg.norm(ue[job][src] - ue[job]["true"], axis=-1)[:, u]
             r = r[r < e.size]
+            tu = ue[job]["true"][:, u]
+            wrap = np.zeros(e.size, bool)
+            wrap[1:] = np.linalg.norm(np.diff(tu, axis=0), axis=-1) > 10.0
+            after = np.zeros(e.size, bool)
+            for k_ in range(eps_per_s):
+                after[k_:] |= wrap[: e.size - k_]
+            r = r[~after[r]]
             add(f"{src} | switch decisions of {sch} (20 dB)", seed, e[r])
     for w, per in win_vals.items():
         seeds = sorted(per)
@@ -295,6 +313,7 @@ def part_c(meta, events) -> dict:
             acc_cc = {}
             sw_stats = {}
             total = {}
+            total_um = {}
             in_wrap = {}
             for i, lane in enumerate(s["lanes"]):
                 job, u = lane.split("|")
@@ -303,42 +322,50 @@ def part_c(meta, events) -> dict:
                 sel = s["ho_lane"] == i
                 hos = {"step": s["ho_step"][sel], "from": s["ho_from"][sel], "to": s["ho_to"][sel]}
                 evs = [ev for ev in events[job] if int(ev["ue"]) == u]
+                re_ = s["reestablishing"][i] if "reestablishing" in s and s["reestablishing"].shape[-1] else None
                 cat, cls, sw = classify_lane(s["serving"][i].astype(np.int64), s["outage_req"][i], s["interrupted"][i], s["snr"][i], float(s["overhead"][i]),
-                                             hos, evs, meta)
+                                             hos, evs, meta, reest=re_)
                 assert (cat >= 0).sum() == s["outage_req"][i].sum()
-                total.setdefault(seed, []).append(s["outage_req"][i].sum() * meta["dt_s"] / minutes)
                 wm = np.zeros(n_t, bool)
                 for lo, hi in wraps.get(lane, []):
                     wm[lo:min(hi, n_t)] = True
+                keep = ~wm  # primary metrics exclude the 1 s after each UE wrap
+                mk = max(keep.sum(), 1) * meta["dt_s"] / 60.0
+                total.setdefault(seed, []).append((s["outage_req"][i] & keep).sum() * meta["dt_s"] / mk)
+                total_um.setdefault(seed, []).append(s["outage_req"][i].sum() * meta["dt_s"] / minutes)
                 in_wrap.setdefault(seed, []).append((s["outage_req"][i] & wm).sum() * meta["dt_s"] / minutes)
                 for ci, cname in enumerate(CATS):
-                    acc_cat.setdefault(cname, {}).setdefault(seed, []).append((cat == ci).sum() * meta["dt_s"] / minutes)
+                    acc_cat.setdefault(cname, {}).setdefault(seed, []).append(((cat == ci) & keep).sum() * meta["dt_s"] / mk)
                     for kj, kname in enumerate(CLASSES):
-                        acc_cc.setdefault(f"{cname}|{kname}", {}).setdefault(seed, []).append(((cat == ci) & (cls == kj)).sum() * meta["dt_s"] / minutes)
+                        acc_cc.setdefault(f"{cname}|{kname}", {}).setdefault(seed, []).append(((cat == ci) & (cls == kj) & keep).sum() * meta["dt_s"] / mk)
                 for kj, kname in enumerate(CLASSES):
-                    acc_cls.setdefault(kname, {}).setdefault(seed, []).append((cls == kj).sum() * meta["dt_s"] / minutes)
-                n_nec = sum(x["necessary"] for x in sw)
-                sw_stats.setdefault("switches_per_min", {}).setdefault(seed, []).append(len(sw) / minutes)
-                sw_stats.setdefault("necessary_per_min", {}).setdefault(seed, []).append(n_nec / minutes)
-                sw_stats.setdefault("unnecessary_per_min", {}).setdefault(seed, []).append((len(sw) - n_nec) / minutes)
+                    acc_cls.setdefault(kname, {}).setdefault(seed, []).append(((cls == kj) & keep).sum() * meta["dt_s"] / mk)
+                swk = [x for x in sw if keep[min(x["step"], n_t - 1)]]
+                n_nec = sum(x["necessary"] for x in swk)
+                sw_stats.setdefault("switches_per_min", {}).setdefault(seed, []).append(len(swk) / mk)
+                sw_stats.setdefault("necessary_per_min", {}).setdefault(seed, []).append(n_nec / mk)
+                sw_stats.setdefault("unnecessary_per_min", {}).setdefault(seed, []).append((len(swk) - n_nec) / mk)
             red = lambda dct: {k: {s_: float(np.mean(v)) for s_, v in sorted(x.items())} for k, x in dct.items()}  # noqa: E731
-            per_scheme[sch] = {"total": {s_: float(np.mean(v)) for s_, v in sorted(total.items())}, "wrap": {s_: float(np.mean(v)) for s_, v in sorted(in_wrap.items())},
+            per_scheme[sch] = {"total": {s_: float(np.mean(v)) for s_, v in sorted(total.items())},
+                               "total_unmasked": {s_: float(np.mean(v)) for s_, v in sorted(total_um.items())}, "wrap": {s_: float(np.mean(v)) for s_, v in sorted(in_wrap.items())},
                                "cat": red(acc_cat), "cls": red(acc_cls),
                                "cat_cls": red(acc_cc), "switches": red(sw_stats)}
         out = {}
         for sch, v in per_scheme.items():
             seeds = sorted(v["total"])
             mean = lambda dd: float(np.mean([dd[s_] for s_ in seeds]))  # noqa: E731
-            cell = {"outage": mean(v["total"]), "outage_1s_after_ue_wrap": mean(v["wrap"]), "by_category": {k: mean(x) for k, x in v["cat"].items()},
+            cell = {"outage": mean(v["total"]), "outage_unmasked": mean(v["total_unmasked"]), "outage_1s_after_ue_wrap": mean(v["wrap"]), "by_category": {k: mean(x) for k, x in v["cat"].items()},
                     "by_class": {k: mean(x) for k, x in v["cls"].items()}, "by_category_class": {k: mean(x) for k, x in v["cat_cls"].items()},
                     "switches": {k: mean(x) for k, x in v["switches"].items()}}
             if sch != "A5" and "A5" in per_scheme:
                 a5 = per_scheme["A5"]
                 cell["gap_vs_A5"] = paired([v["total"][s_] for s_ in seeds], [a5["total"][s_] for s_ in seeds])
+                cell["gap_vs_A5_unmasked"] = paired([v["total_unmasked"][s_] for s_ in seeds], [a5["total_unmasked"][s_] for s_ in seeds])
                 cell["gap_vs_A5_1s_after_ue_wrap"] = paired([v["wrap"][s_] for s_ in seeds], [a5["wrap"][s_] for s_ in seeds])
                 if "planner_true_perfect" in per_scheme and sch != "planner_true_perfect":
                     tp = per_scheme["planner_true_perfect"]
                     cell["vs_true_perfect"] = paired([v["total"][s_] for s_ in seeds], [tp["total"][s_] for s_ in seeds])
+                    cell["vs_true_perfect_unmasked"] = paired([v["total_unmasked"][s_] for s_ in seeds], [tp["total_unmasked"][s_] for s_ in seeds])
                     cell["vs_true_perfect_1s_after_ue_wrap"] = paired([v["wrap"][s_] for s_ in seeds], [tp["wrap"][s_] for s_ in seeds])
                 cell["gap_by_category"] = {k: paired([x[s_] for s_ in seeds], [a5["cat"][k][s_] for s_ in seeds]) for k, x in v["cat"].items()}
                 cell["gap_by_class"] = {k: paired([x[s_] for s_ in seeds], [a5["cls"][k][s_] for s_ in seeds]) for k, x in v["cls"].items()}
@@ -348,10 +375,40 @@ def part_c(meta, events) -> dict:
     return res
 
 
+def part_d(model: str) -> dict:
+    """Human item 5: perfect-track planners vs A5 at sensing overhead x1 (main), x0 with the x1 parameters, x0 re-tuned."""
+    from sim.tvt.stats import paired
+
+    T5 = ROOT / "results" / "TVT" / "T5"
+    files = {"x1 (main, tuned at x1)": T5 / f"handover_{model}.json", "x0, parameters tuned at x1": T5 / f"handover_ovh_0_{model}.json",
+             "x0, re-tuned at x0": T5 / f"handover_ovh0_tuned_{model}.json"}
+    out = {}
+    for name, f in files.items():
+        if not f.exists():
+            continue
+        d = json.loads(f.read_text())
+        for lab, cell in d["schemes"].items():
+            seeds = sorted(cell["A5"]["per_seed"])
+            for sch in ("planner_true_perfect", "planner_tvt_perfect"):
+                if sch in cell:
+                    out.setdefault(lab, {})[f"{name} | {sch}"] = {
+                        "outage": cell[sch]["outage"], "A5": cell["A5"]["outage"], "params": cell[sch]["params"],
+                        "vs_A5": paired([cell[sch]["per_seed"][x]["outage"] for x in seeds], [cell["A5"]["per_seed"][x]["outage"] for x in seeds])}
+    return out
+
+
 def main() -> None:
+    global STEPS
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--model", default=None, choices=["ideal", "failure_aware"])
+    a = ap.parse_args()
+    if a.model:
+        STEPS = OUT / f"steps_{a.model}"
     meta = json.loads((STEPS / "meta.json").read_text())
     events = json.loads((STEPS / "events.json").read_text())
-    ho = json.loads((ROOT / "results" / "TVT" / "T5" / "handover_j3.json").read_text())
+    ho = json.loads((ROOT / "results" / "TVT" / "T5" / (f"handover_{a.model}.json" if a.model else "handover_j3.json")).read_text())
     out = {"definition": __doc__, "a": part_a(), "b_handover": {lab: {sch: {k: v[k] for k in ("outage", "ho_per_min", "ping_pong", "params", "vs_A5") if k in v}
                                                                         for sch, v in cell.items() if " vs " not in sch}
                                                                   for lab, cell in ho["schemes"].items()},
@@ -367,8 +424,12 @@ def main() -> None:
             if x in cell and y in cell:
                 pairs[f"{lab} | {x} vs {y}"] = paired([cell[x]["per_seed"][s]["outage"] for s in seeds], [cell[y]["per_seed"][s]["outage"] for s in seeds])
     out["b_pairs"] = pairs
-    (OUT / "diagnosis.json").write_text(json.dumps(out, indent=1, default=float) + "\n")
+    out["model"] = a.model
+    if a.model:
+        out["d_overhead0"] = part_d(a.model)
+    (OUT / (f"diagnosis_{a.model}.json" if a.model else "diagnosis.json")).write_text(json.dumps(out, indent=1, default=float) + "\n")
     print_tables(out)
+    print_part_d(out)
 
 
 def print_tables(o: dict) -> None:
@@ -437,6 +498,21 @@ def print_tables(o: dict) -> None:
                 v = cell[sch]
                 print(f"| {sch} | " + " | ".join(f"{v['gap_by_class'][k]['mean_diff']:+.3f} ({v['gap_by_class'][k]['wilcoxon_p_two_sided']:.2g})" for k in CLASSES) + " |")
         print()
+
+
+def print_part_d(o: dict) -> None:
+    if not o.get("d_overhead0"):
+        return
+    print("### d) Sensing overhead 0 (human item 5): perfect-track planners vs A5 [s/UE-min, primary (wrap-masked)]\n")
+    print("| margin | setting | scheme | outage | A5 | diff vs A5 [CI] (p) | parameters |")
+    print("|---|---|---|---|---|---|---|")
+    for lab, cell in o["d_overhead0"].items():
+        for key, v in cell.items():
+            name, sch = key.split(" | ")
+            va = v["vs_A5"]
+            print(f"| {lab} | {name} | {sch} | {v['outage']:.3f} | {v['A5']:.3f} | {va['mean_diff']:+.3f} [{va['ci95_boot'][0]:+.3f}, {va['ci95_boot'][1]:+.3f}] "
+                  f"({va['wilcoxon_p_two_sided']:.2g}) | {v['params']} |")
+    print()
 
 
 if __name__ == "__main__":

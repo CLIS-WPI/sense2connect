@@ -152,5 +152,87 @@ class J3ClassifierTest(unittest.TestCase):
         self.assertEqual(int((cat >= 0).sum()), int(outr.sum()))
 
 
+class SignalingTest(unittest.TestCase):
+    @staticmethod
+    def _lanes(snr, scheme, **kw):
+        from xapp.schemes import Lanes
+
+        n = snr.shape[0]
+        f = lambda v: np.full(n, v)  # noqa: E731
+        base = dict(snr_db=snr, scheme=np.asarray(scheme), offset_db=f(1.0), hysteresis_db=f(1.0), ttt_steps=f(4), filter_a=f(0.5), window_steps=f(20),
+                    drop_db=f(10.0), trend_horizon_s=f(0.5), hold_steps=f(50), tau_ho_steps=f(2), e2_delay_steps=f(2), overhead=f(0.0),
+                    initial_cell=np.zeros(n, np.int64), a5_thr1=f(5.0), a5_thr2=f(8.0))
+        base.update(kw)
+        return Lanes(**base)
+
+    @staticmethod
+    def _sig():
+        from sim.scenes.config import load_yaml
+
+        return load_yaml(ROOT / "configs" / "tvt.yaml")["signaling"]
+
+    def test_ideal_equals_paper1_simulator(self):
+        from sim.tvt.signaling import simulate_fa
+        from xapp.schemes import REASON, simulate
+
+        rng = np.random.default_rng(1)
+        n, t = 8, 1500
+        snr = np.cumsum(rng.normal(0, 1.5, (n, t, 2)), axis=1) * 0.3 + 15.0
+        snr[:, 300:420, 0] -= 30.0
+        snr[:, 900:980, 1] -= 30.0
+        scheme = np.array([REASON["a3"], REASON["a5"], REASON["xapp"], REASON["trend"]] * 2)
+        trig = rng.random((n, t // 10, 2)) < 0.05
+        lanes = self._lanes(snr, scheme, trigger=trig, trigger_end_steps=np.full((n, t // 10, 2), 30))
+        kw = dict(bandwidth_hz=400e6, rate_req_bps=400e6, max_se=7.4)
+        a = simulate(lanes, **kw)
+        b = simulate_fa(lanes, **kw, sig=None, cho=np.array([0, 1, 0, 0, 0, 1, 0, 0], bool))
+        for key in ("serving", "outage_req", "outage0", "interrupted", "rate"):
+            np.testing.assert_array_equal(a[key], b[key], key)
+        for key in a["handovers"]:
+            np.testing.assert_array_equal(a["handovers"][key], b["handovers"][key], key)
+
+    def test_rlf_and_reestablishment(self):
+        from sim.tvt.signaling import simulate_fa
+        from xapp.schemes import REASON
+
+        sig = self._sig()
+        t = 1200
+        snr = np.full((2, t, 2), 20.0)
+        snr[0, 100:, 0] = -15.0  # lane 0: serving cell 0 lost for good, no handover (offset huge) -> RLF
+        snr[1, 100:130, 0] = -15.0  # lane 1: short dip, recovers before T310 expires
+        lanes = self._lanes(snr, np.array([REASON["a3"]] * 2), offset_db=np.full(2, 1e9))
+        out = simulate_fa(lanes, bandwidth_hz=400e6, rate_req_bps=400e6, max_se=7.4, sig=sig)
+        f = out["failures"]
+        self.assertEqual(f["rlf_lane"].tolist(), [0])
+        # Qout window 20 steps: the mean of the dB samples falls below -8 dB with m = 17 low samples
+        # (400 - 35 m < -160 -> m > 16), first indication at the next multiple of 2 steps, T310 = 100 steps
+        t_oos = 100 + 16
+        t_oos += (-t_oos) % 2
+        self.assertEqual(int(f["rlf_step"][0]), t_oos + 100)
+        tau = int(round(sig["reestablishment"]["tau_re_s"] / 0.01))
+        self.assertEqual(int(f["re_end"][0]), int(f["rlf_step"][0]) + 1 + tau)
+        self.assertTrue(out["outage_req"][0, int(f["rlf_step"][0]) + 1: int(f["re_end"][0])].all())
+        self.assertEqual(int(out["serving"][0, -1]), 1)  # re-established on the best cell
+        self.assertFalse(out["outage_req"][1, 200:].any())
+
+    def test_command_failure_and_cho(self):
+        from sim.tvt.signaling import simulate_fa
+        from xapp.schemes import REASON
+
+        sig = self._sig()
+        t = 600
+        snr = np.full((2, t, 2), 20.0)
+        snr[:, 100:, 0] = -20.0  # serving collapses abruptly; other cell good
+        lanes = self._lanes(snr, np.array([REASON["a5"], REASON["a5"]]), filter_a=np.full(2, 0.02))
+        out = simulate_fa(lanes, bandwidth_hz=400e6, rate_req_bps=400e6, max_se=7.4, sig=sig, cho=np.array([False, True]))
+        f = out["failures"]
+        ho = out["handovers"]
+        # the slowly filtered A5 condition fires only after the Qout quality is below Qout -> the command fails (lane 0)
+        self.assertGreater(int((f["hof_lane"] == 0).sum()), 0)
+        self.assertEqual(int((f["hof_lane"] == 1).sum()), 0)  # CHO: no command on the critical path
+        self.assertIn(1, ho["lane"].tolist())
+        self.assertEqual(int(out["serving"][1, 300]), 1)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
