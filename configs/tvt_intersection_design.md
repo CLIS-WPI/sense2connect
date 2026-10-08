@@ -59,3 +59,14 @@ trained on the canyon (generalisation).
 - Ghost rejection and the walkable map of paper 2 know the main street only; the TVT walkable area for
   the intersection is the union of the four sidewalk bands and the crossing (from this design).
 - Arrays keep the paper orientation (+x).
+
+## Addendum (fourth TVT round, human decision): panel orientation
+Copy of results/TVT/T6/scene_design.md, committed before any run with it. Reason: deployment planning,
+not results. Rule: "each O-RU has one 38.901 panel facing along each street arm it serves". Both cells
+serve the whole walkable area (sidewalks on all four arms) and both corner O-RUs see along all four arms,
+so each O-RU (and the radar at O-RU 0) has four TR 38.901 panels, yaw 0 (east), 180 (west), 90 (north),
+270 (south) deg, untilted (configs/tvt.yaml panels.yaw_deg_by_mount.corner). Applied to the canyon the rule
+gives the +-x pair (unchanged). Selection: link and radar use the panel whose boresight azimuth is nearest
+to the target's azimuth (= the two-panel half-space rule); positioning uses all four panels (strongest copy
+of a path kept, association within the panel's front half-space); the bound sums the four panels' Fisher
+information. The third-round +-x intersection results are kept as a supplement (naive canyon orientation).

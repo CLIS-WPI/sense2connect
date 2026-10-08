@@ -33,6 +33,13 @@ panels:
   # plane, Sionna element order), boresight +x (yaw 0) and -x (yaw 180 deg), no tilt. The paper-1 radar
   # pointed at the street centre (look_at); it now uses the same two panels (human decision).
   yaw_deg: [0.0, 180.0]
+  # Intersection (T6 second deployment; human decision, fourth round, reason: deployment planning, not results;
+  # results/TVT/T6/scene_design.md, configs/tvt_intersection_design.md addendum): "each O-RU has one 38.901 panel
+  # facing along each street arm it serves". Both cells serve all four arms -> four panels per O-RU (both O-RUs and
+  # the radar at O-RU 0), first listed wins an exact tie. Mounts not listed use yaw_deg. Selection with more than two
+  # panels: nearest boresight azimuth (link, radar); positioning uses every panel.
+  yaw_deg_by_mount:
+    corner: [0.0, 180.0, 90.0, 270.0]
   # Element pattern: 3GPP TR 38.901 V19.5.0 Table 7.3-1 (checked in the spec text):
   #   A_dB(theta, phi) = -min(-(A_V + A_H), A_max) + G_E,max, A_V = -min(12 ((theta - 90)/theta_3dB)^2, SLA_V),
   #   A_H = -min(12 (phi/phi_3dB)^2, A_max), theta_3dB = phi_3dB = 65 deg, SLA_V = A_max = 30 dB, G_E,max = 8 dBi;
