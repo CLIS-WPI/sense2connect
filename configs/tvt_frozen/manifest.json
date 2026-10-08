@@ -1,54 +1,55 @@
 {
- "definition": "TVT freeze: copy every tuned parameter of T1-T6 from results/ into committed files under configs/tvt_frozen/.\n\nHuman decision before the freeze: T7 must not re-tune; it reads these files. Every value is copied\nverbatim from the result file that produced it (no number typed by hand); each output records its\nsource path and the source's sha256. Duplicated parameters (a scheme tuned in more than one run) must\nagree, otherwise the script stops. The learned-baseline weights are not copied; they are referenced by\npath and sha256 (scripts/tvt_t5_handover.py --learned-manifest refuses other weights).\n\nOutputs (configs/tvt_frozen/):\n  tracker.json                 T4 tracker parameters incl. the constant visibility prior (scripts/tvt_t4_track.py --params)\n  visibility_calibration.json  T3 isotonic recalibration and coverage prior (scripts/tvt_t4_track.py --calibration)\n  handover_<model>.json        per-margin parameters of every handover scheme for signaling model ideal / failure_aware\n                               (scripts/tvt_t5_handover.py --signaling <model> --fixed); primary objective wrap-masked\n  handover_intersection_<model>.json   the same, re-tuned on the intersection tuning seeds (T6 second deployment)\n  p2_estimator.json            paper-2 estimator-A parameters used for the planner_p2 inputs (paper-2 tuning seeds)\n  learned.json                 path + sha256 + training summary of the learned predictor (--learned-manifest)\n  manifest.json                sources, sha256, git commit of the freeze\nRun: python scripts/tvt_freeze_params.py\n",
+ "definition": "TVT freeze: copy every tuned parameter of T1-T6 from results/ into committed files under configs/tvt_frozen/.\n\nHuman decision before the freeze: T7 must not re-tune; it reads these files. Every value is copied\nverbatim from the result file that produced it (no number typed by hand); each output records its\nsource path and the source's sha256. Duplicated parameters (a scheme tuned in more than one run) must\nagree, otherwise the script stops. The learned-baseline weights are not copied; they are referenced by\npath and sha256 (scripts/tvt_t5_handover.py --learned-manifest refuses other weights).\n\nOutputs (configs/tvt_frozen/):\n  tracker.json                 T4 tracker parameters incl. the constant visibility prior (scripts/tvt_t4_track.py --params)\n  visibility_calibration.json  T3 isotonic recalibration and coverage prior (scripts/tvt_t4_track.py --calibration)\n  handover_<model>.json        per-margin parameters of every handover scheme for signaling model ideal / failure_aware\n                               (scripts/tvt_t5_handover.py --signaling <model> --fixed); primary objective wrap-masked\n  handover_intersection_<model>.json   the same, re-tuned on the intersection tuning seeds (T6 second deployment)\n  p2_estimator.json            estimator-A parameters of the planner_p2 inputs (back-to-back panels: re-tuned on the tuning\n                               seeds, results/TVT/est_A/est_tuned_A.json; isotropic: paper 2's)\n  learned.json                 path + sha256 + training summary of the learned predictor (--learned-manifest)\n  manifest.json                sources, sha256, git commit of the freeze\nRun: python scripts/tvt_freeze_params.py\n",
+ "array": "back_to_back (configs/tvt.yaml panels)",
  "git_commit": "",
  "files": {
   "tracker.json": {
    "sources": {
-    "results/TVT/T4/tuned.json": "bcfb464b79a9b76ec503d72fb08a8ef331d4d14fe6dd4b724e00140ce76a4cc5"
+    "results/TVT/T4/tuned.json": "63779de0aeb0b4ef9742371ea697775dcff82b0a3ec46420c87530eede01ad82"
    },
-   "sha256": "4ee060e7f11962fed08b34fe44525e92a62ea574355444d74c1919fc09842ee5"
+   "sha256": "646e5e28555f6ea5c3cee493f7c47e2d2893e5576f20efdeb932fc6f87432ace"
   },
   "visibility_calibration.json": {
    "sources": {
-    "results/TVT/T3/visibility.json": "ac7e3c0895fb026deb317d2f66d94a09a1c3397089cb83e16b58165efbf92a55"
+    "results/TVT/T3/visibility.json": "f311984d5ef1e1c10b1ae5b1613126dafcc2292ea4deba21a38f80506e2f5cbb"
    },
-   "sha256": "47592bbe38e6e930f7cfa750b697fb0c712b4acd29551ab9c72be7a44d3ae450"
+   "sha256": "9039f75b68e3331d104d73bb5675cb5f5147dfa4ec28a31bf3033c67b202f92b"
   },
   "handover_ideal.json": {
    "sources": {
-    "results/TVT/T5/handover_ideal.json": "76e13859c82ee0abb1d2ea88b2ad6d9d543e8e1c3cfb8862ed1cd5ef5022aa52"
+    "results/TVT/T5/handover_ideal.json": "5c51dc36fb00648bb135d950aca927a087666d7242642cf9d53f71d1a6bbeeec"
    },
-   "sha256": "cd8e280b007511270203228f0c117c2c15f8d75a7c2a48b3b2ce67b6355e11fb"
+   "sha256": "dfa7aeb4e746bda8fcdbea2a42b4864b7ad609114e4e915189bb17cbeb3a6fda"
   },
   "handover_intersection_ideal.json": {
    "sources": {
-    "results/TVT/T5/handover_intersection_tuned_ideal.json": "be92778533444830da281552e4ceaaf1ceeee14e9e3485302d63656fdc1d9e16"
+    "results/TVT/T5/handover_intersection_tuned_ideal.json": "86e8f813ccb45296f2673e281321365d345e14b0ecb80bd51f1204dea1848656"
    },
-   "sha256": "cb673b492b96b46b59b609cc506c56cb0716bc11524b50799ad6c7ae4eb495bd"
+   "sha256": "f27bbbbb6d7e12785a5ad672523a624b1144cd271cc28a570987294f5110a6d8"
   },
   "handover_failure_aware.json": {
    "sources": {
-    "results/TVT/T5/handover_failure_aware.json": "515044832971d6994da7a27b1087fda36999b0f2540aa981299a4d3400a6b6e0"
+    "results/TVT/T5/handover_failure_aware.json": "245bbca38e5f4a9de0b3e2f579305b0719884cf52ce391e4f48476a5d0b2801e"
    },
-   "sha256": "c1b1a0e2a703f942af1fab83c4c6c25b43b4f677cf0c98150a703ecf28f688e2"
+   "sha256": "81eb626f3d06d5d498cef0f66ad28c1123bd105bf677e10c8dfeaa2dc8bc0383"
   },
   "handover_intersection_failure_aware.json": {
    "sources": {
-    "results/TVT/T5/handover_intersection_tuned_failure_aware.json": "14f4c19de7f1daa8f76951b5e626a2821ce39957a11052b16626256c09c806e7"
+    "results/TVT/T5/handover_intersection_tuned_failure_aware.json": "50cc72aa26f8532d14448db6c2b2e31ee301f464ca5142bc18c73fe4e3b01bbb"
    },
-   "sha256": "8b27c86c6c4a268645c4ea14c072a27cf38bbeee757d8b69e9e589904252101c"
+   "sha256": "9195c7304309809a94a40b8d1498f5766aca3dd6f76f0496e9b0b9461fffce85"
   },
   "p2_estimator.json": {
    "sources": {
-    "results/P2/est_tuned.json": "801a6b30b7e51d11f1264180c8fd7583cec662399b000f8961c42474065611bc"
+    "results/TVT/est_A/est_tuned_A.json": "075416e764eebaab80aa1718240a0f01b7f5d96c246bd89236dd066e2ca67ab9"
    },
-   "sha256": "e3653b54fa49437811e294548e55bce86c54659ba918f015be75ed32af0314cb"
+   "sha256": "fa7c9be6c33884e8a19f3ab06d9d5b6bf8966af1166811a61c3324e29c0d38da"
   },
   "learned.json": {
    "sources": {
-    "results/TVT/T5/learned.json": "9d5c1e556935a2bca8c59cf0ac962ab82c4bf45754086443b71d1edeaa149e7d"
+    "results/TVT/T5/learned.json": "df595d86f6a6b6b0915a729015bc109c2adc37e1aaa488a569ff983089c60ef2"
    },
-   "sha256": "a44f7a1309ef476cd17a79d19fc785e9f89766d6545e57952c1447f7f1b143bf"
+   "sha256": "539b8effed0847069fc4490e829969f3a0fa0e22fd9f7f0696a1cd5eb2c5014f"
   }
  }
 }

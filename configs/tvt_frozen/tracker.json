@@ -6,7 +6,7 @@
   "eps_robust": 0.3,
   "_q_prior": {
    "los": 0.8178005008347246,
-   "nlos": 0.6458922479064422
+   "nlos": 0.6241025753617143
   }
  },
  "tuning": {
@@ -35,12 +35,12 @@
     "pd_nlos": 0.8,
     "eps_robust": 0.3
    },
-   "median_m": 0.03789513542549178,
-   "p90_m": 0.237122164194063,
-   "wall_s": 244.52675200626254
+   "median_m": 0.03852735023351884,
+   "p90_m": 0.2719229394973664,
+   "wall_s": 237.87021130882204
   }
  },
  "_sources": {
-  "results/TVT/T4/tuned.json": "bcfb464b79a9b76ec503d72fb08a8ef331d4d14fe6dd4b724e00140ce76a4cc5"
+  "results/TVT/T4/tuned.json": "63779de0aeb0b4ef9742371ea697775dcff82b0a3ec46420c87530eede01ad82"
  }
 }
