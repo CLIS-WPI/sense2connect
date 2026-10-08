@@ -1,5 +1,6 @@
 """TVT third round: what changed from the isotropic single UPA (results/TVT_iso) to the back-to-back TR 38.901 panels
 (results/TVT), development seeds; markdown tables from the result files only.
+Fourth round: + the intersection with one panel per street arm vs the third-round +-x panels (supplement).
 Run: python scripts/tvt_panels_compare.py > results/TVT/panels_vs_iso.md
 """
 
@@ -157,6 +158,48 @@ def t6(model: str) -> None:
     print()
 
 
+def intersection(model: str) -> None:
+    """Fourth round: intersection with one panel per street arm (results/TVT) vs the naive canyon orientation +-x
+    (third round, results/TVT/supplement_intersection_pmx)."""
+    SUP = PAN / "supplement_intersection_pmx"
+    if model == "failure_aware":
+        a, b = load(SUP, "T1/bound_summary_intersection.json"), load(PAN, "T1/bound_summary_intersection.json")
+        if a and b:
+            print("### Intersection: +-x panels (supplement, naive canyon orientation) vs one panel per street arm\n")
+            print("| T1 PEB [mm] (median over epochs, mean over seeds) | +-x | per street arm |")
+            print("|---|---|---|")
+            for k in ("mapsweep|los", "mapsweep|map_0"):
+                if k in a["configs"] and k in b["configs"]:
+                    print(f"| {k.split('|')[1]} | {m(a['configs'][k]['all']['mean'], 1e3, '{:.1f}')} | {m(b['configs'][k]['all']['mean'], 1e3, '{:.1f}')} |")
+            print()
+        sa, sb = load(SUP, "T6/summary.json"), load(PAN, "T6/summary.json")
+        if sa and sb and "intersection" in sa and "intersection" in sb:
+            print("| T4 tracker UE error [m] (mean over seeds) | +-x | per street arm |")
+            print("|---|---|---|")
+            for c in ("tracker_none", "tracker_pred_real"):
+                for st in ("median", "p90"):
+                    x, y = sa["intersection"].get(c, {}).get(st), sb["intersection"].get(c, {}).get(st)
+                    if x and y:
+                        print(f"| {c} {st} | {x['mean']:.4f} | {y['mean']:.4f} |")
+            print()
+    for tag, name in (("intersection_tuned", "re-tuned on the intersection tuning seeds"), ("intersection_fixed", "canyon parameters")):
+        a, b = load(SUP, f"T5/handover_{tag}_{model}.json"), load(PAN, f"T5/handover_{tag}_{model}.json")
+        if not (a and b):
+            continue
+        print(f"### Intersection handover, {name}, {model} signaling: outage [s/UE-min] and vs A5 (exact Wilcoxon p), +-x -> per street arm\n")
+        print("| margin | scheme | +-x | per street arm | +-x vs A5 | per street arm vs A5 |")
+        print("|---|---|---|---|---|---|")
+        for lab in MARGINS:
+            if lab not in b["schemes"]:
+                continue
+            for sch in ("A5", "CHO", "A3") + REAL + ("planner_tvt_perfect", "planner_true_perfect", "risk_tvt_perfect"):
+                x, y = a["schemes"].get(lab, {}).get(sch), b["schemes"][lab].get(sch)
+                if not y:
+                    continue
+                print(f"| {lab} | {sch} | {m(x['outage'] if x else None)} | {m(y['outage'])} | {pv(x.get('vs_A5') if x else None)} | {pv(y.get('vs_A5'))} |")
+        print(f"\nReference margin of the run: +-x {a.get('margin_ref_db', float('nan')):.1f} dB, per street arm {b.get('margin_ref_db', float('nan')):.1f} dB.\n")
+
+
 def main() -> None:
     sys.path.insert(0, str(ROOT))
     print("## Isotropic single UPA (results/TVT_iso) vs back-to-back TR 38.901 panels (results/TVT), development seeds\n")
@@ -168,6 +211,8 @@ def main() -> None:
         t5(model)
     for model in ("failure_aware", "ideal"):
         t6(model)
+    for model in ("failure_aware", "ideal"):
+        intersection(model)
 
 
 if __name__ == "__main__":

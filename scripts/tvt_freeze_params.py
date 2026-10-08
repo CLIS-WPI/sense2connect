@@ -16,7 +16,9 @@ Outputs (configs/tvt_frozen/):
                                seeds, results/TVT/est_A/est_tuned_A.json; isotropic: paper 2's)
   learned.json                 path + sha256 + training summary of the learned predictor (--learned-manifest)
   manifest.json                sources, sha256, git commit of the freeze
-Run: python scripts/tvt_freeze_params.py
+Run: python scripts/tvt_freeze_params.py   (container), then on the HOST: bash scripts/tvt_freeze_stamp.sh stamp
+(git is not available in the container: the commit is filled from the host and checked with
+bash scripts/tvt_freeze_stamp.sh check; scripts/test_tvt.py requires a full commit hash).
 """
 
 from __future__ import annotations
@@ -64,11 +66,20 @@ def scheme_params(files: list[Path]) -> tuple[dict, dict]:
     return out, {f"{lab} | {sch}": src for (lab, sch), src in origin.items()}
 
 
+def _git_head() -> str:
+    """HEAD if git works here (host), else "" - stamped from the host by scripts/tvt_freeze_stamp.sh stamp."""
+    try:
+        r = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True)
+    except OSError:
+        return ""
+    return r.stdout.strip() if r.returncode == 0 else ""
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     from sim.tvt.panels import enabled as _pn
 
-    manifest = {"definition": __doc__, "array": "back_to_back (configs/tvt.yaml panels)" if _pn() else "single_iso", "git_commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip(),
+    manifest = {"definition": __doc__, "array": "back_to_back (configs/tvt.yaml panels)" if _pn() else "single_iso", "git_commit": _git_head(),
                 "files": {}}
 
     def write(name: str, obj: dict, sources: list[Path]) -> None:
