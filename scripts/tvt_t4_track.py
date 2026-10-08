@@ -123,7 +123,7 @@ def run(jobs, set_name, cond, sigma_map, params, raw, p2cfg, tcfg, *, save=True,
     for t in range(T):
         live = []
         for i, (tr, d) in enumerate(zip(trackers, data)):
-            keys = ("tau_ns", "uy", "uz", "var_tau", "var_uy", "var_uz", "valid") + (("sx",) if "sx" in d["comp"] else ())
+            keys = ("tau_ns", "uy", "uz", "var_tau", "var_uy", "var_uz", "valid") + tuple(k for k in ("sx", "pa") if k in d["comp"])
             meas = [{k: d["comp"][k][t, d["u"], c] for k in keys} for c in range(tr.C)]
             d["meas"] = meas
             if tr.st is None:

@@ -55,6 +55,16 @@ def _tag(model: str) -> str:
     return tag + ("_b2b" if enabled() else "")
 
 
+def _job_tag(model: str, mount: str) -> str:
+    """``_tag`` + the panel yaws when the mount's panel set is not the +-x pair (intersection: _y0-180-90-270)."""
+    from sim.tvt.panels import enabled, is_pair, yaws_deg
+
+    t = _tag(model)
+    if enabled() and not is_pair(yaws_deg(mount)):
+        t += "_y" + "-".join(f"{y:g}" for y in yaws_deg(mount))
+    return t
+
+
 def service_cfg() -> dict[str, Any]:
     from sim.scenes.config import load_yaml
 
@@ -117,7 +127,7 @@ def fields(job: tuple, model: str, raw: dict, actors: dict | None = None) -> dic
 
     sc = service_cfg()
     d = _job_dir(job)
-    tag = _tag(model)
+    tag = _job_tag(model, job[1])
     meta_p = d / f"fields_{tag}_meta.json"
     if meta_p.exists():
         try:
@@ -144,11 +154,15 @@ def fields(job: tuple, model: str, raw: dict, actors: dict | None = None) -> dic
 
         sc0 = prepare_scenario(raw, seed=seed, mount=mount, density=density, duration_s=0.1, dt_s=DT_SENSE)
         pn = {"ue": np.asarray(actors["ue_position_m"], dtype=np.float64), "oru": np.array([o["position_m"] for o in sc0["orus"]], dtype=np.float64)}
+        from sim.tvt.panels import is_pair, yaws_deg
+
+        if not is_pair(yaws_deg(mount)):
+            pn["yaws"] = yaws_deg(mount)
     out = timeline_fields(model, seg, loss, a_center, float(meta["wavelength_m"]), f_off, int(round(DT_SENSE / DT_COMM)),
                           oversampling=int(sc["codebook_oversampling"]), panels=pn)
     d.mkdir(parents=True, exist_ok=True)
     np.savez(d / f"fields_{tag}.npz", **out)
-    meta_p.write_text(json.dumps({"job": list(job), "model": model, "oversampling": int(sc["codebook_oversampling"]), "array": "back_to_back" if enabled() else "single_iso",
+    meta_p.write_text(json.dumps({"job": list(job), "model": model, "oversampling": int(sc["codebook_oversampling"]), "array": "back_to_back" if enabled() else "single_iso", "tag": tag,
                                   "provenance": {"kind": "tvt_service_fields", **scoped_version(sources())}}) + "\n")
     return out
 
@@ -157,7 +171,7 @@ def precompute(jobs: list[tuple], model: str, raw: dict, workers: int = 4) -> No
     todo = []
     for job in jobs:
         try:
-            fields_cached = (_job_dir(job) / f"fields_{_tag(model)}_meta.json").exists()
+            fields_cached = (_job_dir(job) / f"fields_{_job_tag(model, job[1])}_meta.json").exists()
         except Exception:  # noqa: BLE001
             fields_cached = False
         if not fields_cached:

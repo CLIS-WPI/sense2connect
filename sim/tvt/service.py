@@ -165,9 +165,12 @@ def timeline_fields(model: str, seg: dict[str, np.ndarray], path_loss_db: np.nda
     """
     st = path_states(seg, a_center, wavelength_m, steps_per_snapshot)
     if panels is not None:
-        from sim.tvt.panels import link_amplitude
+        from sim.tvt.panels import link_amplitude, link_amplitude_yaws
 
-        amp, _sx = link_amplitude(st["u"], panels["ue"], panels["oru"])
+        if panels.get("yaws") is None:
+            amp, _sx = link_amplitude(st["u"], panels["ue"], panels["oru"])
+        else:  # any panel set (intersection: four panels): codebook of the selected panel (sim/tvt/panels.link_amplitude_yaws)
+            amp, _yaw, st["u"] = link_amplitude_yaws(st["u"], panels["ue"], panels["oru"], panels["yaws"])
         st["a"] = st["a"] * amp
     gain = np.where(np.isfinite(path_loss_db), 10.0 ** (-np.nan_to_num(path_loss_db, posinf=0.0) / 10.0), 0.0)
     gain = np.where(seg["path_class"] >= 0, gain, 0.0)

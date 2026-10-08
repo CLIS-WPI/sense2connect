@@ -87,14 +87,15 @@ def h_matrix_va(inp: dict) -> np.ndarray:
 
 def pebs(inp: dict, f_hz: np.ndarray, beta_scale: float, *, sync_ns: float, sigma_phi_deg: float, sigma_g_db: float, sigma_r_m: float,
          pattern: str, sigma_maps: list[float], timing: str = "tdoa", blocked_db: float = 10.0, device: str = "cuda",
-         chunk: int = 25, va_sigmas: list[float] | None = None, panels: bool = False) -> dict[str, np.ndarray]:
+         chunk: int = 25, va_sigmas: list[float] | None = None, panels: bool | list[float] = False) -> dict[str, np.ndarray]:
     """PEB [T, U] for "los", for "map" at every sigma_map (m; 0 = known, inf = free offsets) and "va_<s>" for every sigma_va.
 
     ``panels`` (configs/tvt.yaml panels: back_to_back): every O-RU has two back-to-back panels (+x, -x) with ``pattern``.
     Each panel's Fisher information is the frozen gram in its local frame (az - pi for the -x panel: the local direction
     R^T u with the unrotated element grid is the world direction with the rotated grid); path amplitudes and element
     errors are eliminated per panel (independent nuisances, unknown inter-panel calibration), and the geometric EFIMs of
-    the two panels are summed (shared delays, angles, clocks)."""
+    the two panels are summed (shared delays, angles, clocks). A list = the panel yaws [deg] (intersection: 0, 180, 90,
+    270; az - yaw per panel, the EFIMs of all panels summed)."""
     import torch
 
     from sim.positioning.array import element_positions
@@ -117,7 +118,10 @@ def pebs(inp: dict, f_hz: np.ndarray, beta_scale: float, *, sync_ns: float, sigm
     absent = torch.as_tensor(~inp["valid"], device=device)
     blk = torch.as_tensor(inp["los_loss"] >= blocked_db, device=device)
     is_los, is_nlos = cls == 0, cls > 0
-    shifts = (0.0, math.pi) if panels else (0.0,)
+    if isinstance(panels, (list, tuple)):
+        shifts = tuple(0.0 if y == 0.0 else (math.pi if y == 180.0 else math.radians(y)) for y in panels)
+    else:
+        shifts = (0.0, math.pi) if panels else (0.0,)
     Jpan = []
     for sh in shifts:
         Ks = []

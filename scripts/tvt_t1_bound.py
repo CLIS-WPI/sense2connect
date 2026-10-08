@@ -54,6 +54,11 @@ def run_job(job, raw, p2cfg, tcfg) -> dict:
 
     global MAIN_PATTERN, PANELS
     PANELS = enabled()  # back-to-back TR 38.901 panels (configs/tvt.yaml panels); sweep entries keep their own pattern
+    if PANELS:
+        from sim.tvt.panels import is_pair, yaws_deg
+
+        if not is_pair(yaws_deg(job[1])):
+            PANELS = yaws_deg(job[1])  # more panels (intersection): Fisher information summed over every panel
     MAIN_PATTERN = str(pn_config()["pattern"]) if PANELS else "iso"
 
     b = tcfg["bound"]

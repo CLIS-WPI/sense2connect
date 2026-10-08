@@ -118,14 +118,25 @@ class MultipathTracker:
         ue = np.array([x[IX], x[IY], self.z])
         return [np.flatnonzero(validity(self.oru[c], ue, self.faces, self.sources, N, A, V, self.fid)) for c in range(self.C)]
 
-    def predict_meas(self, x: np.ndarray, c: int, idx: np.ndarray):
-        """h [S, 3], H [S, 3, n] for sources idx of O-RU c at state x."""
+    def predict_meas(self, x: np.ndarray, c: int, idx: np.ndarray, a: float = 0.0):
+        """h [S, 3], H [S, 3, n] for sources idx of O-RU c at state x.
+
+        ``a`` [deg]: pair axis of the measuring panel (sim/tvt/panels: 0 = +-x panels, world u_y; 90 = +-y panels,
+        u_y of the frame rotated by 90 deg = -u_x). The geometry is rotated into that frame (delays and face offsets
+        are invariant) and the position Jacobian rotated back."""
         from sim.tvt.sources import predict
 
         N, A, V = self._planes(x)
         ue = np.array([x[IX], x[IY], self.z])
-        pr = predict(self.oru[c], ue, N[idx], A[idx], V[idx])
-        self._pred_sx = np.where(pr["u"][:, 0] >= 0.0, 1, -1)  # half-space of each source's departure (back-to-back panels)
+        if a:
+            from sim.tvt.panels import rot_z
+
+            Rz = rot_z(a)
+            pr = predict(self.oru[c] @ Rz, ue @ Rz, N[idx] @ Rz, A[idx] @ Rz, V[idx])
+            pr["Jp"] = pr["Jp"] @ Rz[:2, :2].T  # d/d(x, y) world = d/d(x', y') R^T
+        else:
+            pr = predict(self.oru[c], ue, N[idx], A[idx], V[idx])
+        self._pred_sx = np.where(pr["u"][:, 0] >= 0.0, 1, -1)  # front half-space of each source's departure in the panel frame
         S = len(idx)
         h = np.stack([pr["tau"] + x[ID0 + c] + x[IB], pr["u"][:, 1], pr["u"][:, 2]], -1)
         H = np.zeros((S, 3, self.n))
@@ -168,8 +179,19 @@ class MultipathTracker:
             r = np.linalg.norm(d, axis=-1)
             uy, uz = d[:, 1] / r, d[:, 2] / r
             zy, zz = m["uy"][m["valid"]], m["uz"][m["valid"]]
-            ca = ((uy[:, None] - zy[None]) ** 2 + (uz[:, None] - zz[None]) ** 2) / 0.02 ** 2
-            if "sx" in m:  # back-to-back panels: a component only explains a LoS in its panel's half-space
+            if "pa" in m:  # panels of two pair axes (intersection): each component in its panel's stored frame
+                from sim.tvt.panels import transverse
+
+                pa = np.asarray(m["pa"])[m["valid"]]
+                ca = np.zeros((g.shape[0], zy.size))
+                for a in np.unique(pa):
+                    k = pa == a
+                    ty, gsx = transverse(d / r[:, None], a)
+                    cak = ((ty[:, None] - zy[k][None]) ** 2 + (uz[:, None] - zz[k][None]) ** 2) / 0.02 ** 2
+                    ca[:, k] = np.where(gsx[:, None] == m["sx"][m["valid"]][k][None], cak, 1e12)
+            else:
+                ca = ((uy[:, None] - zy[None]) ** 2 + (uz[:, None] - zz[None]) ** 2) / 0.02 ** 2
+            if "sx" in m and "pa" not in m:  # back-to-back panels: a component only explains a LoS in its panel's half-space
                 gsx = np.where(d[:, 0] >= 0.0, 1, -1)
                 ca = np.where(gsx[:, None] == m["sx"][m["valid"]][None], ca, 1e12)
             j = ca.argmin(1)
@@ -245,12 +267,25 @@ class MultipathTracker:
             S_idx = idx[c]
             if len(S_idx) == 0 or len(jj) == 0:
                 continue
-            h, H = self.predict_meas(self.st.x, c, S_idx)
             z = np.stack([m["tau_ns"][jj], m["uy"][jj], m["uz"][jj]], -1)  # [J, 3]
             R = np.stack([m["var_tau"][jj] + pr.floor_tau_ns ** 2, m["var_uy"][jj] + pr.floor_u ** 2, m["var_uz"][jj] + pr.floor_u ** 2], -1)
             Rb = R + np.array([pr.blk_tau_ns ** 2, pr.blk_u ** 2, pr.blk_u ** 2])
-            HPH = np.einsum("sai,ij,sbj->sab", H, self.st.P, H)  # [S, 3, 3]
-            nu = z[None, :, :] - h[:, None, :]
+            if "pa" in m:  # panels of two pair axes: prediction per component in its panel's frame -> [S, J, ...]
+                ax = np.asarray(m["pa"])[jj].astype(float)
+                axes = sorted(set(ax.tolist()))
+                ai = np.array([axes.index(v) for v in ax])
+                pp = [self.predict_meas(self.st.x, c, S_idx, a) + (self._pred_sx.copy(),) for a in axes]
+                hsj = np.stack([q[0] for q in pp])[ai].transpose(1, 0, 2)  # [S, J, 3]
+                Hsj = np.stack([q[1] for q in pp])[ai].transpose(1, 0, 2, 3)  # [S, J, 3, n]
+                psx = np.stack([q[2] for q in pp])[ai].T  # [S, J]
+                HPHx = np.einsum("sjai,ik,sjbk->sjab", Hsj, self.st.P, Hsj)  # [S, J, 3, 3]
+                nu = z[None, :, :] - hsj
+            else:
+                ax = None
+                h, H = self.predict_meas(self.st.x, c, S_idx)
+                HPH = np.einsum("sai,ij,sbj->sab", H, self.st.P, H)  # [S, 3, 3]
+                HPHx = HPH[:, None]
+                nu = z[None, :, :] - h[:, None, :]
             nu[..., 0] = wrap(nu[..., 0], self.period)
             qs = np.clip(q[c], 0.0, 1.0)
             pdc = np.where(los_mask[c], pr.pd_los, pr.pd_nlos)
@@ -266,38 +301,45 @@ class MultipathTracker:
             wmode = np.zeros((len(S_idx), len(jj), 3))
             gate = np.zeros((len(S_idx), len(jj)), bool)
             for mode, (Rm, pw) in enumerate(hyps):
-                Sm = HPH[:, None] + Rm[..., :, None] * np.eye(3)  # [S, J, 3, 3]
+                Sm = HPHx + Rm[..., :, None] * np.eye(3)  # [S, J, 3, 3]
                 Si = np.linalg.inv(Sm)
                 d2 = np.einsum("sja,sjab,sjb->sj", nu, Si, nu)
                 det = np.linalg.det(Sm)
                 lik = np.exp(-0.5 * d2) / np.sqrt((2 * np.pi) ** 3 * np.maximum(det, 1e-300))
                 gate |= d2 < pr.gate
                 wmode[..., mode] = pw[:, None] * lik / lam
-            if "sx" in m:  # back-to-back panels: association only within the measuring panel's half-space
+            if ax is not None:  # association only within the measuring panel's front half-space
+                gate &= psx == np.asarray(m["sx"])[jj][None, :]
+            elif "sx" in m:  # back-to-back panels: association only within the measuring panel's half-space
                 gate &= self._pred_sx[:, None] == np.asarray(m["sx"])[jj][None, :]
             wmode = np.where(gate[..., None], wmode, 0.0)
             w = wmode.sum(-1)
             w0 = qs * (1 - pdc) + (1 - qs) * (1 - pr.pd_blk)
             beta, _ = bp_marginals(w0, w)
-            plans.append((c, S_idx, jj, z, R, Rb, Rblk, beta, wmode, los_mask[c]))
+            plans.append((c, S_idx, jj, z, R, Rb, Rblk, beta, wmode, los_mask[c], ax))
         # sequential PDA updates, strongest associations first
         order = []
-        for pi_, (c, S_idx, jj, z, R, Rb, Rblk, beta, wmode, lm) in enumerate(plans):
+        for pi_, (c, S_idx, jj, z, R, Rb, Rblk, beta, wmode, lm, _ax) in enumerate(plans):
             for si in range(len(S_idx)):
                 order.append((1.0 - beta[si, 0], pi_, si))
         order.sort(reverse=True)
         for _, pi_, si in order:
-            c, S_idx, jj, z, R, Rb, Rblk, beta, wmode, lm = plans[pi_]
+            c, S_idx, jj, z, R, Rb, Rblk, beta, wmode, lm, ax = plans[pi_]
             if beta[si, 0] > 0.999:
                 continue
-            h, H = self.predict_meas(self.st.x, c, S_idx[si:si + 1])
-            h, H = h[0], H[0]
+            if ax is None:
+                h, H = self.predict_meas(self.st.x, c, S_idx[si:si + 1])
+                h, H = h[0], H[0]
+            else:
+                hh = {a: self.predict_meas(self.st.x, c, S_idx[si:si + 1], a) for a in sorted(set(ax.tolist()))}
             x, P = self.st.x, self.st.P
             comps = [(beta[si, 0], x, P)]
             for j in range(len(jj)):
                 bj = beta[si, j + 1]
                 if bj < 1e-6:
                     continue
+                if ax is not None:
+                    h, H = hh[float(ax[j])][0][0], hh[float(ax[j])][1][0]
                 tot = wmode[si, j].sum()
                 for mode, Rm in ((0, R[j]), (1, Rb[j]), (2, Rblk[si, j])):
                     wm = bj * (wmode[si, j, mode] / tot if tot > 0 else 1.0 / 3.0)

@@ -8,6 +8,9 @@ detect  per panel (configs/tvt.yaml panels.sensing): the cached paths are turned
         localisation with the panel's local element positions and orientation); a panel keeps the detections in its
         half-space (sign(x - x_O-RU) = panel sign) and the frame's detections are the union over both panels.
         Thermal noise: the paper-1 seeds (seed * 100000 + frame) for the +x panel, + 50000 for the -x panel.
+        More panels (configs/tvt.yaml panels.yaw_deg_by_mount, intersection yaw 0/180/90/270): each keeps the
+        detections in its sector (nearest boresight azimuth, sim/tvt/panels.keep_sector); +25000 / +75000 for the
+        90 / 270 deg panels.
         --inr k: residual self-interference as in T6 (noise figure + 10 log10(1 + 10^(INR/10)), every panel).
 Output: results/TVT/radar/det[_inr<k>]/<mount>/<density>/seed_<s>/detections_1024.json (the paper-1 payload layout,
 read by xapp.tracks.load_detections; events.json linked from the paper-1 cache) + per-panel counts.
@@ -34,6 +37,7 @@ for p in (ROOT, ROOT / "scripts"):
 
 DET_ROOT = ROOT / "results" / "TVT" / "radar"
 NOISE_OFFSET = {1: 0, -1: 50000}
+NOISE_OFFSET_YAW = {0.0: 0, 180.0: 50000, 90.0: 25000, 270.0: 75000}  # four panels (intersection): +y / -y panels own offsets
 
 
 def det_dir(mount: str, density: str, seed: int, inr: float | None = None) -> Path:
@@ -99,37 +103,45 @@ def detect_job(cfg_path: Path, mount: str, density: str, seed: int, inr: float |
     wl = float(meta["wavelength_m"])
     radar_xyz = np.asarray(meta["radar_position_m"], dtype=np.float64)
     eye = np.eye(3)
-    radars = {sx: {"positions_m": pos, "orientation_rad": PN.orientation(sx), "radar_position_m": radar_xyz} for sx in PN.SIGNS}
+    yaws = PN.yaws_deg(mount)
+    pair = PN.is_pair(yaws)
+    # panel keys: the third-round signs for the +-x pair, else the yaws [deg] (intersection: four panels)
+    keys = list(PN.SIGNS) if pair else yaws
+    ori = (lambda k: PN.orientation(k)) if pair else (lambda k: np.array([math.radians(k), 0.0, 0.0]))
+    radars = {k: {"positions_m": pos, "orientation_rad": ori(k), "radar_position_m": radar_xyz} for k in keys}
+    to_panel = (lambda part, k: PN.radar_panel_paths(part, k, pos, eye, wl)) if pair else (lambda part, k: PN.radar_panel_paths_yaw(part, k, pos, eye, wl))
+    keep = (lambda dets, k: PN.keep_facing(dets, k, float(radar_xyz[0]))) if pair else (lambda dets, k: PN.keep_sector(dets, yaws.index(k), yaws, radar_xyz))
+    offset = (lambda k: NOISE_OFFSET[k]) if pair else (lambda k: NOISE_OFFSET_YAW[float(k)])
     static = RT.load_static(mount, density, seed)
     static_h = {}
     resid_max = 0.0
-    for sx in PN.SIGNS:
-        st, r = PN.radar_panel_paths(static, sx, pos, eye, wl)
+    for sx in keys:
+        st, r = to_panel(static, sx)
         resid_max = max(resid_max, r)
         c, dl = M.cpi_from_paths(st, waveform, float(noise["tx_power_dbm"]), max_paths=1024)
         static_h[sx] = M.frequency_responses(c, dl, waveform)
     n_frames = int(meta["n_frames"])
     frames = []
-    counts = {str(sx): 0 for sx in PN.SIGNS}
+    counts = {(str(sx) if pair else f"{sx:g}"): 0 for sx in keys}
     batch = 4
     index = 0
     while index < n_frames:
         count = min(batch, n_frames - index)
         rows = [RT.load_frame(mount, density, seed, index + o) for o in range(count)]
         dets = [dict() for _ in range(count)]
-        for sx in PN.SIGNS:
+        for sx in keys:
             measured = []
             for fr in rows:
                 h = 0
                 for kind in ("rcs", "bg"):
                     part = {k[len(kind) + 1:]: v for k, v in fr.items() if k.startswith(kind + "_")}
-                    pp, r = PN.radar_panel_paths(part, sx, pos, eye, wl)
+                    pp, r = to_panel(part, sx)
                     resid_max = max(resid_max, r)
                     c, dl = M.cpi_from_paths(pp, waveform, float(noise["tx_power_dbm"]), max_paths=1024)
                     h = h + M.frequency_responses(c, dl, waveform)
                 measured.append(h)
             batch_h = torch.cat(measured, dim=0)
-            seeds = [int(seed) * 100000 + NOISE_OFFSET[sx] + index + o for o in range(count)]
+            seeds = [int(seed) * 100000 + offset(sx) + index + o for o in range(count)]
             batch_h = M.add_noise_batch(batch_h, waveform, float(noise["noise_figure_db"]), float(noise["temperature_k"]), seeds)
             blind = batch_h - batch_h.mean(dim=-2, keepdim=True)
             twin = batch_h - static_h[sx]
@@ -140,13 +152,13 @@ def detect_job(cfg_path: Path, mount: str, density: str, seed: int, inr: float |
                     for s in grid:
                         mask, _a = M.ca_cfar(power, guard=int(s["guard"]), train=int(s["train"]), pfa=float(s["pfa"]), noise_applied=True)
                         hits = M.local_maxima(mask, power)
-                        kept = PN.keep_facing(M._locate(cube, hits, waveform, radars[sx]), sx, float(radar_xyz[0]))
+                        kept = keep(M._locate(cube, hits, waveform, radars[sx]), sx)
                         for d in kept:
-                            d["panel"] = int(sx)
+                            d["panel"] = int(sx) if pair else float(sx)
                         key = f"{mode}:{int(s['train'])}:{float(s['pfa'])}"
                         dets[o].setdefault(key, []).extend(kept)
                         if mode == "blind" and int(s["train"]) == 4:
-                            counts[str(sx)] += len(kept)
+                            counts[str(sx) if pair else f"{sx:g}"] += len(kept)
         for o, fr in enumerate(rows):
             frames.append({"t_s": (index + o) * 0.1, "ground_truth": M._truth(fr), "detections": dets[o]})
         index += count
@@ -160,7 +172,7 @@ def detect_job(cfg_path: Path, mount: str, density: str, seed: int, inr: float |
     sources = [ROOT / "sim/tvt/panels.py", ROOT / "scripts/tvt_radar.py", ROOT / "scripts/run_m2_review.py", ROOT / "sim/sensing/process_torch.py",
                ROOT / "sim/sensing/channel.py", ROOT / "sim/sensing/cfar.py", ROOT / "sim/sensing/waveform.py"]
     payload = {"mount": mount, "density": density, "seed": seed, "dt_s": 0.1, "n_frames": n_frames, "radar_position_m": radar_xyz.tolist(),
-               "array": "back_to_back panels (configs/tvt.yaml panels)", "inr_db": inr or 0.0, "detections_per_panel_blind_train4": counts,
+               "array": "back_to_back panels (configs/tvt.yaml panels)", "panel_yaws_deg": yaws, "inr_db": inr or 0.0, "detections_per_panel_blind_train4": counts,
                "fit_residual_max": resid_max, "frames": frames,
                "provenance": {"kind": "tvt_panel_detections", **scoped_version([p for p in sources if p.exists()])}}
     (out_d / "detections_1024.json").write_text(json.dumps(payload, default=M._json))
