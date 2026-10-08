@@ -1,7 +1,7 @@
 {
  "model": "best_beam",
  "signaling": "failure_aware",
- "margin_ref_db": 36.866999242742004,
+ "margin_ref_db": 38.70141599494251,
  "schemes": {
   "15 dB": {
    "A3": {
@@ -9,13 +9,13 @@
      "kind": "a3",
      "offset_db": 3.0,
      "hysteresis_db": 6.0,
-     "ttt_s": 0.64
+     "ttt_s": 0.04
     }
    },
    "A5": {
     "params": {
      "kind": "a5",
-     "t1_db": 0.0,
+     "t1_db": 3.0,
      "t2_db": 0.0,
      "ttt_s": 0.04
     }
@@ -23,15 +23,15 @@
    "CHO": {
     "params": {
      "kind": "cho_a5",
-     "t1_db": 0.0,
+     "t1_db": 3.0,
      "t2_db": 0.0,
      "ttt_s": 0.04
     }
    },
    "trigger_tvt": {
     "params": {
-     "horizon_s": 0.5,
-     "hold_s": 0.2
+     "horizon_s": 1.0,
+     "hold_s": 1.0
     }
    },
    "trigger_learned": {
@@ -43,21 +43,21 @@
    },
    "planner_tvt": {
     "params": {
-     "H": 2.0
+     "H": 0.5
     }
    },
    "risk_tvt": {
     "params": {
      "H": 0.5,
      "lam": 0.0,
-     "theta": 5.0
+     "theta": 2.0
     }
    },
    "riskneutral_tvt": {
     "params": {
      "H": 0.5,
      "lam": 0.0,
-     "theta": 5.0
+     "theta": 2.0
     }
    },
    "planner_tvt_perfect": {
@@ -68,8 +68,8 @@
    "risk_tvt_perfect": {
     "params": {
      "H": 0.5,
-     "lam": 0.0,
-     "theta": 5.0
+     "lam": 0.5,
+     "theta": 2.0
     }
    },
    "planner_true_perfect": {
@@ -82,157 +82,7 @@
    "A3": {
     "params": {
      "kind": "a3",
-     "offset_db": 0.0,
-     "hysteresis_db": 3.0,
-     "ttt_s": 0.04
-    }
-   },
-   "A5": {
-    "params": {
-     "kind": "a5",
-     "t1_db": 0.0,
-     "t2_db": 0.0,
-     "ttt_s": 0.04
-    }
-   },
-   "CHO": {
-    "params": {
-     "kind": "cho_a5",
-     "t1_db": 0.0,
-     "t2_db": 0.0,
-     "ttt_s": 0.04
-    }
-   },
-   "trigger_tvt": {
-    "params": {
-     "horizon_s": 0.5,
-     "hold_s": 0.5
-    }
-   },
-   "trigger_learned": {
-    "params": {
-     "horizon_s": 0.5,
-     "hold_s": 0.2,
-     "threshold": 0.95
-    }
-   },
-   "planner_tvt": {
-    "params": {
-     "H": 3.0
-    }
-   },
-   "risk_tvt": {
-    "params": {
-     "H": 1.0,
-     "lam": 0.0,
-     "theta": 5.0
-    }
-   },
-   "riskneutral_tvt": {
-    "params": {
-     "H": 1.0,
-     "lam": 0.0,
-     "theta": 5.0
-    }
-   },
-   "planner_tvt_perfect": {
-    "params": {
-     "H": 1.0
-    }
-   },
-   "risk_tvt_perfect": {
-    "params": {
-     "H": 2.0,
-     "lam": 0.0,
-     "theta": 5.0
-    }
-   },
-   "planner_true_perfect": {
-    "params": {
-     "H": 1.0
-    }
-   }
-  },
-  "25 dB": {
-   "A3": {
-    "params": {
-     "kind": "a3",
      "offset_db": 1.0,
-     "hysteresis_db": 6.0,
-     "ttt_s": 0.04
-    }
-   },
-   "A5": {
-    "params": {
-     "kind": "a5",
-     "t1_db": 0.0,
-     "t2_db": 0.0,
-     "ttt_s": 0.04
-    }
-   },
-   "CHO": {
-    "params": {
-     "kind": "cho_a5",
-     "t1_db": 0.0,
-     "t2_db": 0.0,
-     "ttt_s": 0.04
-    }
-   },
-   "trigger_tvt": {
-    "params": {
-     "horizon_s": 0.5,
-     "hold_s": 1.0
-    }
-   },
-   "trigger_learned": {
-    "params": {
-     "horizon_s": 3.0,
-     "hold_s": 1.0,
-     "threshold": 0.5
-    }
-   },
-   "planner_tvt": {
-    "params": {
-     "H": 0.5
-    }
-   },
-   "risk_tvt": {
-    "params": {
-     "H": 0.5,
-     "lam": 0.0,
-     "theta": 5.0
-    }
-   },
-   "riskneutral_tvt": {
-    "params": {
-     "H": 0.5,
-     "lam": 0.0,
-     "theta": 5.0
-    }
-   },
-   "planner_tvt_perfect": {
-    "params": {
-     "H": 0.5
-    }
-   },
-   "risk_tvt_perfect": {
-    "params": {
-     "H": 0.5,
-     "lam": 0.5,
-     "theta": 5.0
-    }
-   },
-   "planner_true_perfect": {
-    "params": {
-     "H": 2.0
-    }
-   }
-  },
-  "30 dB": {
-   "A3": {
-    "params": {
-     "kind": "a3",
-     "offset_db": 3.0,
      "hysteresis_db": 10.0,
      "ttt_s": 0.04
     }
@@ -255,15 +105,90 @@
    },
    "trigger_tvt": {
     "params": {
-     "horizon_s": 0.5,
+     "horizon_s": 3.0,
      "hold_s": 1.0
     }
    },
    "trigger_learned": {
     "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2,
+     "threshold": 0.95
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.5,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 2.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.5,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 0.5
+    }
+   }
+  },
+  "25 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 3.0,
+     "hysteresis_db": 15.0,
+     "ttt_s": 0.04
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "CHO": {
+    "params": {
+     "kind": "cho_a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
      "horizon_s": 3.0,
-     "hold_s": 1.0,
-     "threshold": 0.5
+     "hold_s": 1.0
+    }
+   },
+   "trigger_learned": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2,
+     "threshold": 0.95
     }
    },
    "planner_tvt": {
@@ -281,6 +206,156 @@
    "riskneutral_tvt": {
     "params": {
      "H": 2.0,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 3.0
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 3.0
+    }
+   }
+  },
+  "30 dB": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 10.0,
+     "hysteresis_db": 15.0,
+     "ttt_s": 0.32
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "CHO": {
+    "params": {
+     "kind": "cho_a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 3.0,
+     "hold_s": 1.0
+    }
+   },
+   "trigger_learned": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2,
+     "threshold": 0.95
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 1.0
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "planner_tvt_perfect": {
+    "params": {
+     "H": 3.0
+    }
+   },
+   "risk_tvt_perfect": {
+    "params": {
+     "H": 0.5,
+     "lam": 0.0,
+     "theta": 0.0
+    }
+   },
+   "planner_true_perfect": {
+    "params": {
+     "H": 3.0
+    }
+   }
+  },
+  "3GPP short-range reference": {
+   "A3": {
+    "params": {
+     "kind": "a3",
+     "offset_db": 6.0,
+     "hysteresis_db": 15.0,
+     "ttt_s": 0.64
+    }
+   },
+   "A5": {
+    "params": {
+     "kind": "a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "CHO": {
+    "params": {
+     "kind": "cho_a5",
+     "t1_db": 0.0,
+     "t2_db": 0.0,
+     "ttt_s": 0.04
+    }
+   },
+   "trigger_tvt": {
+    "params": {
+     "horizon_s": 3.0,
+     "hold_s": 1.0
+    }
+   },
+   "trigger_learned": {
+    "params": {
+     "horizon_s": 0.5,
+     "hold_s": 0.2,
+     "threshold": 0.95
+    }
+   },
+   "planner_tvt": {
+    "params": {
+     "H": 0.5
+    }
+   },
+   "risk_tvt": {
+    "params": {
+     "H": 1.0,
+     "lam": 0.0,
+     "theta": 5.0
+    }
+   },
+   "riskneutral_tvt": {
+    "params": {
+     "H": 1.0,
      "lam": 0.0,
      "theta": 5.0
     }
@@ -295,81 +370,6 @@
      "H": 0.5,
      "lam": 0.0,
      "theta": 0.0
-    }
-   },
-   "planner_true_perfect": {
-    "params": {
-     "H": 0.5
-    }
-   }
-  },
-  "3GPP short-range reference": {
-   "A3": {
-    "params": {
-     "kind": "a3",
-     "offset_db": 3.0,
-     "hysteresis_db": 15.0,
-     "ttt_s": 0.04
-    }
-   },
-   "A5": {
-    "params": {
-     "kind": "a5",
-     "t1_db": 0.0,
-     "t2_db": 3.0,
-     "ttt_s": 0.04
-    }
-   },
-   "CHO": {
-    "params": {
-     "kind": "cho_a5",
-     "t1_db": 0.0,
-     "t2_db": 3.0,
-     "ttt_s": 0.04
-    }
-   },
-   "trigger_tvt": {
-    "params": {
-     "horizon_s": 0.5,
-     "hold_s": 1.0
-    }
-   },
-   "trigger_learned": {
-    "params": {
-     "horizon_s": 3.0,
-     "hold_s": 1.0,
-     "threshold": 0.5
-    }
-   },
-   "planner_tvt": {
-    "params": {
-     "H": 0.5
-    }
-   },
-   "risk_tvt": {
-    "params": {
-     "H": 0.5,
-     "lam": 0.0,
-     "theta": 5.0
-    }
-   },
-   "riskneutral_tvt": {
-    "params": {
-     "H": 0.5,
-     "lam": 0.0,
-     "theta": 5.0
-    }
-   },
-   "planner_tvt_perfect": {
-    "params": {
-     "H": 0.5
-    }
-   },
-   "risk_tvt_perfect": {
-    "params": {
-     "H": 2.0,
-     "lam": 0.5,
-     "theta": 5.0
     }
    },
    "planner_true_perfect": {
@@ -437,6 +437,6 @@
   "3GPP short-range reference | planner_true_perfect": "results/TVT/T5/handover_intersection_tuned_failure_aware.json"
  },
  "_sources": {
-  "results/TVT/T5/handover_intersection_tuned_failure_aware.json": "50cc72aa26f8532d14448db6c2b2e31ee301f464ca5142bc18c73fe4e3b01bbb"
+  "results/TVT/T5/handover_intersection_tuned_failure_aware.json": "ac053d1f914dc9de32e4f6915471a1a0e85b45aefef0fe01de9084bd38ae7702"
  }
 }

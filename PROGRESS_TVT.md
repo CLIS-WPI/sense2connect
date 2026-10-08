@@ -2,7 +2,8 @@
 
 All numbers on DEVELOPMENT seeds 1001-1010 (tuning on 101-105). Held-out 4001-4010 sealed (guard in
 sim/tvt/seeds.py; no tvt-freeze tag). **Current scenario: back-to-back TR 38.901 panels (third round, decision 8);
-consolidated report results/TVT/report.md and results/TVT/panels_vs_iso.md.** The rows below up to the signaling
+intersection with one panel per street arm (fourth round, decision 12); consolidated report results/TVT/report.md
+and results/TVT/panels_vs_iso.md.** The rows below up to the signaling
 round are the isotropic-UPA rounds (reports moved to results/TVT_iso/<T>/report.md, not committed).
 
 | milestone | status | GPU 1 wall time | key numbers |
@@ -17,6 +18,7 @@ round are the isotropic-UPA rounds (reports moved to results/TVT_iso/<T>/report.
 | J3 diagnosis (human request) | DONE | ~0.5 h | value of foresight survives best beam (0.05-0.28 s/UE-min, 71-80 % of the gap; path sum 0.05-0.25, 74-89 %); truth-UE perfect-track planner beats A5 at 25 dB (-0.073, p 0.0098), tracker UE costs +0.05..+0.11 (23-62 % of it in the 1 s after the scenario's UE wrap); white errors with the tracker's RMS are far worse (+0.18..+2.0); remaining gap = sensing overhead + missed switches (mostly pedestrians) vs fewer mistimed switches; results/TVT/J3_diagnosis/report.md |
 | Signaling round before the freeze (human item 6) | DONE (isotropic) | ~2.4 h (CPU-bound, GPU 1 < 10 GB) | every scheme re-tuned and T5/T6 re-run under "ideal" and "failure_aware" signaling (RLF/T310, HO-command failure, re-establishment tau_RE 1.83 s, proper CHO), primary metrics wrap-masked; failures rare (A5 RLF <= 0.04/min, HOF <= 2 % in the reference canyon); CHO = A5 under ideal signaling, beats A5 at 15 dB under failure-aware (-0.050, p 0.0039); every real-input sensing scheme still significantly worse than A5 at every margin of the reference canyon under both models; pre-declared sweep (T310 0.2/0.5/1 s, Qout +-3 dB, tau_RE 0.23/1.83 s) changes no conclusion; overhead 0: truth-UE perfect-track planner beats A5 at 25 dB only (-0.10, p 0.0039); learned threshold at the new grid edge 0.95 = A3 + overhead |
 | Third round: back-to-back TR 38.901 panels (decisions 8-11) | DONE | ~24 h of GPU-1 jobs (~20.5 h elapsed; estimate 35 h) | pattern applied to traced angles (exact vs Sionna, <= 5e-6; radar re-traced once untilted because the tilted trace is not exact); every stage T0-T6 + J3 re-run, every scheme re-tuned under both signaling models. Reference margin 34.8 -> 38.8 dB; PEB LoS 48 -> 37 mm, map 3.4 -> 2.8 mm; radar detections +55-65 %; real-track AUC 0.75 -> 0.73; tracker 3.7 cm unchanged, paper-2 estimator A 12.8 -> 10.1 cm (re-tuned); real-input penalties vs A5 about halved but still significant at every margin; truth-UE perfect-track planner beats A5 at 20 and 30 dB (25 dB p 0.064); learned trigger switched off by tuning at 4/5 margins (fires rarely at 25 dB, no gain); J3 part e: true future = extrapolated (constant-velocity blockers); intersection: +-x panels leave the cross street in a -15 dBi hole (A5 2.0 -> 12.5 s/UE-min at 15 dB) |
+| Fourth round: intersection panels per street arm (decisions 12-16) | DONE | ~1.2 h (radar 0.3 h, positioning 0.7 h, handover 0.3 h) | four panels (yaw 0/180/90/270) at both corner O-RUs and the radar, rule committed before the run (09746ff); pattern exact vs Sionna also at 90/270 deg (<= 3.1e-5). Hole closed: UE 1 median unblocked power -84.7 -> -67.3 dB (O-RU 0); A5 outage 12.5 -> 1.95 s/UE-min at 15 dB (re-tuned, failure-aware; isotropic 2.0), reference 0.187 -> 0.033. PEB LoS 77 -> 52 mm, map 3.7 -> 1.7 mm; tracker median 4.1 -> 2.6 cm, p90 0.28 -> 0.12 m (pred_real). Handover: no scheme beats A5 at any margin, both models, canyon and re-tuned parameters; real-input schemes worse at every margin (p <= 0.02, except risk-aware / risk-neutral at the reference margin: +0.013, n.s.); perfect tracks: truth UE +0.007..+0.106 (worse at 20 dB, p 0.049, else n.s.), tracker UE +0.014..+0.157 (worse at 20 and 25 dB, p 0.049) (re-tuned, failure-aware). CHO = A5. +-x results kept in results/TVT/supplement_intersection_pmx |
 
 ## Notes on process
 - Provenance: the sensing-trace caches carry whole-tree provenance (commit + hash of every uncommitted
@@ -70,18 +72,35 @@ round are the isotropic-UPA rounds (reports moved to results/TVT_iso/<T>/report.
     extrapolated by the motion model vs the true future trajectories, vs A5, by blocker class. Result: identical
     (blockers move at exactly constant velocity; only lane-end wraps differ and change no timeline), so the
     perfect-vs-real gap is entirely sensing accuracy and overhead in this scenario.
+12. Fourth round, intersection panel orientation (reason: deployment planning, not results): "each O-RU has
+    one 38.901 panel facing along each street arm it serves". Both cells serve all four arms, so each corner
+    O-RU and the radar at O-RU 0 have four panels, yaw 0 / 180 / 90 / 270 deg (configs/tvt.yaml
+    panels.yaw_deg_by_mount.corner; rule and azimuths in results/TVT/T6/scene_design.md and the addendum of
+    configs/tvt_intersection_design.md, committed 09746ff BEFORE any run). Only the intersection parts of T6 are
+    re-run (both signaling models; re-tuned on the intersection tuning seeds with the same grids). The +-x
+    intersection results stay as a supplement ("naive canyon orientation leaves a coverage hole"):
+    results/TVT/supplement_intersection_pmx/.
+13. Blocker motion: constant velocity on straight lanes kept. **Limitation (favours the sensing schemes):** the
+    blockers' future trajectories are perfectly predictable by construction (J3 part e: true future = extrapolated
+    state), so the sensing-based predictors face no manoeuvre (turn, stop, speed change) uncertainty; A5 and the
+    reactive baselines do not use trajectory prediction and are unaffected. Results are an upper bound on the
+    value of blocker tracking with respect to trajectory predictability.
+14. Narrative recorded: "requirements and achievable region; solving UE positioning moves the bottleneck to
+    blocker-sensing accuracy and overhead". Reports are not reworded.
+15. Report of the planner with perfect tracks and UE positions from the tracker vs from truth, vs A5, per margin
+    and blocker class with seed-level statistics (panels, failure-aware primary, wrap-masked):
+    scripts/tvt_planner_ue_report.py -> results/TVT/J3_diagnosis/planner_ue_report.md.
+16. configs/tvt_frozen/manifest.json git_commit filled from the host (scripts/tvt_freeze_stamp.sh stamp, after
+    scripts/tvt_freeze_params.py in the container) and checked (scripts/tvt_freeze_stamp.sh check; test_tvt.py
+    requires a full hash).
 
 ## Open questions for the humans
-1. Intersection with +-x panels: the cross street (UE 1) sees O-RU 0 only ~90 deg off boresight (-14.8 dBi);
-   A5 outage 2.0 -> 12.5 s/UE-min at 15 dB and the truth-UE planner loses to A5 there. Keep the prescribed +-x
-   orientation for T7 (report as a deployment finding), or orient the intersection panels along the streets
-   (scenario change, new development round for T6 intersection)?
-2. J3 part e shows the scenario's blocker motion is perfectly predictable (constant velocity on straight lanes).
-   Keep as is (state it as a limitation: predictability is not tested), or add manoeuvring blockers (scenario
-   change before the freeze)?
-3. The real-input penalty vs A5 roughly halves with the panels but stays significant; the truth-UE planner now
-   beats A5 at 20 and 30 dB. Any change to the narrative ("requirements and achievable region", decision 5)?
+1. Intersection, perfect tracks + truth UE: with the street-arm panels this planner does NOT beat A5 at any margin
+   (canyon: beats A5 at 20 and 30 dB). The intersection's re-tuned grids are the canyon's; nothing was changed.
+   Report as is (J5: the planner's headroom is deployment dependent)?
 
+Resolved in the fourth round: intersection orientation (decision 12), blocker motion (decision 13, limitation),
+narrative (decision 14).
 Resolved in the third round: array back half-space (decision 8 replaced the iso arrays); learned-trigger grid
 (decision 9); primary signaling model (decision 10).
 Resolved in the signaling round: CHO model (now with preparation, execution condition and failure model);
@@ -96,7 +115,9 @@ UE wrap (kept, 1 s after each wrap excluded from primary metrics, unmasked as su
       committed before any run that uses them (65d7a6c); sim/tvt/signaling.py equals the paper-1 simulator with
       signaling off (tested).
 - [x] All TVT code on branch tvt; unit tests pass (scripts/test_tvt.py, test_tvt_panels.py, test_tvt_t1..t5.py;
-      44 tests: pattern values, panel selection, radar transform, tracker panel gating, Sionna exactness on GPU).
+      55 tests: pattern values, panel selection incl. four panels (yaw 0/180/90/270), radar transform, tracker panel
+      gating and rotated-frame prediction, Sionna exactness on GPU at yaw 0/180/90/270, manifest commit).
+- [x] Intersection panel orientation fixed before any run (09746ff; configs/tvt.yaml panels.yaw_deg_by_mount).
 - [x] Arrays fixed in configs/tvt.yaml `panels:` with sources before any run (ba97c09); radar re-traced untilted
       (results/TVT/radar/trace, stage-scoped provenance); the T7 held-out run needs the same untilted radar trace
       and per-panel detections (scripts/tvt_radar.py trace/detect), the panel SRS measurements and estimator-A
@@ -112,25 +133,26 @@ UE wrap (kept, 1 s after each wrap excluded from primary metrics, unmasked as su
       `tvt_t4_track.py --params configs/tvt_frozen/tracker.json --calibration configs/tvt_frozen/visibility_calibration.json`
       and, for each model in {ideal, failure_aware},
       `tvt_t5_handover.py --signaling <model> --fixed configs/tvt_frozen/handover_<model>.json --learned-manifest configs/tvt_frozen/learned.json`.
-      Regenerated from the panel results (third round) at f15dbd4; FrozenParamsTest checks the checksums and
-      the array field against configs/tvt.yaml. NOTE: manifest.json git_commit is empty because git is not
-      usable inside the container (also in the earlier freeze); the commit is recorded here. NOTE: learned.pt lives in results/ (not committed); keep or archive it with the tag.
+      Regenerated in the fourth round (only handover_intersection_<model>.json changed: per-street-arm panels);
+      manifest.json git_commit = e277226 (stamped from the host, scripts/tvt_freeze_stamp.sh stamp; verify with
+      scripts/tvt_freeze_stamp.sh check: commit exists, is an ancestor of HEAD, and only configs/tvt_frozen/ and
+      *.md changed since). FrozenParamsTest checks the checksums, the array field and the commit field.
+      NOTE: learned.pt lives in results/ (not committed); keep or archive it with the tag.
 - [ ] Held-out traces: 4001-4010 need sensing caches, detections, comm geometry and path coefficients (as for
       the training seeds: ~1-2 h with 4 workers alone on GPU 1), run from a frozen clone of the tagged tree
       (scripts/tvt_frozen_at.sh) because of the whole-tree provenance of the sensing caches.
 - [x] Training-seed traces (5001-5040) and learned baseline done.
-- [x] Human decisions 1-11 recorded above.
-- [ ] Remaining human decisions: open questions 1-3 (intersection panel orientation, blocker manoeuvres,
-      narrative); creating the tag tvt-freeze (humans only).
+- [x] Human decisions 1-16 recorded above.
+- [ ] Remaining human decisions: open question 1 (report only); creating the tag tvt-freeze (humans only).
 
 ## J1-J5 summary (back-to-back panels, development seeds 1001-1010; primary failure-aware, wrap-masked; exact Wilcoxon over 10 seeds)
 | hypothesis | verdict | evidence |
 |---|---|---|
 | J1 predicted visibility improves association | NOT SUPPORTED | Real-track visibility: +0.3 mm median vs none (p 0.049); oracle visibility during blockage -1.0 mm (p 0.49; isotropic -3.2 mm, p 0.049). T3 real-track AUC 0.73 (isotropic 0.75). Same in every variant. |
-| J2 tracker narrows the gap to the PEB | SUPPORTED (gap narrowed, not closed) | Tracker median 3.7 cm vs re-tuned estimator A 10.1 cm (all) and 6.8 cm vs 26 cm during blockage (p 0.002); ~13x the map-aided PEB (2.8 mm). Tracker better in every calibration, bandwidth, height, speed variant and the intersection. |
-| J3 planner beats A5 with perfect tracks | MIXED: truth UE yes at 20/30 dB, TVT UE no | Truth UE + perfect tracks: -0.071 (20 dB, p 0.037), -0.044 (30 dB, p 0.002); at overhead 0 also 25 dB and the reference margin. TVT UE + perfect tracks: n.s. at every margin. Real tracks: +0.06..+2.1 worse than A5 (p <= 0.049). Learned trigger: tuning switches it off. Part e: true future = extrapolation, so the gap is sensing accuracy. CHO beats A5 at 15 and 25 dB under failure-aware signaling. |
+| J2 tracker narrows the gap to the PEB | SUPPORTED (gap narrowed, not closed) | Tracker median 3.7 cm vs re-tuned estimator A 10.1 cm (all) and 6.8 cm vs 26 cm during blockage (p 0.002); ~13x the map-aided PEB (2.8 mm). Tracker better in every calibration, bandwidth, height, speed variant and the intersection (2.6 cm there, PEB map 1.7 mm). |
+| J3 planner beats A5 with perfect tracks | MIXED: truth UE yes at 20/30 dB, TVT UE no (results/TVT/J3_diagnosis/planner_ue_report.md: tracker UE - truth UE +0.05..+0.07 at 20-30 dB, p 0.002 at 20 and 30 dB, more than half in pedestrian blockages) | Truth UE + perfect tracks: -0.071 (20 dB, p 0.037), -0.044 (30 dB, p 0.002); at overhead 0 also 25 dB and the reference margin. TVT UE + perfect tracks: n.s. at every margin. Real tracks: +0.06..+2.1 worse than A5 (p <= 0.049). Learned trigger: tuning switches it off. Part e: true future = extrapolation, so the gap is sensing accuracy. CHO beats A5 at 15 and 25 dB under failure-aware signaling. |
 | J4 risk-aware beats risk-neutral | NOT SUPPORTED | Real inputs: tuned to lambda = 0 (identical to risk-neutral) at 15-25 dB and the reference margin; at 30 dB -0.003 (failure-aware, p 0.52) / -0.023 (ideal, p 0.38). Perfect tracks: risk-aware vs risk-neutral -0.010..+0.006, p >= 0.08; the look-ahead (not CVaR) beats the deterministic planner at 30 dB (-0.024, p 0.004). |
-| J5 conclusions robust | SUPPORTED, with one deployment caveat | E2 0-100 ms, overhead x0-x2, SI up to INR 40 dB, UE speed, O-RU height 3/10 m, both signaling models, failure-model sweep: no real-input scheme significantly better than A5 anywhere. Isotropic -> panels changes magnitudes, not the ranking. Intersection: the prescribed +-x panels create a coverage hole on the cross street (open question 1). |
+| J5 conclusions robust | SUPPORTED, with one deployment caveat | E2 0-100 ms, overhead x0-x2, SI up to INR 40 dB, UE speed, O-RU height 3/10 m, both signaling models, failure-model sweep: no real-input scheme significantly better than A5 anywhere. Isotropic -> panels changes magnitudes, not the ranking. Intersection with one panel per street arm (decision 12): A5 best, no sensing scheme better even with perfect tracks; supplement: naive canyon orientation (+-x) leaves a coverage hole on the cross street (A5 12.5 vs 1.95 s/UE-min at 15 dB). Limitation: blocker trajectories perfectly predictable (decision 13). |
 
 Isotropic-round J1-J5 (superseded scenario): results/TVT_iso and git history of this file.
 
