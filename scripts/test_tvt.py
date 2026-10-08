@@ -183,6 +183,9 @@ class FrozenParamsTest(unittest.TestCase):
         for m in ("ideal", "failure_aware"):
             ho = json.loads((d / f"handover_{m}.json").read_text())
             self.assertEqual(ho["signaling"], m)
+            for lab, cell in ho["schemes"].items():
+                for sch in ("A5", "CHO", "planner_tvt", "risk_tvt", "planner_tvt_perfect", "trigger_learned"):
+                    self.assertIn("params", cell[sch], f"{m} {lab} {sch}")
 
     def test_frozen_manifest_commit(self):
         """configs/tvt_frozen/manifest.json carries the full commit of the freeze (filled from the host by
@@ -193,9 +196,6 @@ class FrozenParamsTest(unittest.TestCase):
         man = json.loads((ROOT / "configs" / "tvt_frozen" / "manifest.json").read_text())
         self.assertRegex(man.get("git_commit", ""), re.compile(r"^[0-9a-f]{40}$"),
                          "git_commit empty: run bash scripts/tvt_freeze_stamp.sh stamp on the host after scripts/tvt_freeze_params.py")
-            for lab, cell in ho["schemes"].items():
-                for sch in ("A5", "CHO", "planner_tvt", "risk_tvt", "planner_tvt_perfect", "trigger_learned"):
-                    self.assertIn("params", cell[sch], f"{m} {lab} {sch}")
 
 
 if __name__ == "__main__":
