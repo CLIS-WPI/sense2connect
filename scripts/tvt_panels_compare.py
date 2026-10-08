@@ -83,7 +83,12 @@ def radar() -> None:
     from sim.tvt.panels import detections_dir
 
     rows = []
-    for f in sorted((PAN / "radar" / "det").glob("*/*/seed_*/detections_1024.json"))[:8]:
+    picks = []
+    for mount in ("lamppost", "facade", "lamppost_h3", "lamppost_h10", "corner"):
+        for dens in ("low", "high"):
+            fs = sorted((PAN / "radar" / "det" / mount / dens).glob("seed_1*/detections_1024.json"))
+            picks += fs[:2]
+    for f in picks:
         mount, dens, sd = f.parts[-4], f.parts[-3], f.parts[-2]
         p1 = ROOT / "results" / "cache" / mount / dens / sd / "detections_1024.json"
         if not p1.exists():
@@ -96,8 +101,8 @@ def radar() -> None:
                      np.mean([len(fr["detections"][key]) for fr in dp["frames"]]), dp.get("detections_per_panel_blind_train4")))
     del detections_dir
     if rows:
-        print("### Radar detections per frame (blind clutter removal, CFAR train 4; first jobs)\n")
-        print("| job | paper-1 radar (tilted, isotropic) | panels (union) | per panel (+x, -x), all frames |")
+        print("### Radar detections per frame (blind clutter removal, CFAR train 4; first two development jobs per mount and density)\n")
+        print("| job | paper-1 radar (tilted, isotropic) | panels (union) | kept per panel (+x, -x), summed over all frames and all train-4 CFAR settings |")
         print("|---|---|---|---|")
         for r in rows:
             print(f"| {r[0]} | {r[1]:.1f} | {r[2]:.1f} | {r[3]} |")

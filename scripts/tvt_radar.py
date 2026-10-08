@@ -53,7 +53,9 @@ def _trace_one(item) -> str:
     from sim.scenes.config import load_yaml
     from sim.scenes.traffic import prepare_scenario
     from sim.tvt import radar_trace as RT
+    from sim.tvt.scene_register import register
 
+    register()  # custom TVT scenes (intersection) by name in every worker
     cfg_path = Path(cfg_path)
     if RT.fresh(mount, density, seed, cfg_path):
         return f"trace {mount} {density} {seed}: cached"

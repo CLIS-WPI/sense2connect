@@ -535,10 +535,6 @@ def print_part_d(o: dict) -> None:
     print()
 
 
-if __name__ == "__main__":
-    main()
-
-
 def print_part_e(o: dict) -> None:
     e = o.get("e_future_truth")
     if not e:
@@ -563,3 +559,7 @@ def print_part_e(o: dict) -> None:
         if "planner_true_future" in cell and "vs_true_perfect_by_class" in cell["planner_true_future"]:
             print(f"| {lab} | (ii) - (i) | " + " | ".join(pv(cell["planner_true_future"]["vs_true_perfect_by_class"][k]) for k in CLASSES) + " |")
     print()
+
+
+if __name__ == "__main__":
+    main()

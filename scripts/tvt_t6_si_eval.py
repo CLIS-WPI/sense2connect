@@ -36,7 +36,12 @@ def main() -> None:
     K = int(tcfg["visibility"]["samples"])
     seeds = check(load()["development"])
     jobs = [(s, m, d) for s in seeds for m in ("lamppost", "facade") for d in ("low", "high")]
-    inrs = sorted(float(p.name[3:]) for p in (ROOT / "results" / "TVT" / "T6" / "si").glob("inr*"))
+    from sim.tvt.panels import enabled
+
+    if enabled():  # back-to-back panels: nominal detections (INR 0) and results/TVT/radar/det_inr<k>
+        inrs = [0.0] + sorted(float(p.name[7:]) for p in (ROOT / "results" / "TVT" / "radar").glob("det_inr*"))
+    else:
+        inrs = sorted(float(p.name[3:]) for p in (ROOT / "results" / "TVT" / "T6" / "si").glob("inr*"))
     res = {"definition": __doc__, "inr_db": inrs, "cells": {}, "paired": {}}
     per = {}
     for job in jobs:
