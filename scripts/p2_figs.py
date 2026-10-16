@@ -102,39 +102,40 @@ def main() -> None:
     BLK = lambda r: r["nb"] >= 1  # noqa: E731
     bws = ["100", "200", "400"]
     # ---------------------------------------------------------------- fig 1: vs bandwidth
-    fig, ax = plt.subplots(figsize=(COL, 2.6))
+    # camera-ready layout (figure-only change, same stored results and statistics): panels (a) LoS to both O-RUs and
+    # (b) blocked epochs (nb >= 1) side by side on a shared log axis; colour = quantity, one legend row above the panels
+    fig, axs = plt.subplots(1, 2, figsize=(COL, 2.5), sharey=True)
     x = np.arange(3)
     series = [("LoS-only bound", "#1f77b4", "o", lambda bw: (lambda r: r["peb"][(slice(None), slice(None)) + idx(info="los", bw=bw)])),
               ("Map-aided bound", "#2ca02c", "s", lambda bw: (lambda r: r["peb"][(slice(None), slice(None)) + idx(info="map", bw=bw)]))]
-    for name, color, mk, get in series:
-        for state, fn, ls in (("LoS to both", LOS, "-"), ("blocked", BLK, "--")):
+    states = (("(a) LoS to both O-RUs", LOS), ("(b) One O-RU blocked", BLK))
+    for ax, (title, fn) in zip(axs, states):
+        for name, color, mk, get in series:
             med = [seed_medians(runs, get(bw), fn) for bw in bws]
             m = np.array([np.mean(v) for v in med])
             ci = np.array([boot(v) for v in med])
-            ax.errorbar(x, m, yerr=[m - ci[:, 0], ci[:, 1] - m], color=color, marker=mk, ls=ls, capsize=2, label=f"{name}, {state}")
-    for state, fn, ls in (("LoS to both", LOS, "-"), ("blocked", BLK, "--")):
+            ax.errorbar(x, m, yerr=[m - ci[:, 0], ci[:, 1] - m], color=color, marker=mk, ls="-", capsize=2, label=name)
         med = []
         for bw in bws:
             er = est_runs(args.set, f"bw{bw}_tdoa_s1_p2_b")
             med.append(seed_medians(er, lambda r: r["err"], fn) if er else np.full(10, np.nan))
         m = np.array([np.mean(v) for v in med])
         ci = np.array([boot(v) for v in med])
-        ax.errorbar(x, m, yerr=[m - ci[:, 0], ci[:, 1] - m], color="#d62728", marker="^", ls=ls, capsize=2, label=f"Estimator, {state}")
-    ax.axhline(0.1, color="gray", lw=0.6, ls=":")
-    ax.set_yscale("log")
-    ax.set_xticks(x)
-    ax.set_xticklabels([f"{b} MHz" for b in bws])
-    ax.set_ylabel("Median PEB / position error [m]")
-    ax.grid(True, which="both", alpha=0.4)
-    ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), frameon=False, fontsize=8)
-    fig.subplots_adjust(left=0.17, right=0.98, top=0.97, bottom=0.12)
-    fig.set_size_inches(COL, 2.6)
-    # legend outside would widen the figure; place it below instead
-    ax.get_legend().remove()
-    fig.set_size_inches(COL, 3.2)
-    fig.subplots_adjust(left=0.17, right=0.98, top=0.98, bottom=0.33)
-    h, lab = ax.get_legend_handles_labels()
-    fig.legend(h, lab, loc="lower center", ncol=2, frameon=False, fontsize=8, handlelength=1.8, columnspacing=0.8)
+        ax.errorbar(x, m, yerr=[m - ci[:, 0], ci[:, 1] - m], color="#d62728", marker="^", ls="-", capsize=2, label="Estimator")
+        ax.axhline(0.1, color="gray", lw=0.6, ls=":")
+        ax.text(0.03, 0.093, "10 cm", transform=ax.get_yaxis_transform(), ha="left", va="top", fontsize=8, color="0.35")
+        ax.set_yscale("log")
+        ax.set_xticks(x)
+        ax.set_xticklabels(bws)
+        ax.set_xlim(-0.35, 2.35)
+        ax.set_xlabel("Bandwidth [MHz]")
+        ax.set_title(title, fontsize=8, pad=3)
+        ax.grid(True, which="both", alpha=0.4)
+    axs[0].set_ylabel("Median PEB / position error [m]")
+    h, lab = axs[0].get_legend_handles_labels()
+    fig.legend(h, lab, loc="upper center", ncol=3, frameon=False, fontsize=8, handlelength=1.6, columnspacing=0.9, handletextpad=0.4,
+               bbox_to_anchor=(0.5, 1.0), borderaxespad=0.1)
+    fig.subplots_adjust(left=0.15, right=0.98, top=0.83, bottom=0.15, wspace=0.08)
     print("wrote", save(fig, "fig_p2_bw.pdf"))
     # ---------------------------------------------------------------- fig 2: along the sidewalk
     bins = np.arange(-40.0, 40.01, 5.0)
@@ -158,12 +159,25 @@ def main() -> None:
     if er:
         ax.plot(centers, profile(er, lambda r: r["err"]), color="#d62728", marker="^", label="Estimator (EKF)")
     ax.axhline(0.1, color="gray", lw=0.6, ls=":")
+    ax.text(0.99, 0.093, "10 cm", transform=ax.get_yaxis_transform(), ha="right", va="top", fontsize=8, color="0.35")
     ax.set_yscale("log")
     ax.set_xlabel("UE position along the street, $x$ [m]")
     ax.set_ylabel("Median PEB / position error [m]")
     ax.grid(True, which="both", alpha=0.4)
     ax.legend(loc="best", frameon=False, fontsize=8)
-    fig.subplots_adjust(left=0.17, right=0.98, top=0.97, bottom=0.17)
+    # camera-ready (figure-only): O-RU positions of both deployments (paper2/tables/geometry.json), labelled above the axes
+    # in two staggered rows; L = lamppost, F = facade (facade O-RU 1 at x = -40 m = +40 m on the 80 m period)
+    geo = json.loads((ROOT / "paper2" / "tables" / "geometry.json").read_text())
+    xl = ax.get_xlim()
+    for mount, M, row in (("facade", "F", 0), ("lamppost", "L", 1)):
+        for o, name in zip(geo["orus"][mount], ("O-RU 0", "O-RU 1")):
+            xo = float(o["position_m"][0])
+            ax.axvline(xo, color="0.6", lw=0.5, zorder=0)
+            ha = "left" if xo <= xl[0] + 2.0 else "center"
+            ax.annotate(f"{name} ({M})", (xo, 1.0), xycoords=("data", "axes fraction"), xytext=(0, 1 + 9 * row), textcoords="offset points",
+                        ha=ha, va="bottom", fontsize=8, annotation_clip=False)
+    ax.set_xlim(xl)
+    fig.subplots_adjust(left=0.17, right=0.98, top=0.86, bottom=0.17)
     print("wrote", save(fig, "fig_p2_sidewalk.pdf"))
     # ---------------------------------------------------------------- fig 3: CDF
     fig, ax = plt.subplots(figsize=(COL, 2.5))
