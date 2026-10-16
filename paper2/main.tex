@@ -14,9 +14,12 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,patterns}
 \usepackage[hidelinks]{hyperref}
-
+\usepackage{colortbl}
+\definecolor{headblue}{RGB}{221,235,247}
 \input{numbers2.tex}
-
+\definecolor{groupgray}{RGB}{242,242,242}
+\definecolor{bettergreen}{RGB}{226,240,217}
+\usepackage{multirow}
 \begin{document}
 
 \title{mmWave UE Positioning Under Blockage:\\
@@ -106,8 +109,7 @@ into bias and random spread.
 closing experiment that feeds estimated and synthetic bound-level
 positions into a blockage-aware handover planner. The bounds, the
 estimator, and the scripts that generate every number in this paper are
-released as open source.\footnote{\url{https://github.com/CLIS-WPI/sense2connect}
-(branch \texttt{paper2}, tag \texttt{v1.0-wcnc2027-paper2}).}
+released as open source.\footnote{\url{https://github.com/CLIS-WPI/sense2connect}}
 \item Findings on held-out scenarios: calibration rather than bandwidth
 limits the bound; blockage substantially degrades the LoS-only bound,
 while known reflections preserve a much lower map-aided bound;
@@ -376,9 +378,13 @@ cm; RMSE$^2$ = bias$^2$ + centered RMS$^2$
 (Eq.~\eqref{eq:decomp}).}
 \label{tab:val}
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}llr|rrrr|rrrr@{}}
+\setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}
+\setlength{\extrarowheight}{1.5pt}
+\begin{tabular}{llr|rrrr|rrrr}
 \toprule
+\rowcolor{headblue}
  & & & \multicolumn{4}{c|}{\pBwC\,MHz} & \multicolumn{4}{c}{\pBwA\,MHz}\\
+\rowcolor{headblue}
 Mount & LoS state & UE $x$ [m] & PEB & bias & centered & RMSE & PEB & bias & centered & RMSE\\
 \midrule
 \csname @@input\endcsname tables/validation.tex
@@ -573,8 +579,11 @@ fed with the indicated UE position (bound-level errors are synthetic).}
 (10\,dB, main configuration).}
 \label{tab:onset}
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lcccc@{}}
+\setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}
+\setlength{\extrarowheight}{1.5pt}
+\begin{tabular}{lcccc}
 \toprule
+\rowcolor{headblue}
 Window & Median & 90th perc. & $>$\SI{0.1}{m} & $>$\SI{0.25}{m}\\
 \midrule
 1.0--0.5\,s before onset & \pOnsetPreOneMed\,cm & \pOnsetPreOnePninety\,m & \pOnsetPreOneShTen & \pOnsetPreOneShQuarter\\
@@ -587,28 +596,40 @@ Elsewhere                & \pOnsetElseMed\,cm & \pOnsetElsePninety\,m & \pOnsetE
 
 \begin{table}[t]
 \centering
-\caption{Planner outage minus A5 [s/UE-min] by source of UE position
-(perfect blocker tracks; columns: link margin, Ref.\ = 3GPP reference
-budget with a margin of \pRefMargin\,dB; $^\dagger$: not significant,
-seed-level Wilcoxon $p\ge0.05$; pointwise tests, exploratory).}
+\caption{Planner outage minus A5 [s/UE-min] by source of the UE position,
+with perfect blocker tracks. Negative values (shaded) mean less outage
+than A5; $^\dagger$: not significant (seed-level Wilcoxon $p\ge0.05$;
+pointwise tests, exploratory). Ref.\ = 3GPP reference budget
+(\pRefMargin\,dB margin). $^\ast$Oracle diagnostic: mirror solutions
+replaced using the true position.}
 \label{tab:closing}
-\setlength{\tabcolsep}{2.2pt}
-\begin{tabular}{@{}lccccc@{}}
+\newcommand{\cv}[1]{\expandafter\cvaux#1\relax}
+\def\cvaux#1#2\relax{\if-#1\cellcolor{bettergreen}\ensuremath{-}\else\ensuremath{+}\fi#2}
+\let\olddagger\dagger
+\renewcommand{\dagger}{{\rlap{$\scriptstyle\olddagger$}}}
+\setlength{\tabcolsep}{4pt}
+\setlength{\aboverulesep}{0pt}\setlength{\belowrulesep}{0pt}
+\setlength{\extrarowheight}{1.5pt}
+\begin{tabular}{l*{5}{c}}
 \toprule
-UE position & 15\,dB & 20\,dB & 25\,dB & 30\,dB & Ref.\\
+\rowcolor{headblue}
+ & \multicolumn{4}{c}{Link margin} & \\[-1pt]
+\arrayrulecolor{black!40}\cmidrule(lr){2-5}\arrayrulecolor{black}
+\rowcolor{headblue}
+\multirow{-2}{*}{UE position} & 15\,dB & 20\,dB & 25\,dB & 30\,dB & \multirow{-2}{*}{Ref.}\\
 \midrule
-Exact                     & \pClosePerfFifteen & \pClosePerfTwenty & \pClosePerfTwentyFive & \pClosePerfThirty & \pClosePerfRef\\
-\multicolumn{6}{@{}l}{\textit{Synthetic, bound level (full covariance)}}\\
-\quad map-aided           & \pCloseFullMapFifteen & \pCloseFullMapTwenty & \pCloseFullMapTwentyFive & \pCloseFullMapThirty & \pCloseFullMapRef\\
-\quad LoS-only            & \pCloseFullLosFifteen & \pCloseFullLosTwenty & \pCloseFullLosTwentyFive & \pCloseFullLosThirty & \pCloseFullLosRef\\
-\multicolumn{6}{@{}l}{\textit{Estimated}}\\
-\quad estimator           & \pCloseEstFifteen & \pCloseEstTwenty & \pCloseEstTwentyFive & \pCloseEstThirty & \pCloseEstRef\\
-\quad ideal hardware      & \pCloseEstIdealFifteen & \pCloseEstIdealTwenty & \pCloseEstIdealTwentyFive & \pCloseEstIdealThirty & \pCloseEstIdealRef\\
-\quad capped at p90       & \pCloseEstCapFifteen & \pCloseEstCapTwenty & \pCloseEstCapTwentyFive & \pCloseEstCapThirty & \pCloseEstCapRef\\
-\quad mirror-corr.$^\ast$ & \pCloseOracleFifteen & \pCloseOracleTwenty & \pCloseOracleTwentyFive & \pCloseOracleThirty & \pCloseOracleRef\\
-White \SI{1}{m} error     & \pCloseWhiteFifteen & \pCloseWhiteTwenty & \pCloseWhiteTwentyFive & \pCloseWhiteThirty & \pCloseWhiteRef\\
+\rowcolor{groupgray}\multicolumn{6}{l}{\textit{Reference inputs}}\\
+\quad exact               & \cv\pClosePerfFifteen & \cv\pClosePerfTwenty & \cv\pClosePerfTwentyFive & \cv\pClosePerfThirty & \cv\pClosePerfRef\\
+\quad white \SI{1}{m} error & \cv\pCloseWhiteFifteen & \cv\pCloseWhiteTwenty & \cv\pCloseWhiteTwentyFive & \cv\pCloseWhiteThirty & \cv\pCloseWhiteRef\\
+\rowcolor{groupgray}\multicolumn{6}{l}{\textit{Synthetic, bound level (full covariance)}}\\
+\quad map-aided           & \cv\pCloseFullMapFifteen & \cv\pCloseFullMapTwenty & \cv\pCloseFullMapTwentyFive & \cv\pCloseFullMapThirty & \cv\pCloseFullMapRef\\
+\quad LoS-only            & \cv\pCloseFullLosFifteen & \cv\pCloseFullLosTwenty & \cv\pCloseFullLosTwentyFive & \cv\pCloseFullLosThirty & \cv\pCloseFullLosRef\\
+\rowcolor{groupgray}\multicolumn{6}{l}{\textit{Estimated}}\\
+\quad estimator           & \cv\pCloseEstFifteen & \cv\pCloseEstTwenty & \cv\pCloseEstTwentyFive & \cv\pCloseEstThirty & \cv\pCloseEstRef\\
+\quad ideal hardware      & \cv\pCloseEstIdealFifteen & \cv\pCloseEstIdealTwenty & \cv\pCloseEstIdealTwentyFive & \cv\pCloseEstIdealThirty & \cv\pCloseEstIdealRef\\
+\quad capped at p90       & \cv\pCloseEstCapFifteen & \cv\pCloseEstCapTwenty & \cv\pCloseEstCapTwentyFive & \cv\pCloseEstCapThirty & \cv\pCloseEstCapRef\\
+\quad mirror-corr.$^\ast$ & \cv\pCloseOracleFifteen & \cv\pCloseOracleTwenty & \cv\pCloseOracleTwentyFive & \cv\pCloseOracleThirty & \cv\pCloseOracleRef\\
 \bottomrule
-\multicolumn{6}{@{}l@{}}{\footnotesize $^\ast$Oracle diagnostic: mirror solutions replaced using the true position.}
 \end{tabular}
 \end{table}
 
@@ -699,11 +720,7 @@ reflections into reliable position information is therefore the next
 step toward ISAC-assisted mobility.
 
 \section*{Acknowledgment}
-This material is based upon work supported in part by NSF under Awards
-CNS-2120442 and IIS-2325863, and NTIA under Award No.\ 51-60-IF007. Any
-opinions, findings, and conclusions or recommendations expressed in this
-publication are those of the author(s) and do not necessarily reflect
-the views of the NSF and NTIA.
+This material is based upon work supported in part by NSF under Awards CNS-2120442 and IIS-2325863, and NTIA under Award No. 51-60-IF007. Any opinions, findings, and conclusions or recommendations expressed in this publication are those of the author(s) and do not necessarily reflect the views of the NSF and NTIA. AI assisted with coding and enhancing the text; the authors verified all content.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs2}
