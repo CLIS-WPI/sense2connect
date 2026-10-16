@@ -441,6 +441,62 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
             aggregation="90th percentile of the EKF error [m], pooled over runs, UEs and epochs after the first 2 s", raw=tl)
     put("pSyncListShown", "0, 1 and 3", script="scripts/p2_make_paper.py", config=sc,
         aggregation="sigma_sync values [ns] that enter reported numbers (0: pHw*Ideal, pLimLosSync, ideal hardware; 1: main; 3: pHw*Worst)")
+    # ---- camera-ready phase 2 (pre-declared, results/P2/phase2_predeclared.md)
+    margins5 = (("15 dB", "Fifteen"), ("20 dB", "Twenty"), ("25 dB", "TwentyFive"), ("30 dB", "Thirty"), ("3GPP short-range reference", "Ref"))
+
+    def close_put(name, vs, script, config):
+        put(name, f"{vs['mean_diff']:+.3f}" + ("$^\\dagger$" if not vs["wilcoxon_p_two_sided"] < 0.05 else ""), script=script, config=config,
+            aggregation="planner - A5 outage [s/UE-min], seed level; dagger = exact Wilcoxon p >= 0.05 (pointwise, exploratory)", raw=vs)
+
+    hf = P2 / f"diag_boundlevel_held_{tag}.json"
+    if hf.exists():
+        hd = json.loads(hf.read_text())
+        sh = "scripts/p2_diag_boundlevel_held.py -> results/P2/diag_boundlevel_held_%s.json (SYNTHETIC bound-level positions)" % tag
+        c100 = {m["label"]: m for m in hd["conditions"]["bound-level LoS-only, full covariance, no fix = 100 m (synthetic)"]["margins"]}
+        if bf.exists():  # the 100 m condition must reproduce the paper's LoS-only row
+            old = {m["label"]: m["per_job"] for m in bd["conditions"]["bound-level LoS-only, full covariance (synthetic)"]["margins"]}
+            worst = max(abs(c100[lab]["per_job"][k] - old[lab][k]) for lab in old for k in old[lab])
+            if worst > 1e-9:
+                raise SystemExit(f"diag_boundlevel_held: the 100 m condition does not reproduce diag_boundlevel (max |diff| {worst})")
+        hm = {m["label"]: m["vs_a5"] for m in hd["conditions"]["bound-level LoS-only, full covariance, no fix held (synthetic)"]["margins"]}
+        for lab, M in margins5:
+            close_put(f"pCloseFullLosHeld{M}", hm[lab], sh, f"LoS-only bound level, singular J_p -> last valid synthetic position held; margin {lab}")
+        put("pSingularLosShare", f"{100 * hd['tails']['singular_ue_epochs'] / hd['tails']['ue_epochs']:.1f}\\%", script=sh,
+            config="single-epoch LoS-only J_p singular (biased model, main configuration)", aggregation="share of UE-epochs", raw=hd["tails"])
+    tf = P2 / f"tracker_closing_{tag}.json"
+    if tf.exists():
+        td = json.loads(tf.read_text())
+        st_ = "scripts/p2_tracker_closing.py -> results/P2/tracker_closing_%s.json (TVT tracker 36223bc, visibility none, frozen parameters)" % tag
+        mt = td["metrics"]
+        for who, W in (("tracker", "Trk"), ("estimator A", "TrkEstA")):
+            sm = mt[who]["seed_mean"]
+            put(f"p{W}Med", f"{100 * sm['median_m']:.1f}", script=st_, config=f"{who}, main configuration, after the first 2 s",
+                aggregation="median error [cm]; per-seed median over runs, UEs and epochs, mean over seeds", raw=mt[who])
+            put(f"p{W}Pninety", f"{sm['p90_m']:.2f}", script=st_, config=f"{who}", aggregation="p90 error [m]; per seed, mean over seeds")
+            put(f"p{W}BlkMed", f"{100 * sm['median_blocked_m']:.1f}", script=st_, config=f"{who}; epochs with >= 1 blocked O-RU",
+                aggregation="median error [cm]; per seed, mean over seeds")
+            wr = mt[who]["wrap_1s"]
+            put(f"p{W}WrapMed", f"{wr['seed_mean_in']['median_m']:.1f}", script=st_, config=f"{who}; the 1 s after each UE wrap (no mask applied)",
+                aggregation="median error [m] in the 10 epochs after each wrap; per seed, mean over seeds", raw=wr)
+        put("pTrkWrapShare", f"{100 * mt['tracker']['wrap_1s']['share_of_epochs']:.1f}\\%", script=st_, config="1 s after each UE wrap",
+            aggregation="share of the evaluated UE-epochs (after the first 2 s)")
+        put("pTrkWrapNum", str(mt["tracker"]["wrap_1s"]["n_wraps"]), script=st_, config="UE wraps after the first 2 s", aggregation="count")
+        for k, K in (("median_m", "Med"), ("p90_m", "Pninety"), ("median_blocked_m", "BlkMed")):
+            put(f"pTrkVsAP{K}", pfmt(mt["tracker_vs_A_wilcoxon_p"][k]), script=st_, config="tracker vs estimator A", aggregation="exact two-sided Wilcoxon over 10 seeds")
+        tc = {m["label"]: m["vs_a5"] for m in td["conditions"]["tracker (TVT 36223bc, no visibility)"]["margins"]}
+        for lab, M in margins5:
+            close_put(f"pCloseTrk{M}", tc[lab], st_, f"paper-1 planner with tracker positions, perfect blocker tracks; margin {lab}")
+    tof = P2 / f"tracker_onset_{tag}.json"
+    if tof.exists():
+        to = json.loads(tof.read_text())["variants"]["tracker"]
+        so3 = "scripts/p2_tracker_onset.py -> results/P2/tracker_onset_%s.json" % tag
+        for w, W in (("[-1,-0.5) s", "PreOne"), ("[-0.5,0) s", "PreHalf"), ("during", "During"), ("elsewhere", "Else")):
+            r = to[w]
+            put(f"pTrkOnset{W}Med", f"{100 * r['median_m']['mean']:.1f}", script=so3, config=f"tracker; window {w} of the serving-cell 10 dB events",
+                aggregation="median error [cm]: per-seed median, mean over seeds", raw=r)
+            put(f"pTrkOnset{W}Pninety", f"{r['p90_m']['mean']:.2f}", script=so3, config=f"tracker; window {w}", aggregation="p90 error [m]; per seed, mean over seeds")
+            put(f"pTrkOnset{W}ShTen", pct(r["share_gt_0.1"]["mean"]), script=so3, config=f"tracker; window {w}", aggregation="share > 0.1 m; mean over seeds")
+            put(f"pTrkOnset{W}ShQuarter", pct(r["share_gt_0.25"]["mean"]), script=so3, config=f"tracker; window {w}", aggregation="share > 0.25 m; mean over seeds")
     return out
 
 
