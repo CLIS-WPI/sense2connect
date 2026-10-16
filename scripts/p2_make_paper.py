@@ -499,6 +499,44 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
         put("pTrkLowMaxP", pfmt(max(tc[lab]["wilcoxon_p_two_sided"] for lab in low)), script=st_,
             config=f"tracker vs A5 at the margins below 15 dB ({', '.join(low)}); all differences positive (checked)",
             aggregation="largest exact two-sided Wilcoxon p over these margins", raw={lab: tc[lab] for lab in low})
+    # Holm correction across the margins of each Table III row, for every claim the text calls significant
+    hfiles = [P2 / f"{n}_{tag}.json" for n in ("closing", "diag_boundlevel", "diag_mirror_oracle", "tracker_closing")]
+    if all(f.exists() for f in hfiles):
+        cj_, bd_, mo_, tk_ = (json.loads(f.read_text())["conditions"] for f in hfiles)
+        m5 = [lab for lab, _ in margins5]
+        rows = [("exact", cj_["perfect"], m5, ["15 dB", "25 dB", "3GPP short-range reference"]),
+                ("map-aided bound", bd_["bound-level map-aided, full covariance (synthetic)"], m5, ["15 dB", "25 dB"]),
+                ("LoS-only bound, no fix = 100 m", bd_["bound-level LoS-only, full covariance (synthetic)"], m5, m5),
+                ("dominant-path", cj_[elabel("bw400_tdoa_s1_p2_b")], m5, m5),
+                ("ideal hardware", cj_[elabel("bw400_tdoa_s0_p0_b")], m5, m5),
+                ("capped at p90", cj_[elabel("bw400_tdoa_s1_p2_b") + " capped at p90"], m5, m5),
+                ("mirror-corrected (oracle)", mo_["estimator A bw400_tdoa_s1_p2_b mirror-corrected (oracle)"], m5, m5),
+                ("map-aided tracker, margins below 15 dB", tk_["tracker (TVT 36223bc, no visibility)"], ["0 dB", "5 dB", "10 dB"], ["0 dB", "5 dB", "10 dB"])]
+
+        def holm(ps):
+            order = sorted(range(len(ps)), key=lambda i: ps[i])
+            adj, run = [0.0] * len(ps), 0.0
+            for r, i in enumerate(order):
+                run = max(run, min(1.0, (len(ps) - r) * ps[i]))
+                adj[i] = run
+            return adj
+
+        holm_raw, fails, surv = {}, [], []
+        for name, cond, fam, claim in rows:
+            v = {m["label"]: m["vs_a5"] for m in cond["margins"]}
+            ps = [v[lab]["wilcoxon_p_two_sided"] for lab in fam]
+            adj = holm(ps)
+            holm_raw[name] = {lab: {"mean_diff": v[lab]["mean_diff"], "p": p, "p_holm": a, "claimed_significant": lab in claim} for lab, p, a in zip(fam, ps, adj)}
+            for lab, a in zip(fam, adj):
+                if lab in claim:
+                    (surv if a < 0.05 else fails).append((name, lab, a))
+        if [(n, lab) for n, lab, _ in fails] != [("map-aided bound", "25 dB")]:
+            raise SystemExit(f"Holm outcome differs from the text (exception: map-aided bound at 25 dB): {fails}")
+        sho = "scripts/p2_make_paper.py (Holm across the margins of each Table III row) from results/P2/{closing,diag_boundlevel,diag_mirror_oracle,tracker_closing}_%s.json" % tag
+        put("pHolmMapTwentyFiveP", pfmt(fails[0][2]), script=sho, config="map-aided bound-level row, 25 dB (claimed significant pointwise)",
+            aggregation="Holm-adjusted exact Wilcoxon p across the five margins of the row", raw=holm_raw)
+        put("pHolmMaxSurvivingP", pfmt(max(a for _, _, a in surv)), script=sho, config="all other claims of significance in Section V-F",
+            aggregation="largest Holm-adjusted p among the claims that remain significant", raw=[list(x) for x in surv])
     tof = P2 / f"tracker_onset_{tag}.json"
     if tof.exists():
         to = json.loads(tof.read_text())["variants"]["tracker"]

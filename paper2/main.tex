@@ -46,8 +46,9 @@ synchronization and array calibration errors as Bayesian priors,
 compare LoS-only information with map-aided information from a digital
 twin, and evaluate a dominant-path estimator and a map-aided multipath
 tracker. Ray-traced experiments in a street canyon, reported on
-held-out scenarios, show that array calibration, not bandwidth, limits
-the bound, and that blockage substantially degrades the LoS-only bound,
+held-out scenarios, show that with LoS to both radio units, array
+calibration rather than bandwidth limits the LoS-only bound, and that
+blockage substantially degrades the LoS-only bound,
 whereas known reflected paths keep the map-aided bound much lower. The
 dominant-path estimator has mostly systematic errors that grow sharply
 around blockage events, and its positions make proactive handover worse
@@ -140,7 +141,7 @@ errors in a ray-traced campus, and point to reflections as virtual
 anchors for future work.
 
 \textit{Sensing-aided handover.} Vision-, radar-, and ISAC-aided
-handover predicts blockage or user motion
+handover predict blockage or motion
 \cite{charan2021vision,li2025lookbefore}; our companion study
 \cite{natanzi2027companion} identified the user position as a binding
 requirement.
@@ -326,7 +327,7 @@ parameters have been eliminated jointly by a Schur complement: the
 complex gains of all paths; in the \emph{LoS-only} bound, the delays and
 angles of all reflected paths; and in the biased model, the delay and
 angles of a blocked LoS. The second term eliminates the timing and
-hardware errors in $\boldsymbol\nu$. $\boldsymbol\Lambda$ holds the Gaussian priors of the
+hardware errors in $\boldsymbol\nu$. $\boldsymbol\Lambda$ holds the prior precisions of the
 O-RU time offsets ($\sigma_{\mathrm{sync}}$) and of the element phases
 ($\sigma_\phi$); the UE clock bias has no prior (time difference of
 arrival, TDoA). In the \emph{map-aided} bound, the delays and angles of the reflected
@@ -344,8 +345,8 @@ Cram\'er--Rao bound: it bounds the root-mean-square (RMS) error of
 unbiased single-epoch estimates for a given geometry, averaged over the
 noise and the hardware priors; it is neither a median error nor a
 guarantee that an estimator attains it, a biased estimator can have a
-smaller spread, and it excludes the temporal information that a
-tracking filter uses.
+smaller spread, and it excludes the temporal information of
+tracking.
 
 \subsection{Dominant-Path Estimator}
 Per O-RU and epoch, a zero-padded two-dimensional DFT over the array
@@ -419,15 +420,12 @@ sidewalk, \pOruOffset\,m further along the street. Pedestrian UEs at
 \pRunDuration-s run has low or high traffic: \pVehLaneKmLow{} or
 \pVehLaneKmHigh{} vehicles per lane and km (cars, buses, trucks at
 \pVehSpeed\,m/s) and \pPedWalkersLow{} or \pPedWalkersHigh{} pedestrians
-on the sidewalks plus \pPedCrossingLow{} or \pPedCrossingHigh{} crossing
-the street. Paths are traced with Sionna RT
+on the sidewalks plus \pPedCrossingLow{} or \pPedCrossingHigh{} crossing. Paths are traced with Sionna RT
 \cite{hoydis2023sionnart,sionna} (specular, order up to \pMaxDepth, at
 most \pMaxPaths{} paths per link).
 
 \textit{Service model.} The SNR of a cell adds, over all traced paths,
-the path power with the full array gain after its model-B loss; this is
-an optimistic approximation of the received multipath power, since no
-single beam collects all paths with full gain. The UE is in outage when
+the path power with the full array gain after its model-B loss; this is an optimistic approximation, since no single beam collects all paths with full gain. The UE is in outage when
 this total remaining power gives an SNR below
 $\gamma_{\mathrm{req}}=\pSNRreq$\,dB, the value needed for
 \SI{400}{Mbit/s}; during \SI{10}{dB} LoS events, the strongest
@@ -447,8 +445,7 @@ tuned per margin on the tuning seeds; the tuned time-to-trigger,
 \SI{40}{ms}, is the smallest value of the grid. With perfect blocker tracks and a white
 Gaussian UE position error, it satisfies \eqref{eq:req} only up to a
 per-axis standard deviation of about \pBreakEven\,cm, i.e., an RMS
-distance error of about \pBreakEvenRms\,cm or a median distance error of
-about \pBreakEvenMedDist\,cm \cite{natanzi2027companion}.
+distance error of about \pBreakEvenRms\,cm \cite{natanzi2027companion}.
 
 \textit{Blocked LoS.} An O-RU is blocked for a UE at an epoch when the
 model-B loss of its LoS path is at least \pBlockedDb\,dB. In the biased
@@ -511,7 +508,9 @@ both O-RUs, the LoS-only PEB is below \pDecThr\,cm in
 SNR, \pLimLosSync{} for perfect synchronization, and \pLimLosCal{} for
 perfect calibration. On these short links, the delay and angle
 measurements are precise enough that the element phase errors, which
-bias the angles, dominate. Without hardware errors, the LoS-only PEB is
+bias the angles, dominate; the map-aided bound and the blocked LoS-only
+bound, in contrast, do improve with bandwidth (Fig.~\ref{fig:bw},
+Table~\ref{tab:val}). Without hardware errors, the LoS-only PEB is
 below \pDecThr\,cm in \pHwLosIdeal{} of the epochs; with
 \pSyncWorst\,ns and \pPhiWorst\,deg errors, in \pHwLosWorst. The
 map-aided PEB is far less sensitive (\pHwMapIdeal{} and \pHwMapWorst),
@@ -531,9 +530,7 @@ the PEB during blockage to \pMapToLosBlk{} times the LoS-only value
 ($p=\pMapToLosP$). Along the street, the
 LoS-only PEB varies with the geometry of the two O-RUs from about a
 centimeter to over a decimeter, while the map-aided PEB stays mostly in
-the millimeter range. A low map-aided PEB indicates that the
-information is present in the signal; whether an estimator can extract
-it is a separate question.
+the millimeter range. A low map-aided PEB indicates that the information is present in the signal.
 
 
 
@@ -541,8 +538,8 @@ it is a separate question.
 At \pBwC\,MHz, the dominant-path estimator reaches a median error of
 \pEstMedFourHundred\,cm (\pEstLosFourHundred\,cm with LoS to both O-RUs,
 \pEstBlkFourHundred\,cm during blockage); \pEstDecFourHundred{} of its
-errors are below \pDecThr\,cm, and its 90th percentile is
-\pEstPninetyFourHundred\,m. At \pBwA\,MHz, the
+errors are below \pDecThr\,cm, and its per-seed 90th percentile is
+\pEstPninetyFourHundred\,m on average. At \pBwA\,MHz, the
 median grows to \pEstMedHundred\,cm.
 
 To compare the estimator with the bound on equal terms, we ran
@@ -563,13 +560,13 @@ six geometries at \pBwC\,MHz (\pValBiasMseFour{} of it); in the
 remaining one (lamppost, both LoS, $x=-20$\,m), the squared bias is
 \pValBiasMseFourOther{} of it and the random spread is larger. The bias is caused by interference of unresolved multipath, and
 in one geometry by a front/back mirror solution. The centered RMS is
-geometry dependent, between \pValCenToPebFour{} times the PEB at
-\pBwC\,MHz: close to the bound at some geometries and an order of
-magnitude above it at others. In blocked geometries it falls below the
-PEB, which is possible because the estimator is biased: it uses the
+geometry dependent (\pValCenToPebFour{} times the PEB at
+\pBwC\,MHz): close to the bound at some geometries and an order of
+magnitude above it at others. In blocked geometries, the centered RMS
+falls below the PEB, which is possible because the estimator is biased: it uses the
 detoured LoS precisely but in the wrong place. Over the held-out runs, front/back
 mirror solutions remain in \pMirrorShareEpochs{} of the epochs and
-dominate the squared error (RMS \pMirrorARmse\,m), while reflected
+dominate the squared error (RMS over all epochs \pMirrorARmse\,m), while reflected
 dominant paths set the 90th percentile. A variant that used reflections
 as virtual anchors did not reduce the tail on the development seeds
 (90th percentile \pDevBPninety{} vs.\ \pDevAPninety\,m) and was not
@@ -661,10 +658,7 @@ handover, the median error and the share of errors above
 \SI{0.25}{m} are about as elsewhere, but the large errors become larger:
 the 90th percentile rises from \pOnsetElsePninety{} to
 \pOnsetPreHalfPninety\,m. During the event, most of the distribution
-deteriorates, with the median growing to \pOnsetDuringMed\,cm. Errors thus
-worsen in the time windows relevant to proactive handover: before a
-blockage, the extreme errors grow; during it, the bulk of the errors
-does, which the overall median hides. For the map-aided tracker, the
+deteriorates, with the median growing to \pOnsetDuringMed\,cm. The overall median hides both effects. For the map-aided tracker, the
 90th percentile does not rise before onset (\pTrkOnsetPreHalfPninety{}
 vs.\ \pTrkOnsetElsePninety\,m elsewhere), and its median during the
 event is \pTrkOnsetDuringMed\,cm. The windows refer to the blockage
@@ -698,7 +692,9 @@ pooled 90th percentile (\pCapPninety\,m) or replacing its mirror
 solutions by the single-epoch hypothesis closest to the true position
 (an oracle diagnostic, not refiltered) reduces the loss but leaves it
 significant, so the largest errors are not its only
-cause. Synthetic bound-level errors are an optimistic model; they show what
+cause. With Holm correction across the margins of each row, all these
+significant results remain significant except the map-aided bound at
+\SI{25}{dB} (adjusted $p=\pHolmMapTwentyFiveP$). Synthetic bound-level errors are an optimistic model; they show what
 positioning would have to achieve, not that a practical estimator
 achieves it. In the \pDualBlockShare{} of epochs in which both O-RUs are
 blocked, the LoS-only bound is singular; these epochs are treated as
@@ -727,21 +723,20 @@ bound indicates. With its positions, proactive handover is no longer
 significantly worse than A5 at margins from \SI{15}{dB} up, but it does not reach the small gain that exact positions
 provide; whether this remaining gap stems from the tracker's residual
 errors, including those after the UE jumps, is not resolved here. The study has
-limitations: a single street canyon with two O-RUs; a tracker added
-after the first evaluation and run with an exact map; specular paths of
-order at most \pMaxDepth{} and no diffuse scattering; a perfectly known
-map in the map-aided bound; the biased model of a blocked LoS as our
+limitations: a single street canyon with two O-RUs; specular paths of order at most \pMaxDepth{} and no diffuse scattering; an exact map in the map-aided bound and in the tracker, which was added after the first evaluation; the biased model of a blocked LoS as our
 modeling choice; bodies as opaque knife-edge screens, without window
 transmission, vehicle-body reflections, or self-blockage by the user; single-epoch bounds without the temporal information
-of tracking; and planar arrays of isotropic elements, whose front/back
+of tracking; fully digital arrays read out in one symbol; and planar
+arrays of isotropic elements, whose front/back
 ambiguity a back plane would remove
 \cite{dong2026deployable}.
 
 % ---------------------------------------------------------------------
 \section{Conclusion}
 % ---------------------------------------------------------------------
-Under the tested configurations, the single-epoch bound is limited by
-array calibration rather than bandwidth; blockage substantially degrades
+In the tested short-range street canyon with two O-RUs, the single-epoch
+LoS-only bound with LoS to both O-RUs is limited by array calibration
+rather than bandwidth; blockage substantially degrades
 the LoS-only bound, while known reflected paths preserve a much lower
 map-aided bound. A dominant-path estimator shows substantial systematic
 multipath errors that worsen around blockage, and its positions make
