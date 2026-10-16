@@ -483,9 +483,14 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
         put("pTrkWrapNum", str(mt["tracker"]["wrap_1s"]["n_wraps"]), script=st_, config="UE wraps after the first 2 s", aggregation="count")
         for k, K in (("median_m", "Med"), ("p90_m", "Pninety"), ("median_blocked_m", "BlkMed")):
             put(f"pTrkVsAP{K}", pfmt(mt["tracker_vs_A_wilcoxon_p"][k]), script=st_, config="tracker vs estimator A", aggregation="exact two-sided Wilcoxon over 10 seeds")
+        put("pTrkVsAPAll", pfmt(max(mt["tracker_vs_A_wilcoxon_p"].values())), script=st_, config="tracker vs estimator A: median, p90, median with >= 1 O-RU blocked",
+            aggregation="largest of the three exact two-sided Wilcoxon p over 10 seeds", raw=mt["tracker_vs_A_wilcoxon_p"])
         tc = {m["label"]: m["vs_a5"] for m in td["conditions"]["tracker (TVT 36223bc, no visibility)"]["margins"]}
         for lab, M in margins5:
             close_put(f"pCloseTrk{M}", tc[lab], st_, f"paper-1 planner with tracker positions, perfect blocker tracks; margin {lab}")
+        put("pTrkMinP", pfmt(min(tc[lab]["wilcoxon_p_two_sided"] for lab, _ in margins5)), script=st_,
+            config="planner with tracker positions vs A5 at 15, 20, 25, 30 dB and the reference margin",
+            aggregation="smallest exact two-sided Wilcoxon p over the five margins (10 seeds)", raw={lab: tc[lab]["wilcoxon_p_two_sided"] for lab, _ in margins5})
     tof = P2 / f"tracker_onset_{tag}.json"
     if tof.exists():
         to = json.loads(tof.read_text())["variants"]["tracker"]
