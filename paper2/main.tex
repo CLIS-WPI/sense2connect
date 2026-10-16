@@ -54,7 +54,8 @@ around blockage events, and its positions make proactive handover worse
 than 3GPP event-triggered handover. The map-aided tracker reduces the
 median error from \pEstMedFourHundred{} to \pTrkMed\,cm and keeps it low
 around blockage onsets; with its positions, proactive handover is no
-longer significantly worse than the 3GPP event, but not better either.
+longer significantly worse than the 3GPP event at margins of
+\SI{15}{dB} and above, but not better either.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -95,12 +96,12 @@ consider ideal hardware or a single impairment in static scenes
 \cite{keskin2022optimal}. It remains unclear which effect
 limits decimeter accuracy in practice, how blockage changes it, how
 close practical estimators come, and whether their errors are small
-enough at the moments when a handover decision is made.
+enough when handover decisions are made.
 
 This paper addresses these questions in a street canyon served by two
 O-RAN radio units (O-RUs). Our contributions are:
 \begin{itemize}
-\item A positioning analysis tailored to blockage-aware handover: a
+\item A positioning analysis for blockage-aware handover: a
 single-epoch equivalent Fisher information analysis with
 synchronization and array calibration errors as Bayesian priors, two
 models of a blocked LoS, and map-aided information from reflected paths
@@ -344,7 +345,7 @@ unbiased single-epoch estimates for a given geometry, averaged over the
 noise and the hardware priors; it is neither a median error nor a
 guarantee that an estimator attains it, a biased estimator can have a
 smaller spread, and it excludes the temporal information that a
-tracking filter accumulates.
+tracking filter uses.
 
 \subsection{Dominant-Path Estimator}
 Per O-RU and epoch, a zero-padded two-dimensional DFT over the array
@@ -577,11 +578,11 @@ pursued.
 The map-aided tracker reaches a median error of \pTrkMed\,cm (\pTrkBlkMed\,cm
 with at least one O-RU blocked) and a 90th percentile of
 \pTrkPninety\,m, significantly better than the dominant-path estimator
-($p=\pTrkVsAPAll$ for all three statistics). Its largest errors
+(all $p=\pTrkVsAPAll$). Its largest errors
 occur in the \SI{1}{s} after a UE re-enters the periodic street section,
 a simulation artifact in which the track keeps the pre-jump position
 until it re-initializes; these windows contain \pTrkWrapShare{} of the
-epochs and are not excluded.
+epochs (not excluded).
 
 
 
@@ -689,8 +690,10 @@ the LoS-only bound, which grow during blockage, make it worse than A5 at
 every margin. With the positions of the dominant-path estimator, the
 planner is significantly worse than A5 at every margin, also with ideal
 hardware; with those of the map-aided tracker, it is not significantly
-different from A5 at any margin ($p\ge\pTrkMinP$), although at
-\SI{25}{dB} its bootstrap interval lies above zero. Capping each error of the EKF output at the
+different from A5 at any margin from \SI{15}{dB} up ($p\ge\pTrkMinP$),
+although at \SI{25}{dB} its bootstrap interval lies above zero; at
+\SI{10}{dB} it is still significantly worse (\pCloseTrkTen~s/UE-min,
+$p=\pCloseTrkTenP$), as at all lower margins ($p\le\pTrkLowMaxP$). Capping each error of the EKF output at the
 pooled 90th percentile (\pCapPninety\,m) or replacing its mirror
 solutions by the single-epoch hypothesis closest to the true position
 (an oracle diagnostic, not refiltered) reduces the loss but leaves it
@@ -721,7 +724,7 @@ simple virtual-anchor variant did not close it; the map-aided tracker,
 which resolves several paths and associates them probabilistically with
 known surfaces, does extract much of the information that the map-aided
 bound indicates. With its positions, proactive handover is no longer
-significantly worse than A5, but it does not reach the small gain that exact positions
+significantly worse than A5 at margins from \SI{15}{dB} up, but it does not reach the small gain that exact positions
 provide; whether this remaining gap stems from the tracker's residual
 errors, including those after the UE jumps, is not resolved here. The study has
 limitations: a single street canyon with two O-RUs; a tracker added
@@ -731,7 +734,7 @@ map in the map-aided bound; the biased model of a blocked LoS as our
 modeling choice; bodies as opaque knife-edge screens, without window
 transmission, vehicle-body reflections, or self-blockage by the user; single-epoch bounds without the temporal information
 of tracking; and planar arrays of isotropic elements, whose front/back
-ambiguity a physical back plane would remove in hardware
+ambiguity a back plane would remove
 \cite{dong2026deployable}.
 
 % ---------------------------------------------------------------------
@@ -745,7 +748,8 @@ multipath errors that worsen around blockage, and its positions make
 proactive handover worse than reactive handover. A map-aided multipath
 tracker reduces the median error to a few centimeters and keeps it low
 around blockage onsets, so that proactive handover is no longer
-significantly worse than the 3GPP event; reaching the small gain that exact positions
+significantly worse than the 3GPP event at margins of \SI{15}{dB} and
+above; reaching the small gain that exact positions
 provide remains open.
 
 \section*{Acknowledgment}

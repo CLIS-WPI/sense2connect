@@ -491,6 +491,14 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
         put("pTrkMinP", pfmt(min(tc[lab]["wilcoxon_p_two_sided"] for lab, _ in margins5)), script=st_,
             config="planner with tracker positions vs A5 at 15, 20, 25, 30 dB and the reference margin",
             aggregation="smallest exact two-sided Wilcoxon p over the five margins (10 seeds)", raw={lab: tc[lab]["wilcoxon_p_two_sided"] for lab, _ in margins5})
+        close_put("pCloseTrkTen", tc["10 dB"], st_, "paper-1 planner with tracker positions, perfect blocker tracks; margin 10 dB (not in Table III)")
+        put("pCloseTrkTenP", pfmt(tc["10 dB"]["wilcoxon_p_two_sided"]), script=st_, config="tracker vs A5 at 10 dB", aggregation="exact two-sided Wilcoxon p over 10 seeds")
+        low = [lab for lab in tc if lab.endswith(" dB") and float(lab.split()[0]) < 15]
+        if any(tc[lab]["mean_diff"] <= 0 for lab in low):
+            raise SystemExit(f"tracker not worse than A5 at every margin below 15 dB: {[(lab, tc[lab]['mean_diff']) for lab in low]}")
+        put("pTrkLowMaxP", pfmt(max(tc[lab]["wilcoxon_p_two_sided"] for lab in low)), script=st_,
+            config=f"tracker vs A5 at the margins below 15 dB ({', '.join(low)}); all differences positive (checked)",
+            aggregation="largest exact two-sided Wilcoxon p over these margins", raw={lab: tc[lab] for lab in low})
     tof = P2 / f"tracker_onset_{tag}.json"
     if tof.exists():
         to = json.loads(tof.read_text())["variants"]["tracker"]
