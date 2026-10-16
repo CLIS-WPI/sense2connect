@@ -421,6 +421,26 @@ def catalog(tag: str) -> dict[str, dict[str, Any]]:
             put(f"pDev{V}Rmse", f"{r['rmse_m']:.1f}", script=sd, config=f"variant {vv}, development seeds", aggregation="RMSE [m]; per-seed, mean over seeds")
     if "P4_part1" in est:
         put("pPartOneRatio", f"{est['P4_part1']['median']:.1f}", script=se, config="P4 part 1, main configuration", aggregation="median over seeds of median error/PEB")
+    # ---- camera-ready (numbers only, from stored results; no new analysis)
+    pf = sorted((P2 / "peb" / tag).glob("*_*_*.npz"))
+    if pf:
+        thr = float(p2cfg["blockage"]["blocked_los_db"])
+        n_both = n_all = 0
+        for f in pf:
+            ll = np.load(f)["los_loss_db"]  # [T, U, C] model-B LoS loss [dB], inf without a LoS path
+            n_both += int((ll >= thr).all(-1).sum())
+            n_all += int(np.prod(ll.shape[:2]))
+        put("pDualBlockShare", f"{100 * n_both / n_all:.1f}\\%", script="scripts/p2_peb.py -> results/P2/peb/%s/*.npz (los_loss_db)" % tag,
+            config=f"every O-RU blocked (model-B LoS loss >= {thr:g} dB); the single-epoch LoS-only biased bound is singular there "
+                   "(scripts/p2_diag_boundlevel.py: 100 m per axis)",
+            aggregation="share of UE-epochs, pooled over runs, UEs and epochs", raw={"n_both_blocked": n_both, "n_ue_epochs": n_all, "n_runs": len(pf)})
+    if cfj.exists():
+        tl = json.loads(cfj.read_text())["tails"][elabel("bw400_tdoa_s1_p2_b")]
+        put("pCapPninety", f"{tl['p90_m']:.2f}", script="scripts/p2_closing.py -> results/P2/closing_%s.json (tails)" % tag,
+            config=f"'{elabel('bw400_tdoa_s1_p2_b')} capped at p90': every EKF error vector shortened to this length",
+            aggregation="90th percentile of the EKF error [m], pooled over runs, UEs and epochs after the first 2 s", raw=tl)
+    put("pSyncListShown", "0, 1 and 3", script="scripts/p2_make_paper.py", config=sc,
+        aggregation="sigma_sync values [ns] that enter reported numbers (0: pHw*Ideal, pLimLosSync, ideal hardware; 1: main; 3: pHw*Worst)")
     return out
 
 
