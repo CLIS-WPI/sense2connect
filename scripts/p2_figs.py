@@ -108,7 +108,7 @@ def main() -> None:
     x = np.arange(3)
     series = [("LoS-only bound", "#1f77b4", "o", lambda bw: (lambda r: r["peb"][(slice(None), slice(None)) + idx(info="los", bw=bw)])),
               ("Map-aided bound", "#2ca02c", "s", lambda bw: (lambda r: r["peb"][(slice(None), slice(None)) + idx(info="map", bw=bw)]))]
-    states = (("(a) LoS to both O-RUs", LOS), ("(b) One O-RU blocked", BLK))
+    states = (("(a) LoS to both O-RUs", LOS), ("(b) O-RU(s) blocked", BLK))
     for ax, (title, fn) in zip(axs, states):
         for name, color, mk, get in series:
             med = [seed_medians(runs, get(bw), fn) for bw in bws]
