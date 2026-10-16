@@ -17,10 +17,16 @@
 \usepackage{colortbl}
 \definecolor{headblue}{RGB}{221,235,247}
 \input{numbers2.tex}
+% camera-ready values exported by scripts/p2_make_paper.py (paper2-cr);
+% \providecommand keeps the generated definitions when numbers2.tex has them
+\providecommand{\pDualBlockShare}{3.0\%}
+\providecommand{\pCapPninety}{1.90}
+\providecommand{\pSyncListShown}{0, 1 and 3}
 \definecolor{groupgray}{RGB}{242,242,242}
 \definecolor{bettergreen}{RGB}{226,240,217}
 \usepackage{multirow}
 \begin{document}
+\bstctlcite{IEEEexample:BSTcontrol}
 
 \title{mmWave UE Positioning Under Blockage:\\
 Limits for ISAC-Assisted Handover}
@@ -35,23 +41,25 @@ Limits for ISAC-Assisted Handover}
 
 \begin{abstract}
 Blockage-aware proactive handover in millimeter-wave (mmWave) networks
-predicts when a body will cross the line of sight (LoS) between a radio
-unit and a user, and is therefore only as good as the network's
-knowledge of the user position. This paper studies whether the radio
-units that serve a user can localize it accurately enough from its
-uplink sounding reference signals. We derive single-epoch position error
-bounds that include synchronization and array calibration errors as
-Bayesian priors, contrast LoS-only information with map-aided
-information from a digital twin, and evaluate a practical estimator
-with an extended Kalman filter. In ray-traced experiments in a street
-canyon, reported on held-out scenarios, the bound is limited by array calibration rather than bandwidth, blockage
-substantially degrades the LoS-only bound, and known reflected paths
-preserve a much lower map-aided bound. Fixed-geometry experiments reveal substantial systematic errors in the
-evaluated estimator, alongside geometry-dependent random error, and its
-errors grow sharply around blockage events. Fed into a blockage-aware
-handover planner, its positions do not let foresight outperform 3GPP
-event-triggered handover,
-whereas synthetic errors at the level of the map-aided bound do.
+switches a user to another cell before a body crosses the line of sight
+(LoS) to its radio unit. Predicting such a crossing requires knowing
+where the user is, so the scheme is only as good as the network's
+positioning. This paper asks whether the radio units that serve a user
+can localize it accurately enough from its uplink sounding reference
+signals. We derive single-epoch position error bounds that treat
+synchronization and array calibration errors as Bayesian priors,
+compare LoS-only information with map-aided information from a digital
+twin, and evaluate a practical dominant-path estimator with an extended
+Kalman filter. Ray-traced experiments in a street canyon, reported on
+held-out scenarios, yield three findings. First, array calibration, not
+bandwidth, limits the bound. Second, blockage substantially degrades the
+LoS-only bound, whereas known reflected paths keep the map-aided bound
+much lower. Third, the estimator's errors are mostly systematic at the tested
+geometries and grow
+sharply around blockage events. Consequently, its positions do not let
+a blockage-aware handover planner outperform 3GPP event-triggered
+handover, whereas synthetic errors at the level of the map-aided bound
+do.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -104,8 +112,8 @@ synchronization and array calibration errors as Bayesian priors, two
 models of a blocked LoS, and map-aided information from reflected paths
 with known geometry.
 \item A practical uplink estimator with an extended Kalman filter (EKF),
-whose single-epoch front end is compared with the bound at fixed
-geometries by decomposing its error into bias and random spread.
+whose single-epoch front end is compared with the bound at fixed geometries by decomposing its error
+into bias and random spread.
 \item An analysis of positioning errors around blockage onsets and a
 closing experiment that feeds estimated and synthetic bound-level
 positions into a blockage-aware handover planner. The bounds, the
@@ -122,7 +130,8 @@ sub-decimeter accuracy \cite{shahmansoori2018position,abushaban2018bounds},
 building on the equivalent Fisher information framework for wideband
 localization \cite{shen2010fundamental}. Multipath components with known
 geometry carry position information as virtual anchors
-\cite{leitinger2015evaluation,witrisal2016high}.
+\cite{leitinger2015evaluation,witrisal2016high}. We add hardware errors
+as priors and evaluate the bounds under traffic-driven blockage.
 
 \textit{Uplink SRS positioning.} 3GPP specifies uplink time- and
 angle-based positioning \cite{3gpp38855}. Dong \emph{et al.}
@@ -156,7 +165,8 @@ where path $\ell$ has complex gain $\beta_{c,\ell}$ (including blockage
 loss), delay $\tau_{c,\ell}$, and arrival direction
 $\mathbf u_{c,\ell}$ with steering response $s_m$; $\delta_c$ is the time
 offset of O-RU $c$, $b$ the UE clock bias, $\psi_{c,m}$ the calibration
-phase error of element $m$, and $w_{c,n,m}$ thermal noise. Hardware
+phase error of element $m$, and $w_{c,n,m}\sim\mathcal{CN}(0,\sigma_w^2)$
+independent thermal noise. Hardware
 errors are random with $\delta_c\sim\mathcal N(0,\sigma_{\mathrm{sync}}^2)$
 and $\psi_{c,m}\sim\mathcal N(0,\sigma_\phi^2)$.
 
@@ -167,7 +177,8 @@ A specular reflection on a known surface is an LoS path from the virtual
 anchor $\tilde{\mathbf p}_{c,\ell}$, the image of $\mathbf p_c$ in that
 surface, so that $\tau_{c,\ell}=\|\mathbf p-\tilde{\mathbf p}_{c,\ell}\|/c_0$
 \cite{leitinger2015evaluation}. Moving bodies attenuate every path
-segment according to 3GPP blockage model~B \cite{3gpp38901}. An O-RU is \emph{blocked} for a UE when the loss of its LoS path exceeds
+segment according to a blockage model; we use 3GPP model~B
+\cite{3gpp38901}. An O-RU is \emph{blocked} for a UE when the loss of its LoS path exceeds
 a threshold. Model~B reduces the power of a blocked LoS
 but keeps its geometry, whereas the field that actually arrives
 diffracts around the blocker. We therefore consider two models of a
@@ -183,11 +194,11 @@ from the tracked blockers and the reported UE position
 $\hat{\mathbf p}_t=\mathbf p_t+\mathbf e_t$, and selects the serving cell
 accordingly. Its outage time $J(\pi;\{\hat{\mathbf p}_t\})$ counts the
 time below the SNR required for the service rate, including the
-interruptions of its handovers. Since the policy aims to outperform
-reactive handover such as the 3GPP A5 event, the positioning
-requirement is that the error process $\{\mathbf e_t\}$ keeps
+interruptions of its handovers. Since the policy aims to outperform a
+reactive reference policy $\pi_0$ (here, the 3GPP A5 event), the
+positioning requirement is that the error process $\{\mathbf e_t\}$ keeps
 \begin{equation}
-J\bigl(\pi;\{\hat{\mathbf p}_t\}\bigr)\le J(\mathrm{A5}).
+J\bigl(\pi;\{\hat{\mathbf p}_t\}\bigr)\le J(\pi_0).
 \label{eq:req}
 \end{equation}
 This requirement depends on the error at the times the policy acts, not
@@ -322,12 +333,12 @@ O-RU time offsets ($\sigma_{\mathrm{sync}}$) and of the element phases
 arrival, TDoA). In the \emph{map-aided} bound, the delays and angles of the reflected
 paths are not nuisance parameters: their geometry is known from the digital twin,
 and their entries of $\mathbf T$ follow analytically from the virtual
-anchors. The analytic derivatives agree with central finite
-differences at \pDerivFdNumUe{} random UE positions to a relative error
-of at most \pDerivFdMaxRel, and the GPU implementation of
-\eqref{eq:efim} matches an independent NumPy implementation to
-\pFimJobErr{} and a brute-force numerical Fisher matrix on toy cases to
-\pFimToyErr; further checks are in the repository. The position
+anchors. The analytic derivatives agree with central finite differences
+at \pDerivFdNumUe{} random UE positions to a relative error of at most
+\pDerivFdMaxRel, and the GPU implementation of \eqref{eq:efim} matches
+an independent NumPy implementation to \pFimJobErr{} and a brute-force
+numerical Fisher matrix on toy cases to \pFimToyErr; further checks are
+in the repository. The position
 error bound is $\mathrm{PEB}=\sqrt{\mathrm{tr}(\mathbf J_{\mathbf p}^{-1})}$.
 Because the hardware errors enter through priors, it is a hybrid
 Cram\'er--Rao bound: it bounds the root-mean-square (RMS) error of
@@ -400,9 +411,7 @@ the street. Paths are traced with Sionna RT
 most \pMaxPaths{} paths per link).
 
 \textit{Service model.} The SNR of a cell adds, over all traced paths,
-the path power with the full array gain after its model-B loss (an
-upper bound that assumes ideal beam switching to the surviving paths);
-this is
+the path power with the full array gain after its model-B loss; this is
 an optimistic approximation of the received multipath power, since no
 single beam collects all paths with full gain. The UE is in outage when
 this total remaining power gives an SNR below
@@ -445,8 +454,9 @@ attenuated.
 \pNoiseFig\,dB. Numerology~\pNumerology{} (\pScs\,kHz) with \pBwA,
 \pBwB, and \pBwC\,MHz carriers uses \pNscA, \pNscB, and \pNscC{} active
 subcarriers \cite{3gpp38101_2}. We sweep
-$\sigma_{\mathrm{sync}}$ of \pSyncListShown\,ns (drawn once per run, a bias
-that the EKF cannot average out; 40 realizations over the held-out runs) and $\sigma_\phi$ of \pPhiList\,deg
+$\sigma_{\mathrm{sync}}$ of \pSyncListShown\,ns (drawn once per run, a
+bias that the EKF cannot average out; 40 realizations over the held-out
+runs) and $\sigma_\phi$ of \pPhiList\,deg
 (fixed per O-RU and run). The main configuration uses TDoA, \pBwC\,MHz,
 $\sigma_{\mathrm{sync}}=\pSyncMain$\,ns, $\sigma_\phi=\pPhiMain$\,deg, and
 the biased blocked-LoS model.
@@ -531,12 +541,11 @@ and decomposed its error as
 +\mathbb E\bigl[\|\hat{\mathbf p}-\mathbb E[\hat{\mathbf p}]\|^2\bigr],
 \label{eq:decomp}
 \end{equation}
-i.e., squared bias plus squared centered RMS (Table~\ref{tab:val}).
-The hardware errors are redrawn in every draw, so their contribution
-appears in the centered RMS, whereas the bias contains only
-deterministic errors such as unresolved multipath and the detoured LoS;
-within a run, a hardware realization is fixed and acts as a bias. The
-squared bias accounts for most of the mean squared error in five of the
+i.e., squared bias plus squared centered RMS (Table~\ref{tab:val}). The
+hardware errors are redrawn in every draw, so their contribution appears
+in the centered RMS, whereas the bias contains only deterministic errors
+such as unresolved multipath and the detoured LoS; within a run, a
+hardware realization is fixed and acts as a bias. The squared bias accounts for most of the mean squared error in five of the
 six geometries at \pBwC\,MHz (\pValBiasMseFour{} of it); in the
 remaining one (lamppost, both LoS, $x=-20$\,m), the squared bias is
 \pValBiasMseFourOther{} of it and the random spread is larger. The bias is caused by interference of unresolved multipath, and
@@ -592,7 +601,7 @@ with perfect blocker tracks. Negative values (shaded) mean less outage
 than A5; $^\dagger$: not significant (seed-level Wilcoxon $p\ge0.05$;
 pointwise tests, exploratory). Ref.\ = 3GPP reference budget
 (\pRefMargin\,dB margin). $^\ast$Oracle diagnostic: mirror solutions
-replaced using the true position.}
+replaced by the single-epoch hypothesis closest to the true position.}
 \label{tab:closing}
 \newcommand{\cv}[1]{\expandafter\cvaux#1\relax}
 \def\cvaux#1#2\relax{\if-#1\cellcolor{bettergreen}\ensuremath{-}\else\ensuremath{+}\fi#2}
@@ -640,7 +649,9 @@ the 90th percentile rises from \pOnsetElsePninety{} to
 deteriorates, with the median growing to \pOnsetDuringMed\,cm. Errors thus
 worsen in the time windows relevant to proactive handover: before a
 blockage, the extreme errors grow; during it, the bulk of the errors
-does, which the overall median hides.
+does, which the overall median hides. The windows refer to the blockage
+events of a reference cell, not to the decision times of a particular
+planner.
 
 
 
@@ -671,13 +682,13 @@ achieves it. In the \pDualBlockShare{} of epochs in which both O-RUs are
 blocked, the LoS-only bound is singular; these epochs are treated as
 having no fix (\SI{100}{m} standard deviation), so the LoS-only row
 partly reflects missing fixes. The synthetic errors are independent
-across epochs, whereas hardware errors persist over a run; the effect
-of temporal correlation on the planner is not evaluated here. The absolute gains at stake are small: at \SI{15}{dB} margin, A5 has an
+across epochs, whereas hardware errors persist over a run; the effect of
+temporal correlation on the planner is not evaluated here. The absolute gains at stake are small: at \SI{15}{dB} margin, A5 has an
 outage of \pAfiveFifteen~s/UE-min, and the relative change is
 \mbox{\pRelPerfFifteen} with exact positions and \mbox{\pRelMapFifteen} with
 bound-level map-aided positions; at the reference, A5 has
 \pAfiveRef~s/UE-min, and the changes are \mbox{\pRelPerfRef} and
-\mbox{\pRelMapRef}, respectively.
+\mbox{\pRelMapRef}, respectively; the application-level impact is not evaluated here.
 
 % ---------------------------------------------------------------------
 \section{Discussion and Limitations}
@@ -689,7 +700,7 @@ do not rule out stronger practical estimators. The
 information to close this gap is present in the reflected paths, as the
 map-aided bound shows, but our simple virtual-anchor variant did not
 extract it. Two levers remain: super-resolution multipath estimation,
-which removes the bias of unresolved paths even with LoS
+which can reduce the bias of unresolved paths even with LoS
 \cite{shahmansoori2018position}, and map-aided estimators that reliably
 associate reflections with known surfaces during blockage
 \cite{dong2026deployable,witrisal2016high}, together with better array
